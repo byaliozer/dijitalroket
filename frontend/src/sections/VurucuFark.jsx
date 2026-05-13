@@ -1,17 +1,33 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Zap, ArrowRight, Sparkles } from "lucide-react";
+import CodeRain from "../components/CodeRain";
 
 export default function VurucuFark() {
   return (
     <section className="relative overflow-hidden py-24 sm:py-32" data-testid="vurucu-fark-section">
-      {/* Deep emerald + orange highlight background */}
+      {/* Tech background: deep navy + matrix code rain + readability gradient */}
       <div className="absolute inset-0 bg-[#07111F]">
-        <div className="absolute inset-0 bg-grid opacity-30" />
-        <div className="absolute -top-32 left-1/4 h-[460px] w-[460px] rounded-full bg-[#2563EB]/25 blur-[140px] animate-orb-move" />
-        <div className="absolute -bottom-32 right-1/4 h-[460px] w-[460px] rounded-full bg-[#F97316]/15 blur-[140px] animate-orb-move" style={{ animationDelay: "5s" }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[700px] w-[700px] rounded-full border border-[#F97316]/8" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[480px] w-[480px] rounded-full border border-[#F97316]/12" />
+        <CodeRain color="rgba(34,211,238," density={22} />
+        {/* Radial fade so center text stays crisp */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 55% at 50% 50%, rgba(7,17,31,0.92) 0%, rgba(7,17,31,0.75) 45%, rgba(7,17,31,0.35) 80%, transparent 100%)",
+          }}
+        />
+        {/* Subtle accent orbs */}
+        <div className="absolute -top-32 left-1/4 h-[420px] w-[420px] rounded-full bg-[#2563EB]/15 blur-[140px]" />
+        <div className="absolute -bottom-32 right-1/4 h-[420px] w-[420px] rounded-full bg-[#F97316]/10 blur-[140px]" />
+        {/* Horizontal scanlines for tech feel */}
+        <div
+          className="absolute inset-0 opacity-[0.06] mix-blend-screen"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(0deg, rgba(34,211,238,0.6) 0px, rgba(34,211,238,0.6) 1px, transparent 1px, transparent 3px)",
+          }}
+        />
       </div>
 
       <div className="container-x relative">
