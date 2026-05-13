@@ -11,7 +11,7 @@ export default function Logo({ variant = "dark", className = "" }) {
       </span>
       <span className="flex flex-col leading-none">
         <span className={`font-heading text-lg font-extrabold tracking-tight ${textColor}`}>Dijital Roket</span>
-        <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#22D3EE]">DR AI System</span>
+        <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#22D3EE]">DR AI</span>
       </span>
     </Link>
   );
