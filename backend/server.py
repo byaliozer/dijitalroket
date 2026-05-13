@@ -189,6 +189,9 @@ class CaseStudy(BaseModel):
     solution: str
     result: str
     cover_image: Optional[str] = ""
+    content: Optional[str] = ""
+    gallery: List[dict] = []
+    external_url: Optional[str] = ""
     published: bool = True
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
@@ -203,6 +206,9 @@ class CaseStudyCreate(BaseModel):
     solution: str
     result: str
     cover_image: Optional[str] = ""
+    content: Optional[str] = ""
+    gallery: List[dict] = []
+    external_url: Optional[str] = ""
     published: bool = True
 
 
