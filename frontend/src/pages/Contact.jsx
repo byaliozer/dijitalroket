@@ -53,9 +53,9 @@ export default function Contact() {
       <section className="section bg-white">
         <div className="container-x grid gap-10 lg:grid-cols-5">
           <div className="lg:col-span-2 space-y-4">
-            <InfoCard icon={Phone} title="Telefon" value="0543 793 41 01" href="tel:+905437934101" />
-            <InfoCard icon={Mail} title="E-posta" value="info@dijitalroket.com" href="mailto:info@dijitalroket.com" />
-            <InfoCard icon={MapPin} title="Adres" value="Bursa, Türkiye" />
+            <InfoCard icon={Phone} title="Telefon" value={settings?.contact_phone || "0543 793 41 01"} href={`tel:${settings?.contact_phone_link || "+905437934101"}`} />
+            <InfoCard icon={Mail} title="E-posta" value={settings?.contact_email || "byaliozer@gmail.com"} href={`mailto:${settings?.contact_email || "byaliozer@gmail.com"}`} />
+            <InfoCard icon={MapPin} title="Adres" value={settings?.contact_address || "Bursa, Türkiye"} />
           </div>
 
           <form

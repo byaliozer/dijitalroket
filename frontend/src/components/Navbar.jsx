@@ -21,10 +21,11 @@ export default function Navbar() {
   }, [location.pathname]);
 
   return (
-    <header
-      data-testid="site-navbar"
-      className="fixed top-0 inset-x-0 z-50 bg-[#07111F]/90 backdrop-blur-xl border-b border-white/10"
-    >
+    <>
+      <header
+        data-testid="site-navbar"
+        className="fixed top-0 inset-x-0 z-50 bg-[#07111F]/90 backdrop-blur-xl border-b border-white/10"
+      >
       <div className="container-x flex h-16 lg:h-20 items-center justify-between">
         <Logo variant="light" />
 
@@ -73,6 +74,7 @@ export default function Navbar() {
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
+      </header>
 
       <AnimatePresence>
         {open && (
@@ -81,7 +83,7 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25 }}
-            className="xl:hidden fixed inset-x-0 top-16 bottom-0 z-40 bg-[#07111F]/98 backdrop-blur-2xl"
+            className="xl:hidden fixed inset-x-0 top-16 bottom-0 z-[60] bg-[#07111F]"
             data-testid="mobile-menu"
           >
             <div className="container-x py-8 flex flex-col gap-1">
@@ -118,6 +120,6 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
-    </header>
+    </>
   );
 }

@@ -35,7 +35,7 @@ export default function BlogDetail() {
           <Link to="/blog" className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white">
             <ArrowLeft className="h-4 w-4" /> Tüm Yazılar
           </Link>
-          <span className="mt-6 eyebrow-light">{post.category}</span>
+          <div className="mt-6 block"><span className="eyebrow-light">{post.category}</span></div>
           <h1 className="mt-3 h1-display text-white">{post.title}</h1>
           <div className="mt-4 inline-flex items-center gap-1.5 text-sm text-white/60">
             <Clock className="h-3.5 w-3.5" /> {post.read_time} dakikalık okuma

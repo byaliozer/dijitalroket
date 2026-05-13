@@ -41,7 +41,7 @@ export default function ProjectDetail() {
           <Link to="/projeler" className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white">
             <ArrowLeft className="h-4 w-4" /> Tüm Projeler
           </Link>
-          <span className="mt-6 eyebrow-light">{item.sector}</span>
+          <div className="mt-6 block"><span className="eyebrow-light">{item.sector}</span></div>
           <h1 className="mt-3 h1-display text-white max-w-4xl">{item.title}</h1>
           <div className="mt-4 flex flex-wrap gap-2">
             {(item.tags || []).map((t) => (
