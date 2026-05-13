@@ -1,0 +1,136 @@
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { ArrowRight, Sparkles, Layers, Cpu, Zap } from "lucide-react";
+
+const HERO_BG = "https://static.prod-images.emergentagent.com/jobs/4563ce39-d136-4158-943b-98a85fea66a9/images/0c107f763e768d30c0b3ee5f6ce696642c4455d1ca466a00b36446cf22b3f389.png";
+const DASHBOARD_MOCKUP = "https://static.prod-images.emergentagent.com/jobs/4563ce39-d136-4158-943b-98a85fea66a9/images/e4e280432bf2c274958cd8cce8cc9f2b90889996c11e6f863d26e6b7cdfe661d.png";
+
+const METRICS = [
+  { icon: Zap, text: "1 günde yayına alınabilen kurumsal web projeleri" },
+  { icon: Cpu, text: "Saatler içinde çalışan sistem prototipleri" },
+  { icon: Sparkles, text: "DR AI destekli içerik ve görsel üretimi" },
+  { icon: Layers, text: "Web + Panel + Otomasyon tek çatı altında" },
+];
+
+export default function Hero() {
+  return (
+    <section
+      data-testid="hero-section"
+      className="relative overflow-hidden bg-[#07111F] text-white"
+    >
+      {/* Background layers */}
+      <div className="absolute inset-0">
+        <img
+          src={HERO_BG}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover opacity-30 mix-blend-screen"
+        />
+        <div className="absolute inset-0 bg-grid opacity-60" />
+        <div className="absolute inset-0 bg-hero-radial" />
+        <div className="absolute -top-32 -left-24 h-[420px] w-[420px] rounded-full bg-[#2563EB]/30 blur-[120px] animate-orb-move" />
+        <div className="absolute top-40 -right-32 h-[420px] w-[420px] rounded-full bg-[#22D3EE]/25 blur-[120px] animate-orb-move" style={{ animationDelay: "4s" }} />
+        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-b from-transparent to-[#07111F]" />
+      </div>
+
+      <div className="container-x relative pt-24 pb-24 sm:pt-32 sm:pb-32 lg:pt-40 lg:pb-32 grid lg:grid-cols-12 gap-12 items-center">
+        <div className="lg:col-span-7">
+          <motion.span
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#22D3EE] backdrop-blur"
+            data-testid="hero-badge"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-[#22D3EE] animate-pulse" />
+            DR AI Üretim Sistemi
+          </motion.span>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.05 }}
+            className="mt-6 h1-display text-white"
+            data-testid="hero-title"
+          >
+            Şirketinizi <span className="text-gradient">Dijitalde Roketliyoruz.</span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.12 }}
+            className="mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-white/70"
+          >
+            DR AI destekli üretim sistemimizle web siteleri, kurumsal paneller, B2B sistemler, CRM benzeri iş takip araçları,
+            sosyal medya içerikleri ve özel dijital projeleri hızlı, güvenli ve profesyonel şekilde hayata geçiriyoruz.
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.18 }}
+            className="mt-3 text-sm text-white/50"
+          >
+            Klasik ajans hızını değil, roket hızında dijital dönüşüm sunuyoruz.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.25 }}
+            className="mt-8 flex flex-col sm:flex-row gap-3"
+          >
+            <Link to="/proje-talep" data-testid="hero-cta-primary" className="btn-primary animate-glow-pulse">
+              Projemi Analiz Edin
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link to="/kurumsal-cozumler" data-testid="hero-cta-secondary" className="btn-ghost-dark">
+              Kurumsal Çözümleri İnceleyin
+            </Link>
+          </motion.div>
+
+          <motion.ul
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.7, delay: 0.4 }}
+            className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl"
+            data-testid="hero-metrics"
+          >
+            {METRICS.map((m, i) => (
+              <li key={i} className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-3.5 backdrop-blur">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#2563EB]/30 to-[#22D3EE]/30 border border-white/10">
+                  <m.icon className="h-4 w-4 text-[#22D3EE]" />
+                </span>
+                <span className="text-sm text-white/80 leading-snug">{m.text}</span>
+              </li>
+            ))}
+          </motion.ul>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 30 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2 }}
+          className="lg:col-span-5 relative"
+          data-testid="hero-mockup"
+        >
+          <div className="relative animate-float">
+            <div className="absolute -inset-8 rounded-3xl bg-gradient-to-br from-[#2563EB]/20 via-[#22D3EE]/10 to-transparent blur-2xl" />
+            <div className="relative rounded-2xl border border-white/10 bg-white/5 p-2 backdrop-blur-xl shadow-2xl">
+              <img src={DASHBOARD_MOCKUP} alt="DR AI Dashboard" className="rounded-xl w-full" />
+            </div>
+            <div className="absolute -bottom-6 -left-6 hidden md:flex items-center gap-3 rounded-xl bg-[#07111F]/80 border border-white/10 backdrop-blur-xl px-4 py-3 shadow-2xl">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#2563EB] to-[#22D3EE]">
+                <Sparkles className="h-4 w-4 text-white" />
+              </span>
+              <div className="leading-tight">
+                <div className="text-xs text-white/50">DR AI</div>
+                <div className="text-sm font-semibold">Üretim aktif</div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
