@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin, Linkedin, Instagram, Twitter, Rocket } from "lucide-react";
+import { Mail, Phone, MapPin, Linkedin, Instagram, Twitter, Smile } from "lucide-react";
 import Logo from "./Logo";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 
@@ -114,7 +114,7 @@ export default function Footer() {
         <div className="container-x py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/40">
           <span>© 2026 Dijital Roket. Tüm hakları saklıdır.</span>
           <span className="inline-flex items-center gap-2">
-            <Rocket className="h-3 w-3 text-[#22D3EE]" /> DR AI Üretim Sistemi ile yayında.
+            Bu web sitesi de DR AI yapay zekası tarafından yapılmıştır. <Smile className="h-3.5 w-3.5 text-[#22D3EE]" />
           </span>
         </div>
       </div>
