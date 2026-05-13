@@ -28,7 +28,7 @@ export default function SolutionsGrid({ compact = false }) {
             <span className="eyebrow">Kurumsal Çözümler</span>
             <h2 className="mt-3 h2-section">
               Şirketinizin İhtiyacına<br />
-              <span className="text-[#059669]">Özel Dijital Sistemler</span>
+              <span className="text-[#2563EB]">Özel Dijital Sistemler</span>
             </h2>
             <p className="mt-5 body-lg max-w-2xl">
               Hazır kalıplara sıkışmadan; satış, operasyon, insan kaynakları, müşteri yönetimi, bayi ağı, teklif süreçleri
@@ -48,10 +48,10 @@ export default function SolutionsGrid({ compact = false }) {
               className="card-elevate p-6"
               data-testid={`solution-card-${i}`}
             >
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#059669]/8 text-[#059669] border border-[#059669]/15">
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#2563EB]/8 text-[#2563EB] border border-[#2563EB]/15">
                 <s.icon className="h-5 w-5" strokeWidth={1.8} />
               </span>
-              <h3 className="mt-5 font-heading text-base font-semibold text-[#0A1F1A]">{s.title}</h3>
+              <h3 className="mt-5 font-heading text-base font-semibold text-[#07111F]">{s.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-[#334155]">{s.desc}</p>
             </motion.div>
           ))}

@@ -41,7 +41,7 @@ export default function About() {
             </p>
           </div>
           <div className="relative">
-            <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-[#059669]/10 to-[#34D399]/10 blur-2xl" />
+            <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-[#2563EB]/10 to-[#22D3EE]/10 blur-2xl" />
             <img
               src="https://images.unsplash.com/photo-1758518729685-f88df7890776?w=1200&q=80"
               alt="Dijital Roket ekibi"
@@ -51,7 +51,7 @@ export default function About() {
         </div>
       </section>
 
-      <section className="section bg-[#F4FAF7]">
+      <section className="section bg-[#F8FAFC]">
         <div className="container-x">
           <span className="eyebrow">Değerlerimiz</span>
           <h2 className="mt-3 h2-section">İşimizi Yönlendiren İlkeler</h2>
@@ -65,8 +65,8 @@ export default function About() {
                 transition={{ delay: i * 0.05 }}
                 className="card-elevate p-7"
               >
-                <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#059669]/10 to-[#34D399]/10 border border-[#059669]/15">
-                  <v.icon className="h-5 w-5 text-[#059669]" />
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563EB]/10 to-[#22D3EE]/10 border border-[#2563EB]/15">
+                  <v.icon className="h-5 w-5 text-[#2563EB]" />
                 </span>
                 <h3 className="mt-5 h3-card">{v.name}</h3>
               </motion.div>

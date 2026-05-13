@@ -31,12 +31,12 @@ export default function Blog() {
                 </div>
               )}
               <div className="p-6">
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#059669]">{p.category}</span>
-                <h3 className="mt-2 font-heading text-lg font-semibold text-[#0A1F1A] leading-snug">{p.title}</h3>
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#2563EB]">{p.category}</span>
+                <h3 className="mt-2 font-heading text-lg font-semibold text-[#07111F] leading-snug">{p.title}</h3>
                 <p className="mt-2 text-sm text-[#334155] leading-relaxed line-clamp-3">{p.excerpt}</p>
                 <div className="mt-5 flex items-center justify-between text-xs text-[#334155]/70">
                   <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> {p.read_time} dk</span>
-                  <Link to={`/blog/${p.slug}`} className="font-semibold text-[#059669] inline-flex items-center gap-1 hover:gap-1.5 transition-all">
+                  <Link to={`/blog/${p.slug}`} className="font-semibold text-[#2563EB] inline-flex items-center gap-1 hover:gap-1.5 transition-all">
                     Devamını oku <ArrowUpRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>

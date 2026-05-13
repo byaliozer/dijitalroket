@@ -10,15 +10,15 @@ module.exports = {
       },
       colors: {
         brand: {
-          navy: '#0A1F1A',
-          dark: '#051512',
-          blue: '#059669',
-          cyan: '#34D399',
+          navy: '#07111F',
+          dark: '#020617',
+          blue: '#2563EB',
+          cyan: '#22D3EE',
           orange: '#F97316',
           purple: '#7C3AED',
           green: '#10B981',
           slate: '#334155',
-          soft: '#F4FAF7',
+          soft: '#F8FAFC',
         },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
@@ -39,7 +39,7 @@ module.exports = {
         sm: 'calc(var(--radius) - 4px)',
       },
       backgroundImage: {
-        'brand-gradient': 'linear-gradient(135deg, #059669 0%, #34D399 100%)',
+        'brand-gradient': 'linear-gradient(135deg, #2563EB 0%, #22D3EE 100%)',
         'hero-radial': 'radial-gradient(ellipse at top, rgba(5,150,105,0.22), transparent 60%), radial-gradient(ellipse at bottom right, rgba(52,211,153,0.14), transparent 55%)',
         'grid-pattern': "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
       },
@@ -47,7 +47,7 @@ module.exports = {
         'accordion-down': { from: { height: '0' }, to: { height: 'var(--radix-accordion-content-height)' } },
         'accordion-up': { from: { height: 'var(--radix-accordion-content-height)' }, to: { height: '0' } },
         float: { '0%,100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-12px)' } },
-        'glow-pulse': { '0%,100%': { boxShadow: '0 0 0 0 rgba(52,211,153,0.0), 0 0 30px 0 rgba(5,150,105,0.30)' }, '50%': { boxShadow: '0 0 0 4px rgba(52,211,153,0.18), 0 0 60px 0 rgba(5,150,105,0.55)' } },
+        'glow-pulse': { '0%,100%': { boxShadow: '0 0 0 0 rgba(34,211,238,0.0), 0 0 30px 0 rgba(37,99,235,0.25)' }, '50%': { boxShadow: '0 0 0 4px rgba(34,211,238,0.15), 0 0 60px 0 rgba(37,99,235,0.45)' } },
         'orb-move': { '0%,100%': { transform: 'translate(0,0) scale(1)' }, '50%': { transform: 'translate(20px,-30px) scale(1.05)' } },
       },
       animation: {

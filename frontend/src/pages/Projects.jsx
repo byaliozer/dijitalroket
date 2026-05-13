@@ -44,8 +44,8 @@ export default function Projects() {
                 data-testid={`project-filter-${f}`}
                 className={`rounded-full px-4 py-2 text-sm font-medium border transition ${
                   filter === f
-                    ? "bg-[#0A1F1A] border-[#0A1F1A] text-white"
-                    : "bg-white border-slate-200 text-[#334155] hover:border-[#059669]/40"
+                    ? "bg-[#07111F] border-[#07111F] text-white"
+                    : "bg-white border-slate-200 text-[#334155] hover:border-[#2563EB]/40"
                 }`}
               >
                 {f}
@@ -70,10 +70,10 @@ export default function Projects() {
                   </div>
                 )}
                 <div className="p-6">
-                  <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#059669]">{it.sector}</span>
-                  <h3 className="mt-2 font-heading text-lg font-semibold text-[#0A1F1A] leading-snug">{it.title}</h3>
+                  <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#2563EB]">{it.sector}</span>
+                  <h3 className="mt-2 font-heading text-lg font-semibold text-[#07111F] leading-snug">{it.title}</h3>
                   <p className="mt-2 text-sm text-[#334155] leading-relaxed line-clamp-2">{it.need}</p>
-                  <Link to={`/projeler/${it.slug}`} className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[#059669] hover:gap-2 transition-all">
+                  <Link to={`/projeler/${it.slug}`} className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[#2563EB] hover:gap-2 transition-all">
                     Vakayı incele <ArrowUpRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>

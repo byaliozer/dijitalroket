@@ -6,9 +6,9 @@ export default function VurucuFark() {
   return (
     <section className="relative overflow-hidden py-24 sm:py-32" data-testid="vurucu-fark-section">
       {/* Deep emerald + orange highlight background */}
-      <div className="absolute inset-0 bg-[#0A1F1A]">
+      <div className="absolute inset-0 bg-[#07111F]">
         <div className="absolute inset-0 bg-grid opacity-30" />
-        <div className="absolute -top-32 left-1/4 h-[460px] w-[460px] rounded-full bg-[#059669]/25 blur-[140px] animate-orb-move" />
+        <div className="absolute -top-32 left-1/4 h-[460px] w-[460px] rounded-full bg-[#2563EB]/25 blur-[140px] animate-orb-move" />
         <div className="absolute -bottom-32 right-1/4 h-[460px] w-[460px] rounded-full bg-[#F97316]/15 blur-[140px] animate-orb-move" style={{ animationDelay: "5s" }} />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[700px] w-[700px] rounded-full border border-[#F97316]/8" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[480px] w-[480px] rounded-full border border-[#F97316]/12" />
@@ -39,7 +39,7 @@ export default function VurucuFark() {
             transition={{ duration: 0.7, delay: 0.15 }}
             className="mt-10 text-lg sm:text-xl leading-[1.75] text-white/85 max-w-3xl mx-auto"
           >
-            Patentli yapay zeka teknolojimiz <span className="font-bold text-[#34D399]">DR AI</span> sayesinde isteyebileceğiniz bütün
+            Patentli yapay zeka teknolojimiz <span className="font-bold text-[#22D3EE]">DR AI</span> sayesinde isteyebileceğiniz bütün
             projeler <span className="font-bold text-[#F97316]">IŞIK HIZINDA</span> yapılır.{" "}
             <span className="font-semibold text-white">1-2 ay süren web siteleri 1 günde, 3-4 ay süren B2B sistemleri 1 haftada</span> gibi.
           </motion.p>
@@ -90,7 +90,7 @@ export default function VurucuFark() {
               { label: "Özel Panel", classic: "2-3 ay", dr: "3-5 gün" },
             ].map((c) => (
               <div key={c.label} className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl p-5 text-left">
-                <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#34D399]">{c.label}</div>
+                <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#22D3EE]">{c.label}</div>
                 <div className="mt-3 flex items-baseline justify-between gap-3">
                   <div>
                     <div className="text-[10px] uppercase tracking-wide text-white/40">Klasik ajans</div>

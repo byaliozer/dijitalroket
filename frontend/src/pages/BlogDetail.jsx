@@ -27,9 +27,9 @@ export default function BlogDetail() {
   return (
     <>
       <SEO title={`${post.title} | Dijital Roket Blog`} description={post.excerpt} />
-      <section className="relative overflow-hidden bg-[#0A1F1A] text-white">
+      <section className="relative overflow-hidden bg-[#07111F] text-white">
         <div className="absolute inset-0 bg-grid opacity-30" />
-        <div className="absolute -top-20 left-1/3 h-[420px] w-[420px] rounded-full bg-[#059669]/25 blur-[120px]" />
+        <div className="absolute -top-20 left-1/3 h-[420px] w-[420px] rounded-full bg-[#2563EB]/25 blur-[120px]" />
         <div className="container-x relative pt-24 pb-16 max-w-3xl">
           <Link to="/blog" className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white">
             <ArrowLeft className="h-4 w-4" /> Tüm Yazılar

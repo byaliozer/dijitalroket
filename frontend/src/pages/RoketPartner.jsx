@@ -53,7 +53,7 @@ export default function RoketPartner() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.03 }}
-                  className="flex items-start gap-2 text-sm text-[#0A1F1A]"
+                  className="flex items-start gap-2 text-sm text-[#07111F]"
                 >
                   <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0 text-[#10B981]" />
                   <span>{r}</span>
@@ -66,7 +66,7 @@ export default function RoketPartner() {
 
       <RoketPartnerSection />
 
-      <section className="section bg-[#F4FAF7]">
+      <section className="section bg-[#F8FAFC]">
         <div className="container-x grid gap-8 md:grid-cols-3">
           {[
             { title: "Kimler İçin Uygun?", body: "Bayisi olan üretici firmalar, çok şubeli yapılar, dijital departmanı olmayan kurumsal firmalar ve sürekli üretim hattına ihtiyaç duyan markalar." },

@@ -14,13 +14,13 @@ const ITEMS = [
 
 export default function TrustSection() {
   return (
-    <section className="section bg-[#F4FAF7]" data-testid="trust-section">
+    <section className="section bg-[#F8FAFC]" data-testid="trust-section">
       <div className="container-x grid lg:grid-cols-12 gap-12 items-center">
         <div className="lg:col-span-5">
           <span className="eyebrow">Güven ve Süreç</span>
           <h2 className="mt-3 h2-section">
             Hızlıyız,<br />
-            <span className="text-[#059669]">Ama Plansız Değiliz</span>
+            <span className="text-[#2563EB]">Ama Plansız Değiliz</span>
           </h2>
           <p className="mt-5 body-lg max-w-md">
             Dijital Roket'te hız, plansızlık anlamına gelmez. Her projede kapsam, kullanıcı rolleri, veri akışı, mobil
@@ -42,7 +42,7 @@ export default function TrustSection() {
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#10B981]/10 text-[#10B981]">
                   <Check className="h-4 w-4" strokeWidth={3} />
                 </span>
-                <span className="text-sm sm:text-base font-medium text-[#0A1F1A] leading-snug">{t}</span>
+                <span className="text-sm sm:text-base font-medium text-[#07111F] leading-snug">{t}</span>
               </motion.li>
             ))}
           </ul>

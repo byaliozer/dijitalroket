@@ -28,7 +28,7 @@ export default function Hero() {
   return (
     <section
       data-testid="hero-section"
-      className="relative overflow-hidden bg-[#0A1F1A] text-white"
+      className="relative overflow-hidden bg-[#07111F] text-white"
     >
       {/* Background layers */}
       <div className="absolute inset-0">
@@ -39,9 +39,9 @@ export default function Hero() {
         />
         <div className="absolute inset-0 bg-grid opacity-60" />
         <div className="absolute inset-0 bg-hero-radial" />
-        <div className="absolute -top-32 -left-24 h-[420px] w-[420px] rounded-full bg-[#059669]/30 blur-[120px] animate-orb-move" />
-        <div className="absolute top-40 -right-32 h-[420px] w-[420px] rounded-full bg-[#34D399]/25 blur-[120px] animate-orb-move" style={{ animationDelay: "4s" }} />
-        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-b from-transparent to-[#0A1F1A]" />
+        <div className="absolute -top-32 -left-24 h-[420px] w-[420px] rounded-full bg-[#2563EB]/30 blur-[120px] animate-orb-move" />
+        <div className="absolute top-40 -right-32 h-[420px] w-[420px] rounded-full bg-[#22D3EE]/25 blur-[120px] animate-orb-move" style={{ animationDelay: "4s" }} />
+        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-b from-transparent to-[#07111F]" />
       </div>
 
       <div className="container-x relative pt-24 pb-24 sm:pt-32 sm:pb-32 lg:pt-40 lg:pb-32 grid lg:grid-cols-12 gap-12 items-center">
@@ -50,10 +50,10 @@ export default function Hero() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#34D399] backdrop-blur"
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#22D3EE] backdrop-blur"
             data-testid="hero-badge"
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-[#34D399] animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#22D3EE] animate-pulse" />
             Dijital Roket Patentli Yapay Zeka Sistemi · DR AI
           </motion.span>
 
@@ -115,8 +115,8 @@ export default function Hero() {
           >
             {METRICS.map((m, i) => (
               <li key={i} className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-3.5 backdrop-blur">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#059669]/30 to-[#34D399]/30 border border-white/10">
-                  <m.icon className="h-4 w-4 text-[#34D399]" />
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#2563EB]/30 to-[#22D3EE]/30 border border-white/10">
+                  <m.icon className="h-4 w-4 text-[#22D3EE]" />
                 </span>
                 <span className="text-sm text-white/80 leading-snug">{highlight(m.text)}</span>
               </li>
@@ -132,12 +132,12 @@ export default function Hero() {
           data-testid="hero-mockup"
         >
           <div className="relative animate-float">
-            <div className="absolute -inset-8 rounded-3xl bg-gradient-to-br from-[#059669]/20 via-[#34D399]/10 to-transparent blur-2xl" />
+            <div className="absolute -inset-8 rounded-3xl bg-gradient-to-br from-[#2563EB]/20 via-[#22D3EE]/10 to-transparent blur-2xl" />
             <div className="relative rounded-2xl border border-white/10 bg-white/5 p-2 backdrop-blur-xl shadow-2xl">
               <img src={DASHBOARD_MOCKUP} alt="DR AI Dashboard" className="rounded-xl w-full" />
             </div>
-            <div className="absolute -bottom-6 -left-6 hidden md:flex items-center gap-3 rounded-xl bg-[#0A1F1A]/80 border border-white/10 backdrop-blur-xl px-4 py-3 shadow-2xl">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#059669] to-[#34D399]">
+            <div className="absolute -bottom-6 -left-6 hidden md:flex items-center gap-3 rounded-xl bg-[#07111F]/80 border border-white/10 backdrop-blur-xl px-4 py-3 shadow-2xl">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#2563EB] to-[#22D3EE]">
                 <Sparkles className="h-4 w-4 text-white" />
               </span>
               <div className="leading-tight">

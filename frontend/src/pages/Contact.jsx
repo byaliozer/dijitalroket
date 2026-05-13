@@ -64,7 +64,7 @@ export default function Contact() {
             {sent && (
               <div className="flex items-start gap-3 rounded-xl border border-[#10B981]/30 bg-[#10B981]/8 p-4">
                 <CheckCircle2 className="h-5 w-5 text-[#10B981] mt-0.5" />
-                <div className="text-sm text-[#0A1F1A]">Talebiniz alındı. Dijital Roket ekibi en kısa sürede sizinle iletişime geçecektir.</div>
+                <div className="text-sm text-[#07111F]">Talebiniz alındı. Dijital Roket ekibi en kısa sürede sizinle iletişime geçecektir.</div>
               </div>
             )}
 
@@ -116,7 +116,7 @@ export default function Contact() {
 
       <style>{`
         .input { width: 100%; border-radius: 0.75rem; border: 1px solid rgb(226 232 240); background: white; padding: 0.75rem 1rem; font-size: 0.9rem; transition: all 0.2s; outline: none; }
-        .input:focus { border-color: #059669; box-shadow: 0 0 0 4px rgba(37,99,235,0.1); }
+        .input:focus { border-color: #2563EB; box-shadow: 0 0 0 4px rgba(37,99,235,0.1); }
       `}</style>
     </>
   );
@@ -125,12 +125,12 @@ export default function Contact() {
 function InfoCard({ icon: Icon, title, value, href }) {
   const inner = (
     <div className="card-elevate p-6 flex items-start gap-4">
-      <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#059669]/10 to-[#34D399]/10 border border-[#059669]/15">
-        <Icon className="h-5 w-5 text-[#059669]" />
+      <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563EB]/10 to-[#22D3EE]/10 border border-[#2563EB]/15">
+        <Icon className="h-5 w-5 text-[#2563EB]" />
       </span>
       <div>
-        <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#059669]">{title}</div>
-        <div className="mt-1 text-[#0A1F1A] font-semibold">{value}</div>
+        <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#2563EB]">{title}</div>
+        <div className="mt-1 text-[#07111F] font-semibold">{value}</div>
       </div>
     </div>
   );
@@ -140,7 +140,7 @@ function InfoCard({ icon: Icon, title, value, href }) {
 function Field({ label, required, children }) {
   return (
     <label className="block">
-      <span className="block text-xs font-semibold text-[#0A1F1A] mb-1.5">{label}{required && <span className="text-[#F97316]"> *</span>}</span>
+      <span className="block text-xs font-semibold text-[#07111F] mb-1.5">{label}{required && <span className="text-[#F97316]"> *</span>}</span>
       {children}
     </label>
   );

@@ -4,7 +4,7 @@ import Logo from "./Logo";
 
 export default function Footer() {
   return (
-    <footer className="bg-[#051512] text-white" data-testid="site-footer">
+    <footer className="bg-[#020617] text-white" data-testid="site-footer">
       <div className="container-x py-20 grid gap-12 lg:grid-cols-4">
         <div>
           <Logo variant="light" />
@@ -26,7 +26,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-sm font-bold uppercase tracking-[0.18em] text-[#34D399]">Çözümler</h4>
+          <h4 className="text-sm font-bold uppercase tracking-[0.18em] text-[#22D3EE]">Çözümler</h4>
           <ul className="mt-5 space-y-3 text-sm text-white/70">
             <li><Link to="/kurumsal-cozumler" className="hover:text-white">Kurumsal Web</Link></li>
             <li><Link to="/kurumsal-cozumler" className="hover:text-white">B2B Sistemler</Link></li>
@@ -37,7 +37,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-sm font-bold uppercase tracking-[0.18em] text-[#34D399]">Şirket</h4>
+          <h4 className="text-sm font-bold uppercase tracking-[0.18em] text-[#22D3EE]">Şirket</h4>
           <ul className="mt-5 space-y-3 text-sm text-white/70">
             <li><Link to="/hakkimizda" className="hover:text-white">Hakkımızda</Link></li>
             <li><Link to="/projeler" className="hover:text-white">Projeler</Link></li>
@@ -48,11 +48,11 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-sm font-bold uppercase tracking-[0.18em] text-[#34D399]">İletişim</h4>
+          <h4 className="text-sm font-bold uppercase tracking-[0.18em] text-[#22D3EE]">İletişim</h4>
           <ul className="mt-5 space-y-3 text-sm text-white/70">
-            <li className="flex items-start gap-2"><Phone className="h-4 w-4 mt-0.5 text-[#34D399]" /> 0543 793 41 01</li>
-            <li className="flex items-start gap-2"><Mail className="h-4 w-4 mt-0.5 text-[#34D399]" /> info@dijitalroket.com</li>
-            <li className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 text-[#34D399]" /> Bursa, Türkiye</li>
+            <li className="flex items-start gap-2"><Phone className="h-4 w-4 mt-0.5 text-[#22D3EE]" /> 0543 793 41 01</li>
+            <li className="flex items-start gap-2"><Mail className="h-4 w-4 mt-0.5 text-[#22D3EE]" /> info@dijitalroket.com</li>
+            <li className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 text-[#22D3EE]" /> Bursa, Türkiye</li>
           </ul>
         </div>
       </div>
@@ -61,7 +61,7 @@ export default function Footer() {
         <div className="container-x py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/40">
           <span>© 2026 Dijital Roket. Tüm hakları saklıdır.</span>
           <span className="inline-flex items-center gap-2">
-            <Rocket className="h-3 w-3 text-[#34D399]" /> DR AI Üretim Sistemi ile yayında.
+            <Rocket className="h-3 w-3 text-[#22D3EE]" /> DR AI Üretim Sistemi ile yayında.
           </span>
         </div>
       </div>

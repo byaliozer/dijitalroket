@@ -9,7 +9,7 @@ export default function FinalCta() {
     <section className="relative overflow-hidden py-24 sm:py-32" data-testid="final-cta">
       <div className="absolute inset-0">
         <img src={CTA_BG} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#051512]/85 via-[#0A1F1A]/85 to-[#051512]/95" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#020617]/85 via-[#07111F]/85 to-[#020617]/95" />
         <div className="absolute inset-0 bg-grid opacity-20" />
       </div>
 

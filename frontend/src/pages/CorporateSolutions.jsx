@@ -69,7 +69,7 @@ export default function CorporateSolutions() {
 
       <SolutionsGrid compact />
 
-      <section className="section bg-[#F4FAF7]">
+      <section className="section bg-[#F8FAFC]">
         <div className="container-x">
           <span className="eyebrow">Detaylı Çözümler</span>
           <h2 className="mt-3 h2-section max-w-3xl">Her Çözüm İçin: Kim İçin, Ne Sağlar, Nerede Kullanılır</h2>
@@ -90,7 +90,7 @@ export default function CorporateSolutions() {
                   <Row label="Ne sağlar?" value={d.benefit} />
                   <Row label="Örnek kullanım" value={d.example} />
                 </div>
-                <Link to="/proje-talep" className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[#059669] hover:gap-2.5 transition-all">
+                <Link to="/proje-talep" className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[#2563EB] hover:gap-2.5 transition-all">
                   Bu çözüm için görüşme planlayın <ArrowRight className="h-4 w-4" />
                 </Link>
               </motion.div>
@@ -110,7 +110,7 @@ function Row({ label, value }) {
     <div className="flex gap-3">
       <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0 text-[#10B981]" />
       <div>
-        <div className="text-xs font-bold uppercase tracking-[0.15em] text-[#059669]">{label}</div>
+        <div className="text-xs font-bold uppercase tracking-[0.15em] text-[#2563EB]">{label}</div>
         <div className="mt-0.5 text-sm text-[#334155] leading-relaxed">{value}</div>
       </div>
     </div>
