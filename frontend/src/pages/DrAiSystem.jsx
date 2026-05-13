@@ -65,10 +65,10 @@ export default function DrAiSystemPage() {
               transition={{ duration: 0.5, delay: i * 0.05 }}
               className="card-elevate p-8"
             >
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563EB]/10 to-[#22D3EE]/10 border border-[#2563EB]/15">
-                <s.icon className="h-5 w-5 text-[#2563EB]" />
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#059669]/10 to-[#34D399]/10 border border-[#059669]/15">
+                <s.icon className="h-5 w-5 text-[#059669]" />
               </span>
-              <h2 className="mt-5 font-heading text-2xl font-bold text-[#07111F]">{s.title}</h2>
+              <h2 className="mt-5 font-heading text-2xl font-bold text-[#0A1F1A]">{s.title}</h2>
               <p className="mt-3 body-lg">{s.body}</p>
             </motion.div>
           ))}

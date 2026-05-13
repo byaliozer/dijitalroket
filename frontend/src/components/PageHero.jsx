@@ -2,12 +2,12 @@ import { motion } from "framer-motion";
 
 export default function PageHero({ eyebrow, title, subtitle, children }) {
   return (
-    <section className="relative overflow-hidden bg-[#07111F] text-white" data-testid="page-hero">
+    <section className="relative overflow-hidden bg-[#0A1F1A] text-white" data-testid="page-hero">
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-grid opacity-30" />
-        <div className="absolute -top-32 left-1/4 h-[420px] w-[420px] rounded-full bg-[#2563EB]/25 blur-[120px]" />
-        <div className="absolute -top-20 right-1/4 h-[360px] w-[360px] rounded-full bg-[#22D3EE]/15 blur-[120px]" />
-        <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-b from-transparent to-[#07111F]" />
+        <div className="absolute -top-32 left-1/4 h-[420px] w-[420px] rounded-full bg-[#059669]/25 blur-[120px]" />
+        <div className="absolute -top-20 right-1/4 h-[360px] w-[360px] rounded-full bg-[#34D399]/15 blur-[120px]" />
+        <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-b from-transparent to-[#0A1F1A]" />
       </div>
       <div className="container-x relative pt-24 pb-20 sm:pt-32 sm:pb-24 text-center">
         {eyebrow && (

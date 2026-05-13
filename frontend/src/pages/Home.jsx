@@ -1,4 +1,5 @@
 import Hero from "../sections/Hero";
+import VurucuFark from "../sections/VurucuFark";
 import Positioning from "../sections/Positioning";
 import DrAiSection from "../sections/DrAiSection";
 import SolutionsGrid from "../sections/SolutionsGrid";
@@ -19,6 +20,7 @@ export default function Home() {
         description="Dijital Roket; DR AI destekli üretim sistemiyle kurumsal web siteleri, B2B paneller, CRM benzeri sistemler, sosyal medya içerikleri ve özel dijital projeler geliştirir."
       />
       <Hero />
+      <VurucuFark />
       <Positioning />
       <DrAiSection />
       <SolutionsGrid />

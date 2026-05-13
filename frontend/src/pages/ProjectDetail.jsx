@@ -27,9 +27,9 @@ export default function ProjectDetail() {
   return (
     <>
       <SEO title={`${item.title} | Dijital Roket`} description={item.need} />
-      <section className="relative overflow-hidden bg-[#07111F] text-white">
+      <section className="relative overflow-hidden bg-[#0A1F1A] text-white">
         <div className="absolute inset-0 bg-grid opacity-30" />
-        <div className="absolute -top-20 left-1/4 h-[420px] w-[420px] rounded-full bg-[#2563EB]/25 blur-[120px]" />
+        <div className="absolute -top-20 left-1/4 h-[420px] w-[420px] rounded-full bg-[#059669]/25 blur-[120px]" />
         <div className="container-x relative pt-24 pb-16">
           <Link to="/projeler" className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white">
             <ArrowLeft className="h-4 w-4" /> Tüm Projeler
@@ -58,13 +58,13 @@ export default function ProjectDetail() {
             { label: "Sonuç", body: item.result },
           ].map((b) => (
             <div key={b.label} className="card-elevate p-7">
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#2563EB]">{b.label}</div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#059669]">{b.label}</div>
               <p className="mt-3 body-lg">{b.body}</p>
             </div>
           ))}
         </div>
 
-        <div className="container-x mt-16 flex flex-col sm:flex-row items-center justify-between gap-6 rounded-3xl border border-slate-200 bg-[#F8FAFC] p-8">
+        <div className="container-x mt-16 flex flex-col sm:flex-row items-center justify-between gap-6 rounded-3xl border border-slate-200 bg-[#F4FAF7] p-8">
           <div>
             <h3 className="h3-card">Benzer bir proje sizin için de mümkün.</h3>
             <p className="mt-2 text-sm text-[#334155]">Bu vakaya benzer bir ihtiyaç için kapsam sohbeti planlayalım.</p>

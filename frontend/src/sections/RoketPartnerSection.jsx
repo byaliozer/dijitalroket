@@ -13,11 +13,11 @@ const ADVANTAGES = [
 
 export default function RoketPartnerSection() {
   return (
-    <section className="section relative overflow-hidden bg-[#07111F] text-white" data-testid="partner-section">
+    <section className="section relative overflow-hidden bg-[#0A1F1A] text-white" data-testid="partner-section">
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-grid opacity-30" />
         <div className="absolute -top-32 right-1/3 h-[420px] w-[420px] rounded-full bg-[#7C3AED]/20 blur-[130px]" />
-        <div className="absolute bottom-0 left-1/4 h-[360px] w-[360px] rounded-full bg-[#2563EB]/20 blur-[130px]" />
+        <div className="absolute bottom-0 left-1/4 h-[360px] w-[360px] rounded-full bg-[#059669]/20 blur-[130px]" />
       </div>
 
       <div className="container-x relative grid lg:grid-cols-12 gap-12 items-center">
@@ -74,14 +74,14 @@ export default function RoketPartnerSection() {
                 { label: "Kurumsal Ortak", value: "20+" },
                 { label: "Üretim Hızı", value: "10×" },
               ].map((s) => (
-                <div key={s.label} className="rounded-2xl border border-white/10 bg-[#07111F]/60 p-5 backdrop-blur">
+                <div key={s.label} className="rounded-2xl border border-white/10 bg-[#0A1F1A]/60 p-5 backdrop-blur">
                   <div className="font-heading text-3xl font-extrabold text-white">{s.value}</div>
                   <div className="mt-1 text-xs uppercase tracking-[0.15em] text-white/50">{s.label}</div>
                 </div>
               ))}
             </div>
-            <div className="mt-6 flex items-center gap-3 rounded-xl border border-[#22D3EE]/20 bg-[#22D3EE]/5 p-4">
-              <span className="h-2 w-2 rounded-full bg-[#22D3EE] animate-pulse" />
+            <div className="mt-6 flex items-center gap-3 rounded-xl border border-[#34D399]/20 bg-[#34D399]/5 p-4">
+              <span className="h-2 w-2 rounded-full bg-[#34D399] animate-pulse" />
               <span className="text-sm text-white/80">Şu anda sprint kapasitesi açık</span>
             </div>
           </div>

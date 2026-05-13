@@ -17,15 +17,7 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     setOpen(false);
@@ -34,11 +26,7 @@ export default function Navbar() {
   return (
     <header
       data-testid="site-navbar"
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-[#07111F]/85 backdrop-blur-xl border-b border-white/10"
-          : "bg-transparent"
-      }`}
+      className="fixed top-0 inset-x-0 z-50 bg-[#0A1F1A]/90 backdrop-blur-xl border-b border-white/10"
     >
       <div className="container-x flex h-16 lg:h-20 items-center justify-between">
         <Logo variant="light" />
@@ -60,7 +48,7 @@ export default function Navbar() {
                 <>
                   <span>{l.label}</span>
                   {isActive && (
-                    <span className="absolute inset-x-3 -bottom-0.5 h-px bg-gradient-to-r from-[#2563EB] to-[#22D3EE]" />
+                    <span className="absolute inset-x-3 -bottom-0.5 h-px bg-gradient-to-r from-[#059669] to-[#34D399]" />
                   )}
                 </>
               )}
@@ -96,7 +84,7 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25 }}
-            className="xl:hidden fixed inset-x-0 top-16 bottom-0 z-40 bg-[#07111F]/98 backdrop-blur-2xl"
+            className="xl:hidden fixed inset-x-0 top-16 bottom-0 z-40 bg-[#0A1F1A]/98 backdrop-blur-2xl"
             data-testid="mobile-menu"
           >
             <div className="container-x py-8 flex flex-col gap-1">

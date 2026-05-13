@@ -35,10 +35,10 @@ export default function SectorsGrid() {
               className="card-elevate p-6"
               data-testid={`sector-${i}`}
             >
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563EB]/10 to-[#22D3EE]/10 border border-[#22D3EE]/20">
-                <s.icon className="h-5 w-5 text-[#2563EB]" strokeWidth={1.8} />
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#059669]/10 to-[#34D399]/10 border border-[#34D399]/20">
+                <s.icon className="h-5 w-5 text-[#059669]" strokeWidth={1.8} />
               </span>
-              <h3 className="mt-4 font-heading text-base font-semibold text-[#07111F]">{s.name}</h3>
+              <h3 className="mt-4 font-heading text-base font-semibold text-[#0A1F1A]">{s.name}</h3>
               <p className="mt-1.5 text-sm text-[#334155] leading-relaxed">{s.desc}</p>
             </motion.div>
           ))}

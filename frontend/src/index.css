@@ -12,19 +12,19 @@
     --card-foreground: 215 30% 12%;
     --popover: 0 0% 100%;
     --popover-foreground: 215 30% 12%;
-    --primary: 220 90% 53%;
+    --primary: 158 84% 30%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 215 30% 12%;
-    --muted: 210 40% 96%;
+    --secondary: 152 30% 95%;
+    --secondary-foreground: 158 30% 12%;
+    --muted: 152 30% 95%;
     --muted-foreground: 215 20% 40%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 215 30% 12%;
+    --accent: 152 30% 95%;
+    --accent-foreground: 158 30% 12%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 214 31% 91%;
-    --input: 214 31% 91%;
-    --ring: 220 90% 53%;
+    --border: 152 25% 88%;
+    --input: 152 25% 88%;
+    --ring: 158 84% 30%;
     --radius: 0.75rem;
   }
   .dark {
@@ -60,26 +60,26 @@
     -moz-osx-font-smoothing: grayscale;
   }
   h1, h2, h3, h4, h5, h6 { font-family: 'Manrope', 'Inter', sans-serif; letter-spacing: -0.02em; }
-  ::selection { background-color: #2563EB; color: white; }
+  ::selection { background-color: #059669; color: white; }
 }
 
 @layer components {
   .container-x { @apply max-w-7xl mx-auto px-6 lg:px-8; }
   .eyebrow {
-    @apply inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#2563EB];
+    @apply inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#059669];
   }
   .eyebrow-light {
-    @apply inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#22D3EE];
+    @apply inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#34D399];
   }
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white
-           bg-gradient-to-r from-[#2563EB] to-[#22D3EE] shadow-lg shadow-[#2563EB]/25
-           transition-all duration-300 hover:shadow-[#22D3EE]/40 hover:shadow-2xl hover:-translate-y-0.5
-           hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#22D3EE]/50;
+           bg-gradient-to-r from-[#059669] to-[#34D399] shadow-lg shadow-[#059669]/25
+           transition-all duration-300 hover:shadow-[#34D399]/40 hover:shadow-2xl hover:-translate-y-0.5
+           hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#34D399]/50;
   }
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold
-           border border-[#07111F]/15 text-[#07111F] bg-white hover:bg-[#F8FAFC]
+           border border-[#0A1F1A]/15 text-[#0A1F1A] bg-white hover:bg-[#F4FAF7]
            transition-all duration-300 hover:-translate-y-0.5;
   }
   .btn-ghost-dark {
@@ -89,18 +89,18 @@
   }
   .card-elevate {
     @apply relative bg-white rounded-2xl border border-slate-200/70 shadow-sm
-           transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-[#22D3EE]/40;
+           transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-[#34D399]/40;
   }
   .glass-dark {
-    @apply bg-[#07111F]/70 backdrop-blur-xl border border-white/10;
+    @apply bg-[#0A1F1A]/70 backdrop-blur-xl border border-white/10;
   }
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#2563EB] via-[#22D3EE] to-[#2563EB];
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#059669] via-[#34D399] to-[#059669];
   }
   .section { @apply py-20 sm:py-28 lg:py-32; }
   .h1-display { @apply font-heading font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-6xl leading-[1.05]; }
-  .h2-section { @apply font-heading font-bold tracking-tight text-3xl sm:text-4xl lg:text-5xl text-[#07111F]; }
-  .h3-card { @apply font-heading font-semibold text-xl sm:text-2xl text-[#07111F]; }
+  .h2-section { @apply font-heading font-bold tracking-tight text-3xl sm:text-4xl lg:text-5xl text-[#0A1F1A]; }
+  .h3-card { @apply font-heading font-semibold text-xl sm:text-2xl text-[#0A1F1A]; }
   .body-lg { @apply text-base sm:text-lg leading-relaxed text-[#334155]; }
 }
 

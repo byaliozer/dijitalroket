@@ -140,7 +140,7 @@ export default function ProjectRequest() {
 
       <style>{`
         .input { width: 100%; border-radius: 0.75rem; border: 1px solid rgb(226 232 240); background: white; padding: 0.75rem 1rem; font-size: 0.9rem; transition: all 0.2s; outline: none; }
-        .input:focus { border-color: #2563EB; box-shadow: 0 0 0 4px rgba(37,99,235,0.1); }
+        .input:focus { border-color: #059669; box-shadow: 0 0 0 4px rgba(37,99,235,0.1); }
       `}</style>
     </>
   );
@@ -148,8 +148,8 @@ export default function ProjectRequest() {
 
 function Section({ title, children }) {
   return (
-    <div className="border-l-2 border-[#2563EB]/20 pl-5">
-      <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#2563EB] mb-3">{title}</div>
+    <div className="border-l-2 border-[#059669]/20 pl-5">
+      <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#059669] mb-3">{title}</div>
       {children}
     </div>
   );
@@ -158,7 +158,7 @@ function Section({ title, children }) {
 function F({ label, required, children }) {
   return (
     <label className="block">
-      <span className="block text-xs font-semibold text-[#07111F] mb-1.5">{label}{required && <span className="text-[#F97316]"> *</span>}</span>
+      <span className="block text-xs font-semibold text-[#0A1F1A] mb-1.5">{label}{required && <span className="text-[#F97316]"> *</span>}</span>
       {children}
     </label>
   );

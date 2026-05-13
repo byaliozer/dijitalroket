@@ -28,8 +28,8 @@ export default function AdminDashboard() {
   const onLogout = () => { logout(); navigate("/admin/login"); };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]" data-testid="admin-dashboard">
-      <aside className="fixed inset-y-0 left-0 hidden lg:block w-64 bg-[#07111F] text-white">
+    <div className="min-h-screen bg-[#F4FAF7]" data-testid="admin-dashboard">
+      <aside className="fixed inset-y-0 left-0 hidden lg:block w-64 bg-[#0A1F1A] text-white">
         <div className="p-6 border-b border-white/10"><Logo variant="light" /></div>
         <nav className="p-3 space-y-1">
           {TABS.map((t) => (
@@ -57,7 +57,7 @@ export default function AdminDashboard() {
         <header className="sticky top-0 z-10 bg-white border-b border-slate-200">
           <div className="px-6 lg:px-10 h-16 flex items-center justify-between">
             <div className="lg:hidden"><Logo /></div>
-            <h1 className="hidden lg:block font-heading text-xl font-bold text-[#07111F]">
+            <h1 className="hidden lg:block font-heading text-xl font-bold text-[#0A1F1A]">
               {TABS.find((t) => t.id === tab)?.label}
             </h1>
             <div className="flex items-center gap-3">
@@ -67,7 +67,7 @@ export default function AdminDashboard() {
           </div>
           <nav className="lg:hidden flex gap-1 overflow-x-auto px-3 py-2 scrollbar-hidden">
             {TABS.map((t) => (
-              <button key={t.id} onClick={() => setTab(t.id)} className={`shrink-0 rounded-lg px-3 py-2 text-xs font-medium ${tab === t.id ? "bg-[#07111F] text-white" : "text-[#334155]"}`}>
+              <button key={t.id} onClick={() => setTab(t.id)} className={`shrink-0 rounded-lg px-3 py-2 text-xs font-medium ${tab === t.id ? "bg-[#0A1F1A] text-white" : "text-[#334155]"}`}>
                 {t.label}
               </button>
             ))}
@@ -99,8 +99,8 @@ function Overview() {
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       {cards.map((c) => (
         <div key={c.label} className="card-elevate p-6">
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#2563EB]">{c.label}</div>
-          <div className="mt-3 font-heading text-4xl font-extrabold text-[#07111F]">{c.value}</div>
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#059669]">{c.label}</div>
+          <div className="mt-3 font-heading text-4xl font-extrabold text-[#0A1F1A]">{c.value}</div>
           {typeof c.new === "number" && c.new > 0 && (
             <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-[#F97316]/10 px-2 py-0.5 text-xs font-semibold text-[#F97316]">
               {c.new} yeni
@@ -291,7 +291,7 @@ function DataTable({ rows, columns, actions }) {
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              {columns.map((c) => <th key={c.key} className="text-left font-semibold text-[#07111F] px-5 py-3">{c.label}</th>)}
+              {columns.map((c) => <th key={c.key} className="text-left font-semibold text-[#0A1F1A] px-5 py-3">{c.label}</th>)}
               {actions && <th className="px-5 py-3 text-right">İşlem</th>}
             </tr>
           </thead>
@@ -318,7 +318,7 @@ function Modal({ title, children, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl border border-slate-200 max-w-2xl w-full max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
         <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-          <h3 className="font-heading font-bold text-[#07111F]">{title}</h3>
+          <h3 className="font-heading font-bold text-[#0A1F1A]">{title}</h3>
           <button onClick={onClose} className="p-1 rounded hover:bg-slate-100"><X className="h-5 w-5" /></button>
         </div>
         <div className="p-6">{children}</div>
@@ -332,7 +332,7 @@ function DefList({ data, fields }) {
     <dl className="space-y-3 text-sm">
       {fields.map(([label, key]) => data[key] && (
         <div key={key}>
-          <dt className="text-xs font-bold uppercase tracking-[0.15em] text-[#2563EB]">{label}</dt>
+          <dt className="text-xs font-bold uppercase tracking-[0.15em] text-[#059669]">{label}</dt>
           <dd className="mt-0.5 text-[#334155] whitespace-pre-wrap">{String(data[key])}</dd>
         </div>
       ))}
@@ -385,16 +385,16 @@ function BlogForm({ initial, onSubmit }) {
 function FormInput({ label, value, onChange, type = "text", required }) {
   return (
     <label className="block">
-      <span className="block text-xs font-semibold text-[#07111F] mb-1">{label}{required && " *"}</span>
-      <input type={type} required={required} value={value || ""} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#2563EB]" />
+      <span className="block text-xs font-semibold text-[#0A1F1A] mb-1">{label}{required && " *"}</span>
+      <input type={type} required={required} value={value || ""} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#059669]" />
     </label>
   );
 }
 function FormTextarea({ label, value, onChange, rows = 3 }) {
   return (
     <label className="block">
-      <span className="block text-xs font-semibold text-[#07111F] mb-1">{label}</span>
-      <textarea rows={rows} value={value || ""} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#2563EB] resize-none" />
+      <span className="block text-xs font-semibold text-[#0A1F1A] mb-1">{label}</span>
+      <textarea rows={rows} value={value || ""} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#059669] resize-none" />
     </label>
   );
 }
