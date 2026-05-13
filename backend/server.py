@@ -11,7 +11,7 @@ import bcrypt
 import jwt
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, status
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, status, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -234,6 +234,37 @@ async def login(payload: LoginRequest):
 @api_router.get("/auth/me")
 async def me(current=Depends(get_current_admin)):
     return current
+
+
+# -----------------------------------------------------------------------------
+# Admin file uploads (images for blog/projects)
+# -----------------------------------------------------------------------------
+UPLOAD_DIR = Path("/app/frontend/public/uploads")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+ALLOWED_IMAGE_TYPES = {
+    "image/jpeg": ".jpg",
+    "image/jpg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+    "image/gif": ".gif",
+}
+MAX_UPLOAD_BYTES = 8 * 1024 * 1024  # 8 MB
+
+
+@api_router.post("/admin/upload")
+async def admin_upload(file: UploadFile = File(...), current=Depends(get_current_admin)):
+    content_type = (file.content_type or "").lower()
+    ext = ALLOWED_IMAGE_TYPES.get(content_type)
+    if not ext:
+        raise HTTPException(status_code=400, detail="Sadece JPG, PNG, WEBP veya GIF görseller yüklenebilir.")
+    data = await file.read()
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=400, detail="Görsel 8MB'dan büyük olamaz.")
+    if len(data) == 0:
+        raise HTTPException(status_code=400, detail="Boş dosya yüklenemez.")
+    name = f"{uuid.uuid4().hex}{ext}"
+    (UPLOAD_DIR / name).write_bytes(data)
+    return {"url": f"/uploads/{name}", "size": len(data), "filename": name}
 
 
 @api_router.post("/contact", response_model=ContactForm)

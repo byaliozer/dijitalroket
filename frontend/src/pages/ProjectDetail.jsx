@@ -5,98 +5,9 @@ import { motion } from "framer-motion";
 import { api } from "../lib/api";
 import SEO from "../components/SEO";
 import FinalCta from "../sections/FinalCta";
+import Markdown from "../components/Markdown";
 
-/**
- * Lightweight markdown renderer for project content.
- * Splits by lines, groups consecutive paragraph lines / bullet lines.
- * Supports: ## H2, ### H3, **bold**, > quote, - bullets.
- */
-function renderMarkdown(md) {
-  if (!md) return null;
-  const lines = md.split(/\r?\n/);
-  const out = [];
-  let paraBuf = [];
-  let listBuf = [];
-
-  const flushPara = () => {
-    if (paraBuf.length) {
-      const text = paraBuf.join(" ").trim();
-      if (text) {
-        out.push(
-          <p key={`p-${out.length}`} className="mt-4 text-[16px] sm:text-[17px] leading-[1.85] text-[#334155]">
-            {inline(text)}
-          </p>
-        );
-      }
-      paraBuf = [];
-    }
-  };
-  const flushList = () => {
-    if (listBuf.length) {
-      out.push(
-        <ul key={`ul-${out.length}`} className="mt-3 mb-3 space-y-2 list-disc pl-6 text-[#334155]">
-          {listBuf.map((l, i) => (
-            <li key={i} className="leading-relaxed text-[16px]">{inline(l)}</li>
-          ))}
-        </ul>
-      );
-      listBuf = [];
-    }
-  };
-
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (!line) { flushPara(); flushList(); continue; }
-    if (line.startsWith("## ")) {
-      flushPara(); flushList();
-      out.push(
-        <h2 key={`h2-${out.length}`} className="mt-12 mb-3 font-heading text-2xl sm:text-3xl font-bold text-[#07111F]">
-          {line.slice(3).trim()}
-        </h2>
-      );
-      continue;
-    }
-    if (line.startsWith("### ")) {
-      flushPara(); flushList();
-      out.push(
-        <h3 key={`h3-${out.length}`} className="mt-8 mb-2 font-heading text-lg sm:text-xl font-semibold text-[#07111F]">
-          {line.slice(4).trim()}
-        </h3>
-      );
-      continue;
-    }
-    if (line.startsWith("> ")) {
-      flushPara(); flushList();
-      out.push(
-        <blockquote key={`q-${out.length}`} className="my-6 border-l-4 border-[#2563EB] bg-[#F8FAFC] px-6 py-4 rounded-r-xl">
-          <p className="text-[#07111F] italic leading-relaxed">{inline(line.slice(2))}</p>
-        </blockquote>
-      );
-      continue;
-    }
-    if (line.startsWith("- ")) {
-      flushPara();
-      listBuf.push(line.slice(2));
-      continue;
-    }
-    flushList();
-    paraBuf.push(line);
-  }
-  flushPara(); flushList();
-  return out;
-}
-
-// inline: **bold** -> <strong>
-function inline(text) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((p, i) =>
-    p.startsWith("**") && p.endsWith("**") ? (
-      <strong key={i} className="font-semibold text-[#07111F]">{p.slice(2, -2)}</strong>
-    ) : (
-      <span key={i}>{p}</span>
-    )
-  );
-}
+// inline helper removed — now using shared Markdown component.
 
 export default function ProjectDetail() {
   const { slug } = useParams();
@@ -179,7 +90,7 @@ export default function ProjectDetail() {
       {/* Full content */}
       {item.content && (
         <article className="pb-12 bg-white">
-          <div className="container-x max-w-3xl">{renderMarkdown(item.content)}</div>
+          <div className="container-x max-w-3xl"><Markdown source={item.content} /></div>
         </article>
       )}
 

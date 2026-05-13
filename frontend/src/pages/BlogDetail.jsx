@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Clock } from "lucide-react";
 import { api } from "../lib/api";
 import SEO from "../components/SEO";
+import Markdown from "../components/Markdown";
 import FinalCta from "../sections/FinalCta";
 
 export default function BlogDetail() {
@@ -49,10 +50,8 @@ export default function BlogDetail() {
       )}
 
       <article className="section bg-white">
-        <div className="container-x max-w-3xl prose prose-slate">
-          {post.content.split("\n\n").map((para, i) => (
-            <p key={i} className="text-[17px] leading-[1.85] text-[#334155] mb-5">{para}</p>
-          ))}
+        <div className="container-x max-w-3xl">
+          <Markdown source={post.content} />
         </div>
       </article>
       <FinalCta />
