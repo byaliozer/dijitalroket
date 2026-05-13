@@ -428,6 +428,73 @@ async def admin_list_projects(current=Depends(get_current_admin)):
 
 
 # -----------------------------------------------------------------------------
+# Site Settings (single doc, editable from admin)
+# -----------------------------------------------------------------------------
+DEFAULT_SETTINGS = {
+    "site_title": "Dijital Roket | DR AI Destekli Kurumsal Dijital Dönüşüm",
+    "site_description": "Dijital Roket; DR AI destekli üretim sistemiyle kurumsal web siteleri, B2B paneller, CRM benzeri sistemler, sosyal medya içerikleri ve özel dijital projeler geliştirir.",
+    "favicon_url": "",
+    "og_image": "",
+    "pages": {
+        "home":    {"title": "", "description": ""},
+        "about":   {"title": "Hakkımızda | Dijital Roket", "description": "Dijital Roket; 2015'ten bu yana Bursa merkezli AI destekli dijital dönüşüm şirketidir."},
+        "contact": {"title": "İletişim | Dijital Roket", "description": "Dijital Roket ile iletişime geçin. Bursa merkezli kurumsal dijital dönüşüm ortağınız."},
+        "projects":{"title": "Projeler | Dijital Roket DR AI Çalışmaları", "description": "Web, B2B, AI ve dijital dönüşüm projelerimizden seçtiğimiz vaka çalışmaları."},
+        "blog":    {"title": "Blog | Dijital Roket İçgörüler", "description": "Dijital dönüşüm, AI, kurumsal web, B2B sistemler ve CRM üzerine içgörüler."},
+    },
+    "contact_phone": "0543 793 41 01",
+    "contact_phone_link": "+905437934101",
+    "contact_email": "info@dijitalroket.com",
+    "contact_address": "Bursa, Türkiye",
+    "social_linkedin": "",
+    "social_instagram": "",
+    "social_twitter": "",
+    "about_eyebrow": "Hakkımızda",
+    "about_title": "Dijital Dönüşümü Hızlandıran Teknoloji Ekibi",
+    "about_hero_image": "https://images.unsplash.com/photo-1758518729685-f88df7890776?w=1200&q=80",
+    "about_content": (
+        "## 2015'ten Bu Yana Markaların Dijital Çözüm Ortağı\n\n"
+        "Dijital Roket, 2015'ten bu yana markaların dijital dünyada daha güçlü görünmesi ve daha verimli çalışması için çözümler üreten Bursa merkezli bir teknoloji ve dijital dönüşüm şirketidir.\n\n"
+        "Bugün Dijital Roket; web tasarımı, özel yazılım, sosyal medya, içerik üretimi, AI destekli görsel üretimi, B2B sistemler, CRM benzeri paneller ve kurumsal dijital dönüşüm projelerini tek çatı altında sunar.\n\n"
+        "Amacımız sadece güzel görünen işler yapmak değil; şirketlerin satış, operasyon, pazarlama ve müşteri yönetimi süreçlerini daha hızlı, ölçülebilir ve profesyonel hale getirmektir.\n\n"
+        "## Değerlerimiz\n\n"
+        "- Hız\n- Güven\n- Strateji\n- Teknoloji\n- Sürekli gelişim\n- Sonuç odaklılık"
+    ),
+}
+
+
+@api_router.get("/settings")
+async def get_settings():
+    doc = await db.settings.find_one({"_id": "default"})
+    if not doc:
+        return DEFAULT_SETTINGS
+    doc.pop("_id", None)
+    return doc
+
+
+@api_router.put("/admin/settings")
+async def update_settings(payload: dict, current=Depends(get_current_admin)):
+    # Whitelist top-level keys
+    allowed = set(DEFAULT_SETTINGS.keys())
+    clean = {k: v for k, v in payload.items() if k in allowed}
+    await db.settings.update_one(
+        {"_id": "default"},
+        {"$set": clean},
+        upsert=True,
+    )
+    doc = await db.settings.find_one({"_id": "default"})
+    doc.pop("_id", None)
+    return doc
+
+
+async def seed_settings():
+    existing = await db.settings.find_one({"_id": "default"})
+    if not existing:
+        await db.settings.insert_one({"_id": "default", **DEFAULT_SETTINGS})
+        logger.info("Default settings seeded")
+
+
+# -----------------------------------------------------------------------------
 # Seed
 # -----------------------------------------------------------------------------
 SEED_BLOG_POSTS = [
@@ -570,6 +637,7 @@ async def on_startup():
         logger.warning("Index creation: %s", e)
     await seed_admin()
     await seed_content()
+    await seed_settings()
 
 
 @app.on_event("shutdown")

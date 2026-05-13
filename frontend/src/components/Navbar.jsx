@@ -6,11 +6,8 @@ import Logo from "./Logo";
 
 const NAV_LINKS = [
   { to: "/", label: "Ana Sayfa" },
-  { to: "/dr-ai-sistemi", label: "DR AI Sistemi" },
   { to: "/kurumsal-cozumler", label: "Kurumsal Çözümler" },
-  { to: "/sprint-modeli", label: "Sprint Modeli" },
   { to: "/projeler", label: "Projeler" },
-  { to: "/roket-partner", label: "Roket Partner" },
   { to: "/hakkimizda", label: "Hakkımızda" },
   { to: "/iletisim", label: "İletişim" },
 ];
@@ -62,7 +59,7 @@ export default function Navbar() {
             data-testid="nav-cta-btn"
             className="btn-primary text-sm py-2.5 px-5"
           >
-            Projemi Analiz Edin
+            Talebim Var
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -114,7 +111,7 @@ export default function Navbar() {
                 data-testid="mobile-cta-btn"
                 className="btn-primary mt-8 w-full text-base"
               >
-                Projemi Analiz Edin
+                Talebim Var
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>

@@ -3,9 +3,10 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   LayoutDashboard, Mail, FileText, FolderOpen, BookOpenText, LogOut, Trash2,
-  Plus, Eye, X, ExternalLink, Image as ImageIcon, ArrowUp, ArrowDown, Loader2, Upload,
+  Plus, Eye, X, ExternalLink, Image as ImageIcon, ArrowUp, ArrowDown, Loader2, Settings,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { api, formatApiError } from "../../lib/api";
 import Logo from "../../components/Logo";
 import ImageUploader from "../../components/ImageUploader";
@@ -16,6 +17,7 @@ const TABS = [
   { id: "requests", label: "Proje Brief'leri", icon: FileText },
   { id: "projects", label: "DR AI Çalışmaları", icon: FolderOpen },
   { id: "blog", label: "Blog Yazıları", icon: BookOpenText },
+  { id: "settings", label: "Site Ayarları", icon: Settings },
 ];
 
 export default function AdminDashboard() {
@@ -81,6 +83,7 @@ export default function AdminDashboard() {
           {tab === "requests" && <Requests />}
           {tab === "projects" && <ProjectsAdmin />}
           {tab === "blog" && <BlogAdmin />}
+          {tab === "settings" && <SettingsAdmin />}
         </main>
       </div>
     </div>
@@ -338,6 +341,108 @@ function DefList({ data, fields }) {
         </div>
       ))}
     </dl>
+  );
+}
+
+// -----------------------------------------------------------------------------
+// Site Settings tab
+// -----------------------------------------------------------------------------
+function SettingsAdmin() {
+  const { settings, refresh } = useSiteSettings();
+  const [f, setF] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => { if (settings && !f) setF(JSON.parse(JSON.stringify(settings))); }, [settings, f]);
+
+  if (!f) return <div className="text-sm text-[#334155]">Yükleniyor...</div>;
+
+  const set = (patch) => setF((s) => ({ ...s, ...patch }));
+  const setPage = (key, patch) =>
+    setF((s) => ({ ...s, pages: { ...s.pages, [key]: { ...s.pages?.[key], ...patch } } }));
+
+  const save = async (e) => {
+    e?.preventDefault();
+    setSaving(true);
+    try {
+      await api.put("/admin/settings", f);
+      toast.success("Site ayarları güncellendi");
+      await refresh();
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const pageKeys = [
+    ["home", "Ana Sayfa"],
+    ["about", "Hakkımızda"],
+    ["projects", "Projeler"],
+    ["blog", "Blog"],
+    ["contact", "İletişim"],
+  ];
+
+  return (
+    <form onSubmit={save} className="space-y-6 max-w-4xl">
+      <FormSection title="Genel SEO" hint="Tüm sitede varsayılan başlık ve açıklama. Belirli sayfa için aşağıdan özelleştirebilirsiniz.">
+        <FormInput label="Varsayılan SEO Başlığı" value={f.site_title} onChange={(v) => set({ site_title: v })} />
+        <FormTextarea label="Varsayılan Meta Açıklaması" rows={2} value={f.site_description} onChange={(v) => set({ site_description: v })} />
+      </FormSection>
+
+      <FormSection title="Favicon ve OG Görseli" hint="Favicon tarayıcı sekmesinde görünür. OG görseli sosyal medyada paylaşıldığında kullanılır.">
+        <ImageUploader label="Favicon" value={f.favicon_url} onChange={(v) => set({ favicon_url: v })} />
+        <ImageUploader label="OG / Sosyal Medya Görseli" value={f.og_image} onChange={(v) => set({ og_image: v })} />
+      </FormSection>
+
+      <FormSection title="Sayfa Bazlı SEO" hint="Sadece o sayfa için başlık ve açıklama. Boş bırakılırsa genel SEO kullanılır.">
+        <div className="space-y-4">
+          {pageKeys.map(([k, label]) => (
+            <div key={k} className="rounded-lg border border-slate-200 p-4">
+              <div className="text-xs font-bold uppercase tracking-[0.15em] text-[#2563EB] mb-3">{label}</div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <FormInput label="Başlık" value={f.pages?.[k]?.title || ""} onChange={(v) => setPage(k, { title: v })} />
+                <FormInput label="Açıklama" value={f.pages?.[k]?.description || ""} onChange={(v) => setPage(k, { description: v })} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </FormSection>
+
+      <FormSection title="İletişim Bilgileri" hint="Footer ve İletişim sayfasında kullanılır.">
+        <div className="grid sm:grid-cols-2 gap-4">
+          <FormInput label="Telefon (görünen)" value={f.contact_phone} onChange={(v) => set({ contact_phone: v })} />
+          <FormInput label="Telefon (tıklama bağlantısı)" value={f.contact_phone_link} onChange={(v) => set({ contact_phone_link: v })} />
+          <FormInput label="E-posta" value={f.contact_email} onChange={(v) => set({ contact_email: v })} />
+          <FormInput label="Adres" value={f.contact_address} onChange={(v) => set({ contact_address: v })} />
+        </div>
+      </FormSection>
+
+      <FormSection title="Sosyal Medya" hint="Footer'da gösterilir. Boş bırakırsanız ikon hiç gösterilmez.">
+        <div className="grid sm:grid-cols-3 gap-4">
+          <FormInput label="LinkedIn URL" value={f.social_linkedin} onChange={(v) => set({ social_linkedin: v })} />
+          <FormInput label="Instagram URL" value={f.social_instagram} onChange={(v) => set({ social_instagram: v })} />
+          <FormInput label="Twitter / X URL" value={f.social_twitter} onChange={(v) => set({ social_twitter: v })} />
+        </div>
+      </FormSection>
+
+      <FormSection title="Hakkımızda Sayfası">
+        <div className="grid sm:grid-cols-2 gap-4">
+          <FormInput label="Üst Etiket (eyebrow)" value={f.about_eyebrow} onChange={(v) => set({ about_eyebrow: v })} />
+          <FormInput label="Sayfa Başlığı" value={f.about_title} onChange={(v) => set({ about_title: v })} />
+        </div>
+        <ImageUploader label="Hakkımızda Görseli" value={f.about_hero_image} onChange={(v) => set({ about_hero_image: v })} />
+        <div>
+          <div className="text-xs font-semibold text-[#07111F] mb-1">Hakkımızda İçeriği</div>
+          <ContentEditor value={f.about_content} onChange={(v) => set({ about_content: v })} rows={14} />
+        </div>
+      </FormSection>
+
+      <div className="sticky bottom-0 -mx-6 lg:-mx-10 px-6 lg:px-10 py-4 bg-white border-t border-slate-200 flex justify-end">
+        <button disabled={saving} className="btn-primary">
+          {saving ? "Kaydediliyor..." : "Ayarları Kaydet"}
+        </button>
+      </div>
+    </form>
   );
 }
 

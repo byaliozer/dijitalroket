@@ -11,7 +11,7 @@ export default function Blog() {
   useEffect(() => { api.get("/blog").then((r) => setItems(r.data)).catch(() => {}); }, []);
   return (
     <>
-      <SEO title="Blog | Dijital Roket İçgörüler" description="Dijital dönüşüm, AI, kurumsal web, B2B sistemler ve CRM üzerine içgörüler." />
+      <SEO page="blog" />
       <PageHero eyebrow="İçgörüler" title="Dijital Dönüşüm Blogu" subtitle="Kurumsal web, B2B, CRM ve AI üretimi üzerine düşünceler." />
       <section className="section bg-white">
         <div className="container-x grid gap-6 md:grid-cols-2 lg:grid-cols-3">

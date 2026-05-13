@@ -1,7 +1,6 @@
 import PageHero from "../components/PageHero";
 import SEO from "../components/SEO";
 import SolutionsGrid from "../sections/SolutionsGrid";
-import SectorsGrid from "../sections/SectorsGrid";
 import FinalCta from "../sections/FinalCta";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -99,7 +98,6 @@ export default function CorporateSolutions() {
         </div>
       </section>
 
-      <SectorsGrid />
       <FinalCta />
     </>
   );

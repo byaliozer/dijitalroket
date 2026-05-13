@@ -24,10 +24,7 @@ export default function Projects() {
 
   return (
     <>
-      <SEO
-        title="Projeler | Dijital Roket DR AI Çalışmaları"
-        description="Web, B2B, AI ve dijital dönüşüm projelerimizden seçtiğimiz vaka çalışmaları."
-      />
+      <SEO page="projects" />
       <PageHero
         eyebrow="DR AI Çalışmaları"
         title="Roketlediğimiz Projeler"

@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import PageHero from "../components/PageHero";
 import SEO from "../components/SEO";
 import { api, formatApiError } from "../lib/api";
+import { useSiteSettings } from "../context/SiteSettingsContext";
 import { Phone, Mail, MapPin, Send, CheckCircle2 } from "lucide-react";
 
 const PROJECT_TYPES = [
@@ -18,6 +19,7 @@ const PROJECT_TYPES = [
 const BUDGETS = ["50.000 TL altı", "50.000 - 150.000 TL", "150.000 - 500.000 TL", "500.000 TL üzeri", "Görüşmek istiyorum"];
 
 export default function Contact() {
+  const { settings } = useSiteSettings();
   const [form, setForm] = useState({
     name: "", company: "", phone: "", email: "", project_type: "", budget: "", message: "",
   });
