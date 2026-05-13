@@ -1,0 +1,180 @@
+{
+  "project_name": "Dijital Roket",
+  "domain": "AI-Powered Corporate Digital Transformation & B2B SaaS",
+  "identity": {
+    "theme": "Hybrid (Dark Tech Hero + Light Mode Body)",
+    "archetype": "Archetype 4: Swiss & High-Contrast (Enterprise SaaS)",
+    "tone": "Ultra-professional, corporate, modern, premium, trustworthy, authoritative",
+    "main_message": "Şirketinizi Dijitalde Roketliyoruz"
+  },
+  "colors": {
+    "primary": {
+      "roket_blue": "#2563EB",
+      "electric_cyan": "#22D3EE"
+    },
+    "background": {
+      "deep_space_navy": "#07111F",
+      "premium_dark": "#020617",
+      "pure_white": "#FFFFFF",
+      "soft_gray": "#F8FAFC"
+    },
+    "text": {
+      "slate_text": "#334155",
+      "white_text": "#FFFFFF",
+      "heading_dark": "#07111F"
+    },
+    "accent": {
+      "rocket_orange": "#F97316",
+      "premium_purple": "#7C3AED"
+    },
+    "semantic": {
+      "success_green": "#10B981"
+    },
+    "usage_rules": {
+      "hero_background": "deep_space_navy (#07111F) transitioning to pure_white (#FFFFFF) for subsequent sections.",
+      "cta_buttons": "Linear gradient from roket_blue to electric_cyan. Must include a subtle glow on hover.",
+      "cards": "pure_white background with very thin border (e.g., border-slate-200) and soft, subtle shadow. Hover lift required.",
+      "section_headings": "deep_space_navy (#07111F) on light backgrounds, pure_white on dark backgrounds.",
+      "accents": "rocket_orange (#F97316) used extremely sparingly (e.g., small badges, notification dots, subtle active states)."
+    }
+  },
+  "typography": {
+    "fonts": {
+      "headings": "Manrope, sans-serif",
+      "body": "Inter, sans-serif"
+    },
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none",
+      "h2": "text-3xl sm:text-4xl font-bold tracking-tight text-[#07111F]",
+      "h3": "text-xl sm:text-2xl font-semibold",
+      "body": "text-base text-[#334155] leading-relaxed",
+      "labels": "text-xs font-bold uppercase tracking-[0.2em] text-[#2563EB]"
+    }
+  },
+  "spacing_and_layout": {
+    "philosophy": "Generous, airy, readable. Optimize for enterprise trust and clarity.",
+    "section_padding": "py-24 sm:py-32",
+    "container": "max-w-7xl mx-auto px-6 lg:px-8",
+    "grids": {
+      "solutions_grid": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 (Bento-inspired but structurally uniform for 12 cards)",
+      "case_studies": "grid grid-cols-1 md:grid-cols-2 gap-8",
+      "sectors": "grid grid-cols-2 md:grid-cols-4 gap-4"
+    }
+  },
+  "components_strategy": {
+    "marketing_pages": "Use pure HTML + Tailwind CSS for layouts. Do not use standard Shadcn containers if they restrict fluid/asymmetric designs.",
+    "interactive_logic": "Heavily customize Shadcn components for forms, tabs, and modals to match the corporate tech aesthetic.",
+    "admin_dashboard": "Utilize Shadcn components (tables, cards, charts) for data-heavy views. Ensure JWT login logic layout is sleek.",
+    "icons": "Use @phosphor-icons/react (Duotone or Regular) for premium tech feel."
+  },
+  "pages": [
+    "Home",
+    "DR AI System",
+    "Corporate Solutions",
+    "Sprint Model",
+    "Projects/Case Studies",
+    "Roket Partner Program",
+    "About",
+    "Contact",
+    "Blog",
+    "Project Request Form",
+    "Admin Panel (JWT Login)"
+  ],
+  "sections_details": {
+    "header": {
+      "design": "Sticky navigation. Glassmorphism backdrop-blur-xl bg-[#07111F]/80 on dark hero, transitioning to bg-white/80 on scroll if technically feasible, or stay consistent dark with white text.",
+      "elements": "Logo, Mega navigation menu, CTA button (Gradient)."
+    },
+    "hero": {
+      "design": "Dark navy/space tech background. Use 'hero_bg_particles' as absolute bg overlay. Grid lines, subtle particles, soft gradient orbs.",
+      "elements": "Badge overline, H1 Title ('Şirketinizi Dijitalde Roketliyoruz'), Subtitle, Primary CTA, Secondary CTA. Floating 'dashboard_mockup' image on the right or bottom center."
+    },
+    "positioning_cards": {
+      "design": "3-card section overlapping the hero bottom or directly below it on a soft gray background.",
+      "elements": "Trust-building metrics or core value pillars. White cards, subtle border, hover lift."
+    },
+    "dr_ai_system": {
+      "design": "6-step process flow.",
+      "elements": "Connecting lines, glowing active state dots, perhaps utilizing the 'ai_workflow_nodes' image alongside the steps."
+    },
+    "corporate_solutions": {
+      "design": "12-card grid.",
+      "elements": "Modern icons, short titles, brief descriptions, 'Learn more' link. Pure white cards on #F8FAFC background."
+    },
+    "sprint_timeline": {
+      "design": "Vertical or horizontal timeline activated on scroll.",
+      "elements": "Milestone markers, success green (#10B981) for completed/active states."
+    },
+    "case_studies": {
+      "design": "4 cards detailing Need / Solution / Result structure.",
+      "elements": "Corporate business team images, metric highlights (e.g., '300% efficiency')."
+    },
+    "roket_partner": {
+      "design": "Trust/Process section with checkmarks.",
+      "elements": "Grid of sponsor/partner logos (black and white transparent style)."
+    },
+    "sectors_grid": {
+      "design": "8 sectors grid (tourism, automotive, etc.).",
+      "elements": "Minimalist representation, icon + sector name."
+    },
+    "blog_teasers": {
+      "design": "3 cards grid.",
+      "elements": "Image, date, title, read more button."
+    },
+    "final_cta": {
+      "design": "Premium dark gradient section using 'cta_dark_gradient' background.",
+      "elements": "Strong headline, Gradient CTA button, Trust signals."
+    },
+    "footer": {
+      "design": "Premium footer with 4 columns. bg-[#020617] with white/slate text.",
+      "elements": "Links, Newsletter, Socials, Copyright."
+    }
+  },
+  "interactions_and_motion": {
+    "hero": "Title fade-up on load. Dashboard mockups floating smoothly (infinite y-axis sine wave). Background orbs have subtle slow movement.",
+    "cards": "Stagger fade-up on scroll. On hover: cards lift slightly (-translate-y-1 or 2), border becomes slightly stronger/colorful (e.g., border-electric_cyan/30), shadow deepens.",
+    "buttons": "Gradient CTA buttons have a subtle glow that expands on hover. Scale up slightly (scale-105).",
+    "timeline": "Lines and dots light up (activate) sequentially as the user scrolls down.",
+    "restrictions": "Professional and controlled only. NO over-animation. NO bouncy or game-like effects. Keep it serious and corporate. Mobile must have simplified animations."
+  },
+  "media": {
+    "hero_bg_particles": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/4563ce39-d136-4158-943b-98a85fea66a9/images/0c107f763e768d30c0b3ee5f6ce696642c4455d1ca466a00b36446cf22b3f389.png",
+      "description": "Abstract dark space tech background with subtle glowing grid lines, perfect for hero section overlay.",
+      "usage": "Background image for the Hero section, set to cover with low opacity."
+    },
+    "dashboard_mockup": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/4563ce39-d136-4158-943b-98a85fea66a9/images/e4e280432bf2c274958cd8cce8cc9f2b90889996c11e6f863d26e6b7cdfe661d.png",
+      "description": "Premium modern B2B SaaS admin dashboard mockup.",
+      "usage": "Floating main visual in the Hero section."
+    },
+    "ai_workflow_nodes": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/4563ce39-d136-4158-943b-98a85fea66a9/images/b3ed469b8f79e4ebb595fdbbb94870e861a74cd69547ee02c1fbeb9b6c4293d4.png",
+      "description": "Abstract 3D glowing nodes and connected networks.",
+      "usage": "Visual for DR AI System or About section."
+    },
+    "cta_dark_gradient": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/4563ce39-d136-4158-943b-98a85fea66a9/images/bf36a3370e6682320e9e8ad812ca5a29125baf68971acdf711b896f9ffc22e4a.png",
+      "description": "Premium dark gradient background blending purple and navy.",
+      "usage": "Background for the Final CTA section."
+    },
+    "team_meetings": [
+      "https://images.unsplash.com/photo-1758518729685-f88df7890776?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwxfHxjb3Jwb3JhdGUlMjBidXNpbmVzcyUyMHRlYW0lMjBtZWV0aW5nJTIwbW9kZXJuJTIwb2ZmaWNlfGVufDB8fHx8MTc3ODY2NDg3Nnww&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1758518726869-01aff69a56e3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwyfHxjb3Jwb3JhdGUlMjBidXNpbmVzcyUyMHRlYW0lMjBtZWV0aW5nJTIwbW9kZXJuJTIwb2ZmaWNlfGVufDB8fHx8MTc3ODY2NDg3Nnww&ixlib=rb-4.1.0&q=85"
+    ],
+    "partner_logos": [
+      "https://images.unsplash.com/photo-1769985090420-087bc0a62ba3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTN8MHwxfHNlYXJjaHw0fHxjb21wYW55JTIwbG9nbyUyMGJsYWNrJTIwYW5kJTIwd2hpdGUlMjB0cmFuc3BhcmVudHxlbnwwfHx8fDE3Nzg2NjQ4NzZ8MA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1769984834254-673f70ed7275?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTN8MHwxfHNlYXJjaHwyfHxjb21wYW55JTIwbG9nbyUyMGJsYWNrJTIwYW5kJTIwd2hpdGUlMjB0cmFuc3BhcmVudHxlbnwwfHx8fDE3Nzg2NjQ4NzZ8MA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1776774568714-13eef12a21a7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTN8MHwxfHNlYXJjaHwzfHxjb21wYW55JTIwbG9nbyUyMGJsYWNrJTIwYW5kJTIwd2hpdGUlMjB0cmFuc3BhcmVudHxlbnwwfHx8fDE3Nzg2NjQ4NzZ8MA&ixlib=rb-4.1.0&q=85"
+    ]
+  },
+  "instructions_to_main_agent": [
+    "1. Setup fonts: Import Manrope and Inter via Google Fonts. Ensure they are configured in tailwind.config.js.",
+    "2. Setup colors: Extend Tailwind theme with the explicit hex codes provided in the colors section.",
+    "3. Install UI dependencies: Install @phosphor-icons/react, framer-motion (for controlled animations), and any required shadcn components (cards, forms, inputs, tabs).",
+    "4. Use semantic HTML and apply 'data-testid' to all interactive elements for robust testing.",
+    "5. For the hero, layer the deep_space_navy background, then the hero_bg_particles image with low opacity, and place the floating dashboard mockup in a prominent position.",
+    "6. Adhere strictly to the Turkish language content requested.",
+    "7. DO NOT use generic or cheap aesthetics. The padding must be generous, text contrast must meet accessibility standards, and components must feel like a multi-million dollar SaaS platform."
+  ]
+}
