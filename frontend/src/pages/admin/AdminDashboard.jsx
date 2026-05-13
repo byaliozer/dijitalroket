@@ -425,6 +425,13 @@ function SettingsAdmin() {
         </div>
       </FormSection>
 
+      <FormSection title="DR AI Uygulama Linkleri" hint="Footer'daki Google Play / App Store butonlarında kullanılır.">
+        <div className="grid sm:grid-cols-2 gap-4">
+          <FormInput label="Google Play URL" value={f.app_google_play} onChange={(v) => set({ app_google_play: v })} />
+          <FormInput label="App Store URL" value={f.app_app_store} onChange={(v) => set({ app_app_store: v })} />
+        </div>
+      </FormSection>
+
       <FormSection title="Hakkımızda Sayfası">
         <div className="grid sm:grid-cols-2 gap-4">
           <FormInput label="Üst Etiket (eyebrow)" value={f.about_eyebrow} onChange={(v) => set({ about_eyebrow: v })} />

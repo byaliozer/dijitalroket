@@ -444,11 +444,13 @@ DEFAULT_SETTINGS = {
     },
     "contact_phone": "0543 793 41 01",
     "contact_phone_link": "+905437934101",
-    "contact_email": "info@dijitalroket.com",
+    "contact_email": "byaliozer@gmail.com",
     "contact_address": "Bursa, Türkiye",
     "social_linkedin": "",
-    "social_instagram": "",
+    "social_instagram": "https://www.instagram.com/dijital.roket/",
     "social_twitter": "",
+    "app_google_play": "https://play.google.com/store/apps/details?id=com.dijitalroket.drai",
+    "app_app_store": "https://apps.apple.com/br/app/dr-ai-sosyal-medya-st%C3%BCdyosu/id6758508361",
     "about_eyebrow": "Hakkımızda",
     "about_title": "Dijital Dönüşümü Hızlandıran Teknoloji Ekibi",
     "about_hero_image": "https://images.unsplash.com/photo-1758518729685-f88df7890776?w=1200&q=80",
@@ -475,7 +477,13 @@ async def get_settings():
 @api_router.put("/admin/settings")
 async def update_settings(payload: dict, current=Depends(get_current_admin)):
     # Whitelist top-level keys
-    allowed = set(DEFAULT_SETTINGS.keys())
+    allowed = {
+        "site_title", "site_description", "favicon_url", "og_image", "pages",
+        "contact_phone", "contact_phone_link", "contact_email", "contact_address",
+        "social_linkedin", "social_instagram", "social_twitter",
+        "app_google_play", "app_app_store",
+        "about_eyebrow", "about_title", "about_hero_image", "about_content",
+    }
     clean = {k: v for k, v in payload.items() if k in allowed}
     await db.settings.update_one(
         {"_id": "default"},
