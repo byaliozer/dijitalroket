@@ -25,11 +25,11 @@ export default function Projects() {
   return (
     <>
       <SEO
-        title="Projeler | Dijital Roket Vaka Çalışmaları"
+        title="Projeler | Dijital Roket DR AI Çalışmaları"
         description="Web, B2B, AI ve dijital dönüşüm projelerimizden seçtiğimiz vaka çalışmaları."
       />
       <PageHero
-        eyebrow="Vaka Çalışmaları"
+        eyebrow="DR AI Çalışmaları"
         title="Roketlediğimiz Projeler"
         subtitle="Fikirleri sadece tasarıma değil, çalışan dijital sistemlere dönüştürüyoruz."
       />
@@ -74,7 +74,7 @@ export default function Projects() {
                   <h3 className="mt-2 font-heading text-lg font-semibold text-[#07111F] leading-snug">{it.title}</h3>
                   <p className="mt-2 text-sm text-[#334155] leading-relaxed line-clamp-2">{it.need}</p>
                   <Link to={`/projeler/${it.slug}`} className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[#2563EB] hover:gap-2 transition-all">
-                    Vakayı incele <ArrowUpRight className="h-3.5 w-3.5" />
+                    Projeyi incele <ArrowUpRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
               </motion.article>

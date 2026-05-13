@@ -513,10 +513,13 @@ async def seed_content():
         if not await db.blog_posts.find_one({"slug": post["slug"]}):
             obj = BlogPost(**post)
             await db.blog_posts.insert_one(obj.model_dump())
-    for case in SEED_CASE_STUDIES:
-        if not await db.case_studies.find_one({"slug": case["slug"]}):
-            obj = CaseStudy(**case)
-            await db.case_studies.insert_one(obj.model_dump())
+    # Only seed demo case studies if no real-project flag is set (one-time real seed via script)
+    flag = await db.config.find_one({"_id": "seed"})
+    if not (flag and flag.get("real_projects_seeded")):
+        for case in SEED_CASE_STUDIES:
+            if not await db.case_studies.find_one({"slug": case["slug"]}):
+                obj = CaseStudy(**case)
+                await db.case_studies.insert_one(obj.model_dump())
     logger.info("Seed content ensured")
 
 

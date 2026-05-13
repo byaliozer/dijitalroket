@@ -17,7 +17,7 @@ export default function CaseStudiesSection({ limit = 4, withHeading = true }) {
         {withHeading && (
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
             <div className="max-w-2xl">
-              <span className="eyebrow">Vaka Çalışmaları</span>
+              <span className="eyebrow">DR AI Çalışmaları</span>
               <h2 className="mt-3 h2-section">Roketlediğimiz Projeler</h2>
               <p className="mt-5 body-lg">
                 Fikirleri sadece tasarıma değil, çalışan dijital sistemlere dönüştürüyoruz.
@@ -69,7 +69,7 @@ export default function CaseStudiesSection({ limit = 4, withHeading = true }) {
                   </div>
                 </dl>
                 <Link to={`/projeler/${it.slug}`} className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[#2563EB] hover:gap-2.5 transition-all">
-                  Vakayı incele <ArrowUpRight className="h-4 w-4" />
+                  Projeyi incele <ArrowUpRight className="h-4 w-4" />
                 </Link>
               </div>
             </motion.article>

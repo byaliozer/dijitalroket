@@ -13,7 +13,7 @@ const TABS = [
   { id: "overview", label: "Genel Bakış", icon: LayoutDashboard },
   { id: "contacts", label: "İletişim Talepleri", icon: Mail },
   { id: "requests", label: "Proje Brief'leri", icon: FileText },
-  { id: "projects", label: "Vaka Çalışmaları", icon: FolderOpen },
+  { id: "projects", label: "DR AI Çalışmaları", icon: FolderOpen },
   { id: "blog", label: "Blog Yazıları", icon: BookOpenText },
 ];
 
@@ -93,7 +93,7 @@ function Overview() {
     { label: "Toplam İletişim", value: stats.contacts_total, new: stats.contacts_new },
     { label: "Proje Brief'leri", value: stats.project_requests_total, new: stats.project_requests_new },
     { label: "Blog Yazıları", value: stats.blog_posts },
-    { label: "Vaka Çalışmaları", value: stats.case_studies },
+    { label: "DR AI Çalışmaları", value: stats.case_studies },
   ] : [];
   return (
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
