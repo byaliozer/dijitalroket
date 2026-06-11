@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { Menu, X, ArrowRight, LogIn } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "./Logo";
 
@@ -54,7 +54,15 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden xl:flex">
+        <div className="hidden xl:flex items-center gap-2">
+          <Link
+            to="/firma/giris"
+            data-testid="nav-portal-btn"
+            className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-4 py-2.5 text-sm font-medium text-white/80 hover:text-white hover:border-white/40 transition-colors"
+          >
+            <LogIn className="h-4 w-4" />
+            Portal Girişi
+          </Link>
           <Link
             to="/proje-talep"
             data-testid="nav-cta-btn"
@@ -109,9 +117,17 @@ export default function Navbar() {
                 </motion.div>
               ))}
               <Link
+                to="/firma/giris"
+                data-testid="mobile-portal-btn"
+                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/15 py-3 text-base font-medium text-white hover:bg-white/5"
+              >
+                <LogIn className="h-4 w-4" />
+                Portal Girişi
+              </Link>
+              <Link
                 to="/proje-talep"
                 data-testid="mobile-cta-btn"
-                className="btn-primary mt-8 w-full text-base"
+                className="btn-primary mt-3 w-full text-base"
               >
                 Talebim Var
                 <ArrowRight className="h-4 w-4" />
