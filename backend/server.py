@@ -7,6 +7,8 @@ load_dotenv(ROOT_DIR / '.env')
 import os
 import logging
 import uuid
+import base64
+import httpx
 import bcrypt
 import jwt
 from datetime import datetime, timezone, timedelta
@@ -513,6 +515,371 @@ async def seed_settings():
 
 
 # -----------------------------------------------------------------------------
+# Brand Management & DR AI Image Engine 2.0 (gpt-image-2)
+# -----------------------------------------------------------------------------
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+DR_IMAGE_MODEL = "gpt-image-2"          # Shown to users as "DR AI Image Engine 2.0"
+DR_CAPTION_MODEL = "gpt-4o"             # Vision model for caption generation
+PUBLIC_DIR = Path("/app/frontend/public")
+
+SIZE_MAP = {"post": "1088x1344", "story": "1088x1920"}
+LOGO_POSITIONS = {
+    "top-left": "Place the provided brand logo in the top-left corner, close to the top and left edges, with a small margin.",
+    "top-center": "Place the provided brand logo centered horizontally at the top edge with a small top margin.",
+    "top-right": "Place the provided brand logo in the top-right corner, close to the top and right edges, with a small margin.",
+    "middle-left": "Place the provided brand logo along the left edge, vertically centered.",
+    "center": "Place the provided brand logo exactly at the visual center of the image.",
+    "middle-right": "Place the provided brand logo along the right edge, vertically centered.",
+    "bottom-left": "Place the provided brand logo in the bottom-left corner, close to the bottom and left edges, with a small margin.",
+    "bottom-center": "Place the provided brand logo centered horizontally near the bottom edge with a small bottom margin.",
+    "bottom-right": "Place the provided brand logo in the bottom-right corner, close to the bottom and right edges, with a small margin.",
+}
+
+
+class BrandCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    slug: str = Field(min_length=1, max_length=120)
+    logo_url: Optional[str] = ""
+    brand_url: Optional[str] = ""
+    brand_color: Optional[str] = "#2563EB"
+    logo_position: str = "bottom-right"
+    portal_email: EmailStr
+    portal_password: str = Field(min_length=4, max_length=120)
+    credits_total: int = 25
+
+
+class BrandUpdate(BaseModel):
+    name: Optional[str] = None
+    slug: Optional[str] = None
+    logo_url: Optional[str] = None
+    brand_url: Optional[str] = None
+    brand_color: Optional[str] = None
+    logo_position: Optional[str] = None
+    portal_email: Optional[EmailStr] = None
+    portal_password: Optional[str] = None
+    credits_total: Optional[int] = None
+    credits_used: Optional[int] = None
+
+
+class BrandLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class BrandGenerateRequest(BaseModel):
+    prompt: str = Field(min_length=3, max_length=2000)
+    format: str = "post"  # post | story
+
+
+def _current_month() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m")
+
+
+def create_brand_token(brand_id: str, email: str) -> str:
+    payload = {
+        "sub": brand_id,
+        "brand_id": brand_id,
+        "email": email,
+        "exp": datetime.now(timezone.utc) + timedelta(days=7),
+        "type": "brand",
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+
+async def get_current_brand(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    if not credentials:
+        raise HTTPException(status_code=401, detail="Yetkilendirme gerekli")
+    try:
+        payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "brand":
+            raise HTTPException(status_code=401, detail="Geçersiz token")
+        brand = await db.brands.find_one({"id": payload.get("brand_id")}, {"_id": 0})
+        if not brand:
+            raise HTTPException(status_code=401, detail="Marka bulunamadı")
+        return brand
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Oturum süresi doldu")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Geçersiz token")
+
+
+async def _ensure_credit_period(brand: dict) -> dict:
+    """Reset monthly usage when the calendar month changes."""
+    month = _current_month()
+    if brand.get("credit_month") != month:
+        await db.brands.update_one(
+            {"id": brand["id"]},
+            {"$set": {"credit_month": month, "credits_used": 0}},
+        )
+        brand["credit_month"] = month
+        brand["credits_used"] = 0
+    return brand
+
+
+def _brand_public(brand: dict) -> dict:
+    used = brand.get("credits_used", 0)
+    total = brand.get("credits_total", 0)
+    return {
+        "id": brand["id"],
+        "name": brand.get("name", ""),
+        "slug": brand.get("slug", ""),
+        "logo_url": brand.get("logo_url", ""),
+        "brand_url": brand.get("brand_url", ""),
+        "brand_color": brand.get("brand_color", "#2563EB"),
+        "logo_position": brand.get("logo_position", "bottom-right"),
+        "credits_total": total,
+        "credits_used": used,
+        "credits_remaining": max(0, total - used),
+        "credit_month": brand.get("credit_month", _current_month()),
+    }
+
+
+def _extract_chat_text(data: dict) -> str:
+    try:
+        return (data["choices"][0]["message"]["content"] or "").strip()
+    except (KeyError, IndexError, TypeError):
+        return ""
+
+
+async def dr_generate_image(prompt: str, fmt: str, brand: dict) -> str:
+    """Generate an image with gpt-image-2. Logo is composited natively by the model. Returns base64 PNG."""
+    if not OPENAI_API_KEY:
+        raise HTTPException(status_code=500, detail="Görsel üretim servisi yapılandırılmamış.")
+    size = SIZE_MAP.get(fmt, SIZE_MAP["post"])
+    brand_color = brand.get("brand_color") or "#2563EB"
+    brand_name = brand.get("name") or "marka"
+    fmt_label = "Instagram story (vertical 9:16)" if fmt == "story" else "Instagram post (vertical 4:5)"
+    placement = LOGO_POSITIONS.get(brand.get("logo_position", "bottom-right"), LOGO_POSITIONS["bottom-right"])
+
+    logo_rel = (brand.get("logo_url") or "").lstrip("/")
+    logo_path = PUBLIC_DIR / logo_rel if logo_rel else None
+    has_logo = bool(logo_rel) and logo_path and logo_path.exists()
+
+    headers = {"Authorization": f"Bearer {OPENAI_API_KEY}"}
+
+    async with httpx.AsyncClient(timeout=240) as cx:
+        if has_logo:
+            full_prompt = (
+                f"{prompt}. Design a professional, modern, high-end {fmt_label} social media visual. "
+                f"Use the uploaded image as the official '{brand_name}' brand logo. {placement} "
+                f"Do not redesign, redraw, distort or recolor the logo; keep its colors, proportions and aspect ratio "
+                f"exactly as in the input image. Tastefully incorporate the brand accent color {brand_color} into the design. "
+                f"Make sure any text rendered in the image is correctly spelled and legible. Premium corporate aesthetic."
+            )
+            files = {"image": (logo_path.name, logo_path.read_bytes(), "image/png")}
+            form = {
+                "model": DR_IMAGE_MODEL,
+                "prompt": full_prompt,
+                "size": size,
+                "quality": "high",
+                "background": "opaque",
+                "output_format": "png",
+            }
+            resp = await cx.post("https://api.openai.com/v1/images/edits", headers=headers, data=form, files=files)
+        else:
+            full_prompt = (
+                f"{prompt}. Design a professional, modern, high-end {fmt_label} social media visual for the brand "
+                f"'{brand_name}'. Tastefully incorporate the brand accent color {brand_color}. Make sure any text is "
+                f"correctly spelled and legible. Premium corporate aesthetic."
+            )
+            body = {
+                "model": DR_IMAGE_MODEL,
+                "prompt": full_prompt,
+                "size": size,
+                "quality": "high",
+                "background": "opaque",
+                "output_format": "png",
+            }
+            resp = await cx.post("https://api.openai.com/v1/images/generations", headers={**headers, "Content-Type": "application/json"}, json=body)
+
+    if resp.status_code >= 400:
+        logger.error("gpt-image-2 error %s: %s", resp.status_code, resp.text[:500])
+        raise HTTPException(status_code=502, detail="Görsel üretilemedi. Lütfen tekrar deneyin.")
+    data = resp.json()
+    try:
+        return data["data"][0]["b64_json"]
+    except (KeyError, IndexError, TypeError):
+        logger.error("gpt-image-2 unexpected response: %s", str(data)[:500])
+        raise HTTPException(status_code=502, detail="Görsel üretilemedi.")
+
+
+async def dr_generate_caption(image_b64: str, user_prompt: str, brand: dict) -> str:
+    if not OPENAI_API_KEY:
+        return ""
+    image_data_url = f"data:image/png;base64,{image_b64}"
+    brand_name = brand.get("name") or "marka"
+    prompt_tr = (
+        f"Bu görsel '{brand_name}' markası için üretilmiş bir sosyal medya görselidir. "
+        f"Görselin içeriğine bakarak Instagram'da paylaşmaya uygun, kısa, etkileyici ve profesyonel bir Türkçe "
+        f"açıklama (caption) yaz. En fazla 2 cümle olsun ve sonuna 3-4 ilgili Türkçe hashtag ekle. "
+        f"Sadece açıklamayı döndür, başka bir şey yazma. Görselin teması: {user_prompt}"
+    )
+    body = {
+        "model": DR_CAPTION_MODEL,
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt_tr},
+                    {"type": "image_url", "image_url": {"url": image_data_url}},
+                ],
+            }
+        ],
+        "max_tokens": 300,
+    }
+    try:
+        async with httpx.AsyncClient(timeout=120) as cx:
+            resp = await cx.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers={"Authorization": f"Bearer {OPENAI_API_KEY}", "Content-Type": "application/json"},
+                json=body,
+            )
+        if resp.status_code >= 400:
+            logger.error("caption error %s: %s", resp.status_code, resp.text[:300])
+            return ""
+        return _extract_chat_text(resp.json())
+    except Exception as e:
+        logger.warning("caption generation failed: %s", e)
+        return ""
+
+
+# ---- Admin: Brand CRUD ----
+@api_router.get("/admin/brands")
+async def admin_list_brands(current=Depends(get_current_admin)):
+    brands = await db.brands.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return brands
+
+
+@api_router.post("/admin/brands")
+async def admin_create_brand(payload: BrandCreate, current=Depends(get_current_admin)):
+    email = payload.portal_email.lower().strip()
+    if await db.brands.find_one({"portal_email": email}):
+        raise HTTPException(status_code=400, detail="Bu e-posta ile zaten bir marka kayıtlı.")
+    if await db.brands.find_one({"slug": payload.slug}):
+        raise HTTPException(status_code=400, detail="Bu slug zaten kullanımda.")
+    doc = payload.model_dump()
+    doc["portal_email"] = email
+    doc["id"] = str(uuid.uuid4())
+    doc["credits_used"] = 0
+    doc["credit_month"] = _current_month()
+    doc["created_at"] = datetime.now(timezone.utc).isoformat()
+    doc["updated_at"] = doc["created_at"]
+    await db.brands.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+
+@api_router.put("/admin/brands/{brand_id}")
+async def admin_update_brand(brand_id: str, payload: BrandUpdate, current=Depends(get_current_admin)):
+    update = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if "portal_email" in update:
+        update["portal_email"] = update["portal_email"].lower().strip()
+        clash = await db.brands.find_one({"portal_email": update["portal_email"], "id": {"$ne": brand_id}})
+        if clash:
+            raise HTTPException(status_code=400, detail="Bu e-posta başka bir markada kullanılıyor.")
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    result = await db.brands.find_one_and_update(
+        {"id": brand_id}, {"$set": update}, return_document=True, projection={"_id": 0}
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="Marka bulunamadı")
+    return result
+
+
+@api_router.delete("/admin/brands/{brand_id}")
+async def admin_delete_brand(brand_id: str, current=Depends(get_current_admin)):
+    await db.brands.delete_one({"id": brand_id})
+    await db.generations.delete_many({"brand_id": brand_id})
+    return {"ok": True}
+
+
+@api_router.get("/admin/brands/{brand_id}/generations")
+async def admin_brand_generations(brand_id: str, month: Optional[str] = None, current=Depends(get_current_admin)):
+    q = {"brand_id": brand_id}
+    if month:
+        q["month"] = month
+    items = await db.generations.find(q, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    # monthly counts summary
+    pipeline = [
+        {"$match": {"brand_id": brand_id}},
+        {"$group": {"_id": "$month", "count": {"$sum": 1}}},
+        {"$sort": {"_id": -1}},
+    ]
+    summary = await db.generations.aggregate(pipeline).to_list(100)
+    summary = [{"month": s["_id"], "count": s["count"]} for s in summary]
+    return {"items": items, "monthly_summary": summary, "total": len(items)}
+
+
+# ---- Brand Portal ----
+@api_router.post("/brand/login")
+async def brand_login(payload: BrandLogin):
+    email = payload.email.lower().strip()
+    brand = await db.brands.find_one({"portal_email": email})
+    if not brand or brand.get("portal_password") != payload.password:
+        raise HTTPException(status_code=401, detail="E-posta veya şifre hatalı")
+    token = create_brand_token(brand["id"], email)
+    await _ensure_credit_period(brand)
+    brand = await db.brands.find_one({"id": brand["id"]}, {"_id": 0})
+    return {"token": token, "brand": _brand_public(brand)}
+
+
+@api_router.get("/brand/me")
+async def brand_me(brand=Depends(get_current_brand)):
+    brand = await _ensure_credit_period(brand)
+    return _brand_public(brand)
+
+
+@api_router.post("/brand/generate")
+async def brand_generate(payload: BrandGenerateRequest, brand=Depends(get_current_brand)):
+    brand = await _ensure_credit_period(brand)
+    total = brand.get("credits_total", 0)
+    used = brand.get("credits_used", 0)
+    if used >= total:
+        raise HTTPException(status_code=402, detail="Kredi yetersiz. Bu ay için üretim hakkınız doldu.")
+
+    fmt = payload.format if payload.format in SIZE_MAP else "post"
+    image_b64 = await dr_generate_image(payload.prompt, fmt, brand)
+
+    # Persist image
+    name = f"dr_{uuid.uuid4().hex}.png"
+    (UPLOAD_DIR / name).write_bytes(base64.b64decode(image_b64))
+    image_url = f"/uploads/{name}"
+
+    caption = await dr_generate_caption(image_b64, payload.prompt, brand)
+
+    # Deduct credit + audit log
+    month = _current_month()
+    await db.brands.update_one({"id": brand["id"]}, {"$inc": {"credits_used": 1}})
+    gen_doc = {
+        "id": str(uuid.uuid4()),
+        "brand_id": brand["id"],
+        "brand_name": brand.get("name", ""),
+        "prompt": payload.prompt,
+        "format": fmt,
+        "logo_position": brand.get("logo_position", "bottom-right"),
+        "image_url": image_url,
+        "caption": caption,
+        "month": month,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.generations.insert_one(gen_doc)
+    gen_doc.pop("_id", None)
+
+    return {
+        "image_url": image_url,
+        "caption": caption,
+        "format": fmt,
+        "credits_remaining": max(0, total - (used + 1)),
+    }
+
+
+@api_router.get("/brand/generations")
+async def brand_generations(brand=Depends(get_current_brand)):
+    items = await db.generations.find({"brand_id": brand["id"]}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return items
+
+
+# -----------------------------------------------------------------------------
 # Seed
 # -----------------------------------------------------------------------------
 SEED_BLOG_POSTS = [
@@ -651,6 +1018,8 @@ async def on_startup():
         await db.users.create_index("email", unique=True)
         await db.blog_posts.create_index("slug", unique=True)
         await db.case_studies.create_index("slug", unique=True)
+        await db.brands.create_index("portal_email", unique=True)
+        await db.brands.create_index("slug", unique=True)
     except Exception as e:
         logger.warning("Index creation: %s", e)
     await seed_admin()

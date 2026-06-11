@@ -14,31 +14,38 @@ import BlogDetail from "./pages/BlogDetail";
 import ProjectRequest from "./pages/ProjectRequest";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import { BrandAuthProvider } from "./context/BrandAuthContext";
+import BrandLogin from "./pages/brand/BrandLogin";
+import BrandPortal from "./pages/brand/BrandPortal";
 import "./App.css";
 
 export default function App() {
   return (
     <SiteSettingsProvider>
       <AuthProvider>
-        <BrowserRouter>
-          <Toaster position="top-right" richColors closeButton />
-          <Routes>
-            <Route element={<SiteLayout />}>
-              <Route index element={<Home />} />
-              <Route path="/kurumsal-cozumler" element={<CorporateSolutions />} />
-              <Route path="/projeler" element={<Projects />} />
-              <Route path="/projeler/:slug" element={<ProjectDetail />} />
-              <Route path="/hakkimizda" element={<About />} />
-              <Route path="/iletisim" element={<Contact />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<BlogDetail />} />
-              <Route path="/proje-talep" element={<ProjectRequest />} />
-            </Route>
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <BrandAuthProvider>
+          <BrowserRouter>
+            <Toaster position="top-right" richColors closeButton />
+            <Routes>
+              <Route element={<SiteLayout />}>
+                <Route index element={<Home />} />
+                <Route path="/kurumsal-cozumler" element={<CorporateSolutions />} />
+                <Route path="/projeler" element={<Projects />} />
+                <Route path="/projeler/:slug" element={<ProjectDetail />} />
+                <Route path="/hakkimizda" element={<About />} />
+                <Route path="/iletisim" element={<Contact />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogDetail />} />
+                <Route path="/proje-talep" element={<ProjectRequest />} />
+              </Route>
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/firma/giris" element={<BrandLogin />} />
+              <Route path="/firma/panel" element={<BrandPortal />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </BrandAuthProvider>
       </AuthProvider>
     </SiteSettingsProvider>
   );

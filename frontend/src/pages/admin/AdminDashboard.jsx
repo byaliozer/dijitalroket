@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import {
   LayoutDashboard, Mail, FileText, FolderOpen, BookOpenText, LogOut, Trash2,
   Plus, Eye, X, ExternalLink, Image as ImageIcon, ArrowUp, ArrowDown, Loader2, Settings,
+  Sparkles, Zap, Copy, Check, History,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
@@ -17,6 +18,7 @@ const TABS = [
   { id: "requests", label: "Proje Brief'leri", icon: FileText },
   { id: "projects", label: "DR AI Çalışmaları", icon: FolderOpen },
   { id: "blog", label: "Blog Yazıları", icon: BookOpenText },
+  { id: "brands", label: "Markalar (AI)", icon: Sparkles },
   { id: "settings", label: "Site Ayarları", icon: Settings },
 ];
 
@@ -83,6 +85,7 @@ export default function AdminDashboard() {
           {tab === "requests" && <Requests />}
           {tab === "projects" && <ProjectsAdmin />}
           {tab === "blog" && <BlogAdmin />}
+          {tab === "brands" && <BrandsAdmin />}
           {tab === "settings" && <SettingsAdmin />}
         </main>
       </div>
@@ -203,7 +206,7 @@ function ProjectsAdmin() {
 
   const save = async (form) => {
     try {
-      const payload = { ...form, tags: form.tags ? form.tags.split(",").map((s) => s.trim()).filter(Boolean) : [] };
+      const payload = { ...form, tags: Array.isArray(form.tags) ? form.tags : [] };
       if (form.id) await api.put(`/admin/projects/${form.id}`, payload);
       else await api.post("/admin/projects", payload);
       toast.success("Kaydedildi"); setEdit(null); load();
@@ -213,7 +216,7 @@ function ProjectsAdmin() {
   return (
     <div>
       <div className="mb-5 flex justify-end">
-        <button onClick={() => setEdit({ slug: "", title: "", client: "", sector: "", tags: "", need: "", solution: "", result: "", cover_image: "", content: "", gallery: [], external_url: "", published: true })} className="btn-primary py-2 text-sm">
+        <button onClick={() => setEdit({ slug: "", title: "", client: "", sector: "", tags: [], need: "", solution: "", result: "", cover_image: "", content: "", gallery: [], external_url: "", seo_title: "", seo_description: "", published: true })} className="btn-primary py-2 text-sm">
           <Plus className="h-4 w-4" /> Yeni Proje
         </button>
       </div>
@@ -228,7 +231,7 @@ function ProjectsAdmin() {
         actions={(r) => (
           <>
             <a href={`/projeler/${r.slug}`} target="_blank" rel="noreferrer" className="p-2 rounded hover:bg-slate-100"><ExternalLink className="h-4 w-4" /></a>
-            <button onClick={() => setEdit({ ...r, tags: (r.tags || []).join(", "), gallery: r.gallery || [] })} className="p-2 rounded hover:bg-slate-100"><Eye className="h-4 w-4" /></button>
+            <button onClick={() => setEdit({ ...r, tags: r.tags || [], gallery: r.gallery || [] })} className="p-2 rounded hover:bg-slate-100"><Eye className="h-4 w-4" /></button>
             <button onClick={() => del(r.id)} className="p-2 rounded hover:bg-red-50 text-red-600"><Trash2 className="h-4 w-4" /></button>
           </>
         )}
@@ -259,7 +262,7 @@ function BlogAdmin() {
   return (
     <div>
       <div className="mb-5 flex justify-end">
-        <button onClick={() => setEdit({ slug: "", title: "", excerpt: "", content: "", category: "", cover_image: "", read_time: 5, published: true })} className="btn-primary py-2 text-sm">
+        <button onClick={() => setEdit({ slug: "", title: "", excerpt: "", content: "", category: "", cover_image: "", read_time: 5, tags: [], seo_title: "", seo_description: "", published: true })} className="btn-primary py-2 text-sm">
           <Plus className="h-4 w-4" /> Yeni Yazı
         </button>
       </div>
@@ -304,7 +307,7 @@ function DataTable({ rows, columns, actions }) {
               <tr key={r.id} className="border-b border-slate-100 hover:bg-slate-50/50">
                 {columns.map((c) => (
                   <td key={c.key} className="px-5 py-3 text-[#334155]">
-                    {c.render ? c.render(r[c.key]) : (r[c.key] || "-")}
+                    {c.render ? c.render(r[c.key], r) : (r[c.key] || "-")}
                   </td>
                 ))}
                 {actions && <td className="px-5 py-3"><div className="flex justify-end gap-1">{actions(r)}</div></td>}
@@ -487,8 +490,10 @@ function ProjectForm({ initial, onSubmit }) {
           <FormInput label="Başlık" required value={f.title} onChange={(v) => set({ title: v })} />
           <FormInput label="Müşteri" value={f.client} onChange={(v) => set({ client: v })} />
           <FormInput label="Sektör" value={f.sector} onChange={(v) => set({ sector: v })} />
-          <FormInput label="Etiketler (virgülle)" value={f.tags} onChange={(v) => set({ tags: v })} />
           <FormInput label="Harici Link (örn. firma sitesi)" value={f.external_url} onChange={(v) => set({ external_url: v })} />
+        </div>
+        <div className="mt-4">
+          <TagInput label="Etiketler" value={f.tags} onChange={(v) => set({ tags: v })} />
         </div>
       </FormSection>
 
@@ -541,6 +546,11 @@ function ProjectForm({ initial, onSubmit }) {
         )}
       </FormSection>
 
+      <FormSection title="SEO Ayarları" hint="Boş bırakılırsa başlık ve özet otomatik kullanılır.">
+        <FormInput label="SEO Başlığı" value={f.seo_title} onChange={(v) => set({ seo_title: v })} />
+        <FormTextarea label="SEO Açıklaması" rows={2} value={f.seo_description} onChange={(v) => set({ seo_description: v })} />
+      </FormSection>
+
       <label className="flex items-center gap-2">
         <input type="checkbox" checked={!!f.published} onChange={(e) => set({ published: e.target.checked })} />
         <span className="text-sm">Yayında göster</span>
@@ -576,8 +586,14 @@ function BlogForm({ initial, onSubmit }) {
         <FormTextarea label="" value={f.excerpt} onChange={(v) => set({ excerpt: v })} rows={3} />
       </FormSection>
 
-      <FormSection title="İçerik" hint="Markdown destekli — ## Başlık, ### Alt Başlık, **kalın**, - madde, > alıntı. Görsel eklemek için aşağıdaki butonu kullanın.">
+      <FormSection title="İçerik" hint="Markdown destekli — ## Başlık, ### Alt Başlık, **kalın**, - madde, > alıntı. Görsel eklemek için aşağıdaki butonu kullanın. HTML etiketleri de desteklenir.">
         <ContentEditor value={f.content} onChange={(v) => set({ content: v })} rows={16} />
+      </FormSection>
+
+      <FormSection title="Etiketler & SEO" hint="Etiketler blog filtreleme için, SEO alanları arama motorları için kullanılır.">
+        <TagInput label="Etiketler" value={f.tags} onChange={(v) => set({ tags: v })} />
+        <FormInput label="SEO Başlığı" value={f.seo_title} onChange={(v) => set({ seo_title: v })} />
+        <FormTextarea label="SEO Açıklaması" rows={2} value={f.seo_description} onChange={(v) => set({ seo_description: v })} />
       </FormSection>
 
       <label className="flex items-center gap-2">
@@ -597,6 +613,7 @@ function ContentEditor({ value, onChange, rows = 12 }) {
   const ref = useState(null)[0]; // not used; we use document.activeElement-style insertion via id
   const id = `content-${Math.random().toString(36).slice(2, 8)}`;
   const [uploading, setUploading] = useState(false);
+  const [imgSize, setImgSize] = useState(100);
   const inputRef = useState(null)[0];
 
   const insertAtCursor = (text) => {
@@ -642,8 +659,8 @@ function ContentEditor({ value, onChange, rows = 12 }) {
       const form = new FormData();
       form.append("file", file);
       const { data } = await api.post("/admin/upload", form, { headers: { "Content-Type": "multipart/form-data" } });
-      insertAtCursor(`![](${data.url})`);
-      toast.success("Görsel eklendi");
+      insertAtCursor(imgSize >= 100 ? `![](${data.url})` : `![](${data.url}){w=${imgSize}}`);
+      toast.success(`Görsel eklendi (%${imgSize})`);
     } catch (err) {
       toast.error(formatApiError(err.response?.data?.detail) || err.message);
     } finally {
@@ -660,6 +677,19 @@ function ContentEditor({ value, onChange, rows = 12 }) {
         <ToolbarBtn onClick={() => insertAtCursor("- Madde")} title="Madde">• Madde</ToolbarBtn>
         <ToolbarBtn onClick={() => insertAtCursor("> Alıntı")} title="Alıntı">“ Alıntı</ToolbarBtn>
         <div className="ml-auto flex items-center gap-2">
+          <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-white px-1 py-1" title="Eklenecek görsel genişliği">
+            {[100, 75, 50].map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setImgSize(s)}
+                data-testid={`content-img-size-${s}`}
+                className={`rounded px-2 py-0.5 text-[11px] font-semibold transition ${imgSize === s ? "bg-[#2563EB] text-white" : "text-slate-600 hover:bg-slate-100"}`}
+              >
+                %{s}
+              </button>
+            ))}
+          </div>
           <label className="inline-flex items-center gap-1.5 cursor-pointer rounded-md border border-[#2563EB]/30 bg-[#2563EB]/8 px-3 py-1.5 text-xs font-semibold text-[#2563EB] hover:bg-[#2563EB]/12">
             {uploading ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Yükleniyor</> : <><ImageIcon className="h-3.5 w-3.5" /> Görsel Ekle</>}
             <input
@@ -724,3 +754,241 @@ function FormTextarea({ label, value, onChange, rows = 3 }) {
     </label>
   );
 }
+
+function TagInput({ label = "Etiketler", value = [], onChange }) {
+  const [input, setInput] = useState("");
+  const list = Array.isArray(value) ? value : [];
+  const add = (raw) => {
+    const t = (raw || "").replace(/,$/, "").trim();
+    if (!t) { setInput(""); return; }
+    if (!list.includes(t)) onChange([...list, t]);
+    setInput("");
+  };
+  const remove = (i) => onChange(list.filter((_, idx) => idx !== i));
+  return (
+    <div className="block">
+      {label && <span className="block text-xs font-semibold text-[#07111F] mb-1">{label}</span>}
+      <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-slate-200 px-2 py-2 focus-within:border-[#2563EB]">
+        {list.map((t, i) => (
+          <span key={i} data-testid={`tag-chip-${t}`} className="inline-flex items-center gap-1 rounded-md bg-[#2563EB]/10 px-2 py-1 text-xs font-medium text-[#2563EB]">
+            {t}
+            <button type="button" onClick={() => remove(i)} className="hover:text-[#07111F]"><X className="h-3 w-3" /></button>
+          </span>
+        ))}
+        <input
+          value={input}
+          data-testid="tag-input"
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(input); }
+            else if (e.key === "Backspace" && !input && list.length) remove(list.length - 1);
+          }}
+          onBlur={() => add(input)}
+          placeholder="Etiket yazıp Enter'a basın"
+          className="flex-1 min-w-[140px] outline-none text-sm px-1 py-0.5"
+        />
+      </div>
+    </div>
+  );
+}
+
+// -----------------------------------------------------------------------------
+// Brands (DR AI Image Engine 2.0) tab
+// -----------------------------------------------------------------------------
+const POSITION_GRID = [
+  ["top-left", "Üst Sol"], ["top-center", "Üst Orta"], ["top-right", "Üst Sağ"],
+  ["middle-left", "Orta Sol"], ["center", "Merkez"], ["middle-right", "Orta Sağ"],
+  ["bottom-left", "Alt Sol"], ["bottom-center", "Alt Orta"], ["bottom-right", "Alt Sağ"],
+];
+
+function BrandsAdmin() {
+  const [rows, setRows] = useState([]);
+  const [edit, setEdit] = useState(null);
+  const [usage, setUsage] = useState(null);
+  const load = () => api.get("/admin/brands").then((r) => setRows(r.data)).catch(() => {});
+  useEffect(() => { load(); }, []);
+
+  const del = async (id) => {
+    if (!confirm("Bu markayı ve tüm üretim geçmişini silmek istediğinize emin misiniz?")) return;
+    await api.delete(`/admin/brands/${id}`);
+    toast.success("Marka silindi"); load();
+  };
+
+  const save = async (form) => {
+    try {
+      const payload = { ...form, credits_total: Number(form.credits_total) || 0 };
+      if (form.id) {
+        payload.credits_used = Number(form.credits_used) || 0;
+        await api.put(`/admin/brands/${form.id}`, payload);
+      } else {
+        await api.post("/admin/brands", payload);
+      }
+      toast.success("Kaydedildi"); setEdit(null); load();
+    } catch (err) { toast.error(formatApiError(err.response?.data?.detail)); }
+  };
+
+  const newBrand = { name: "", slug: "", logo_url: "", brand_url: "", brand_color: "#2563EB", logo_position: "bottom-right", portal_email: "", portal_password: "", credits_total: 25 };
+
+  return (
+    <div>
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <p className="text-sm text-[#334155]">Markalar <span className="font-semibold">/firma/giris</span> adresinden giriş yapıp DR AI Image Engine 2.0 ile görsel üretir.</p>
+        <button onClick={() => setEdit(newBrand)} data-testid="brand-new-btn" className="btn-primary py-2 text-sm shrink-0">
+          <Plus className="h-4 w-4" /> Yeni Marka
+        </button>
+      </div>
+      <DataTable
+        rows={rows}
+        columns={[
+          { key: "name", label: "Marka" },
+          { key: "portal_email", label: "Giriş E-postası" },
+          { key: "portal_password", label: "Şifre" },
+          { key: "credits", label: "Kredi (Ay)", render: (_, r) => `${r.credits_used || 0} / ${r.credits_total || 0}` },
+          { key: "logo_position", label: "Logo Konumu" },
+        ]}
+        actions={(r) => (
+          <>
+            <button onClick={() => setUsage(r)} title="Kullanım / Audit" className="p-2 rounded hover:bg-slate-100"><History className="h-4 w-4" /></button>
+            <button onClick={() => setEdit({ ...r })} className="p-2 rounded hover:bg-slate-100"><Eye className="h-4 w-4" /></button>
+            <button onClick={() => del(r.id)} className="p-2 rounded hover:bg-red-50 text-red-600"><Trash2 className="h-4 w-4" /></button>
+          </>
+        )}
+      />
+      {edit && <Modal onClose={() => setEdit(null)} title={edit.id ? "Markayı Düzenle" : "Yeni Marka"} wide>
+        <BrandForm initial={edit} onSubmit={save} />
+      </Modal>}
+      {usage && <Modal onClose={() => setUsage(null)} title={`${usage.name} — Kullanım`} wide>
+        <BrandUsage brand={usage} />
+      </Modal>}
+    </div>
+  );
+}
+
+function BrandForm({ initial, onSubmit }) {
+  const [f, setF] = useState(initial);
+  const set = (patch) => setF((s) => ({ ...s, ...patch }));
+
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit(f); }} className="space-y-5">
+      <FormSection title="Marka Bilgileri">
+        <div className="grid sm:grid-cols-2 gap-4">
+          <FormInput label="Marka Adı" required value={f.name} onChange={(v) => set({ name: v })} />
+          <FormInput label="Slug (benzersiz)" required value={f.slug} onChange={(v) => set({ slug: v })} />
+          <FormInput label="Marka Web Sitesi" value={f.brand_url} onChange={(v) => set({ brand_url: v })} />
+          <label className="block">
+            <span className="block text-xs font-semibold text-[#07111F] mb-1">Marka Ana Rengi</span>
+            <div className="flex items-center gap-2">
+              <input type="color" value={f.brand_color || "#2563EB"} onChange={(e) => set({ brand_color: e.target.value })} className="h-10 w-14 rounded border border-slate-200 cursor-pointer" />
+              <input type="text" value={f.brand_color || ""} onChange={(e) => set({ brand_color: e.target.value })} className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#2563EB]" />
+            </div>
+          </label>
+        </div>
+      </FormSection>
+
+      <FormSection title="Marka Logosu" hint="Logo, üretilen görsele DR AI tarafından doğrudan yerleştirilir (PNG, şeffaf zemin önerilir).">
+        <ImageUploader value={f.logo_url} onChange={(v) => set({ logo_url: v })} label="" />
+      </FormSection>
+
+      <FormSection title="Logo Yerleşim Konumu" hint="9 noktalı ızgaradan logonun görselde duracağı konumu seçin.">
+        <LogoPositionPicker value={f.logo_position} onChange={(v) => set({ logo_position: v })} />
+      </FormSection>
+
+      <FormSection title="Portal Erişimi" hint="Bu bilgiler markaya iletilir. Şifre burada açıkça görünür ve dilediğinizde değiştirebilirsiniz.">
+        <div className="grid sm:grid-cols-2 gap-4">
+          <FormInput label="Giriş E-postası" required type="email" value={f.portal_email} onChange={(v) => set({ portal_email: v })} />
+          <FormInput label="Şifre (görünür)" required value={f.portal_password} onChange={(v) => set({ portal_password: v })} />
+        </div>
+      </FormSection>
+
+      <FormSection title="Kredi (Aylık)" hint="Marka her ay bu kadar görsel üretebilir. Her üretim 1 kredi düşer; kredi her ay başında sıfırlanır.">
+        <div className="grid sm:grid-cols-2 gap-4">
+          <FormInput label="Aylık Kredi" type="number" value={f.credits_total} onChange={(v) => set({ credits_total: v })} />
+          {f.id != null && (
+            <FormInput label="Bu Ay Kullanılan (düzenlenebilir)" type="number" value={f.credits_used} onChange={(v) => set({ credits_used: v })} />
+          )}
+        </div>
+      </FormSection>
+
+      <div className="sticky bottom-0 -mx-6 -mb-6 px-6 py-4 bg-white border-t border-slate-200 flex justify-end">
+        <button className="btn-primary" data-testid="brand-save-btn">Kaydet</button>
+      </div>
+    </form>
+  );
+}
+
+function LogoPositionPicker({ value, onChange }) {
+  return (
+    <div className="inline-grid grid-cols-3 gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-2">
+      {POSITION_GRID.map(([pos, label]) => (
+        <button
+          key={pos}
+          type="button"
+          onClick={() => onChange(pos)}
+          data-testid={`logo-pos-${pos}`}
+          title={label}
+          className={`h-14 w-20 rounded-lg border text-[11px] font-medium transition ${
+            value === pos ? "border-[#2563EB] bg-[#2563EB] text-white" : "border-slate-200 bg-white text-slate-500 hover:border-[#2563EB]"
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function BrandUsage({ brand }) {
+  const [data, setData] = useState(null);
+  useEffect(() => {
+    api.get(`/admin/brands/${brand.id}/generations`).then((r) => setData(r.data)).catch(() => setData({ items: [], monthly_summary: [], total: 0 }));
+  }, [brand.id]);
+
+  if (!data) return <div className="text-sm text-[#334155]">Yükleniyor...</div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-xl border border-slate-200 p-4">
+        <div className="text-xs font-bold uppercase tracking-[0.15em] text-[#2563EB] mb-3">Aylık Üretim Özeti</div>
+        {data.monthly_summary.length === 0 ? (
+          <p className="text-sm text-slate-500">Henüz üretim yapılmamış.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {data.monthly_summary.map((m) => (
+              <div key={m.month} className="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 text-sm">
+                <span className="font-semibold text-[#07111F]">{m.month}</span>
+                <span className="ml-2 text-[#2563EB] font-bold">{m.count}</span>
+                <span className="text-slate-500"> görsel</span>
+              </div>
+            ))}
+          </div>
+        )}
+        <p className="mt-3 text-xs text-slate-500">Faturalandırma için: ilgili ayda üretilen toplam görsel sayısını yukarıdan görebilirsiniz.</p>
+      </div>
+
+      <div>
+        <div className="text-xs font-bold uppercase tracking-[0.15em] text-[#2563EB] mb-3">Üretim Geçmişi ({data.total})</div>
+        {data.items.length === 0 ? (
+          <p className="text-sm text-slate-500">Kayıt yok.</p>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {data.items.map((g) => (
+              <div key={g.id} className="rounded-xl border border-slate-200 overflow-hidden">
+                <div className="aspect-square overflow-hidden bg-slate-100">
+                  <img src={g.image_url} alt="" className="h-full w-full object-cover" />
+                </div>
+                <div className="p-2">
+                  <p className="line-clamp-2 text-[11px] text-slate-600">{g.prompt}</p>
+                  <div className="mt-1 flex items-center justify-between text-[10px] text-slate-400">
+                    <span className="uppercase">{g.format}</span>
+                    <span>{new Date(g.created_at).toLocaleDateString("tr-TR")}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+

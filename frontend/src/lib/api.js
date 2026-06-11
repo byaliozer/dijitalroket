@@ -14,6 +14,18 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Separate client for the Brand Portal (own token, never mixed with admin)
+export const brandApi = axios.create({
+  baseURL: API_BASE,
+  headers: { "Content-Type": "application/json" },
+});
+
+brandApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem("dr_brand_token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
 export function formatApiError(detail) {
   if (detail == null) return "Bir hata oluştu. Lütfen tekrar deneyin.";
   if (typeof detail === "string") return detail;

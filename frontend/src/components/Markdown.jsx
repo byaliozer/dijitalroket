@@ -2,7 +2,9 @@ import { useState } from "react";
 
 /**
  * Shared markdown renderer for blog & project content.
- * Supports: ## H2, ### H3, **bold**, > quote, - bullets, ![alt](url) images.
+ * Supports: ## H2, ### H3, **bold**, > quote, - bullets,
+ *           ![alt](url) images, ![alt](url){w=75} sized images (% width),
+ *           and raw HTML blocks (lines starting with "<").
  */
 function inline(text) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
@@ -22,6 +24,7 @@ export default function Markdown({ source = "" }) {
   const out = [];
   let paraBuf = [];
   let listBuf = [];
+  let htmlBuf = [];
 
   const flushPara = () => {
     if (paraBuf.length) {
@@ -48,22 +51,45 @@ export default function Markdown({ source = "" }) {
       listBuf = [];
     }
   };
+  const flushHtml = () => {
+    if (htmlBuf.length) {
+      out.push(
+        <div
+          key={`html-${out.length}`}
+          className="dr-html my-6"
+          dangerouslySetInnerHTML={{ __html: htmlBuf.join("\n") }}
+        />
+      );
+      htmlBuf = [];
+    }
+  };
 
   for (const raw of lines) {
     const line = raw.trim();
+
+    // Continue collecting a raw HTML block until a blank line.
+    if (htmlBuf.length) {
+      if (!line) { flushHtml(); continue; }
+      htmlBuf.push(raw);
+      continue;
+    }
+
     if (!line) { flushPara(); flushList(); continue; }
-    // Image: ![alt](url)
-    const imgMatch = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+
+    // Image: ![alt](url) with optional {w=NN} percentage width
+    const imgMatch = line.match(/^!\[([^\]]*)\]\(([^)\s]+)\)(?:\{w=(\d+)\})?$/);
     if (imgMatch) {
       flushPara(); flushList();
       const alt = imgMatch[1];
       const url = imgMatch[2];
+      const w = imgMatch[3] ? Math.min(100, parseInt(imgMatch[3], 10)) : 100;
       out.push(
-        <figure key={`img-${out.length}`} className="my-8">
+        <figure key={`img-${out.length}`} className="my-8 flex flex-col items-center">
           <button
             type="button"
             onClick={() => setLightbox({ url, alt })}
-            className="block w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
+            style={{ width: `${w}%`, maxWidth: "100%" }}
+            className="block overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
           >
             <img src={url} alt={alt} loading="lazy" className="w-full h-auto object-cover transition-transform duration-500 hover:scale-[1.02]" />
           </button>
@@ -72,6 +98,14 @@ export default function Markdown({ source = "" }) {
       );
       continue;
     }
+
+    // Raw HTML block (starts with a tag)
+    if (line.startsWith("<")) {
+      flushPara(); flushList();
+      htmlBuf.push(raw);
+      continue;
+    }
+
     if (line.startsWith("## ")) {
       flushPara(); flushList();
       out.push(
@@ -107,7 +141,7 @@ export default function Markdown({ source = "" }) {
     flushList();
     paraBuf.push(line);
   }
-  flushPara(); flushList();
+  flushPara(); flushList(); flushHtml();
 
   return (
     <>
