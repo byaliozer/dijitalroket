@@ -1,0 +1,123 @@
+<analysis>**original_problem_statement**: 
+Dijital Roket için 2026 standartlarında, ultra profesyonel, kurumsal, modern, premium görünümlü bir B2B web sitesi geliştirilmesi. Sitede ChatGPT veya OpenAI gibi kelimeler kullanılmayacak, bunun yerine DR AI Üretim Sistemi konsepti kullanılacak. Hedef kitle: Orta/büyük şirketler, kurumsal firmalar. Ana sayfada DR AI özellikleri, sprint modeli, iletişim ve proje formları olacak. Ayrıca sitenin kendi yönetilebilir admin paneli olacak. 
+
+**User's preferred language**: Turkish (Türkçe) 
+*INSTRUCT NEXT AGENT: You MUST respond to the user in Turkish only.*
+
+**what currently exists?**: 
+A fully functional React + FastAPI + MongoDB full-stack application. It features a premium corporate dark/light hybrid design with advanced animations (like CodeRain). It includes 6 real case studies scraped from the original website, a blog system, detailed contact/project request forms, and a comprehensive Admin Panel (JWT auth). Admin can manage SEO, footer links, blog posts, projects (with markdown and image uploads), and contact messages dynamically. Mobile responsiveness issues have been resolved.
+
+**Last working item**:
+- **Last item agent was working**: Project Editor Enhancements (Aşama 1). Adding specific features to the project/blog editor in the admin panel: HTML/Markdown support, tags UI (chips), SEO title, SEO description, and adding 100%, 75%, 50% width sizing options to the Image Uploader. The agent just agreed to start this in the last message.
+- **Status**: IN PROGRESS
+- **Agent Testing Done**: N
+- **Which testing method agent to use?**: Frontend testing agent
+- **User Testing Done**: N
+
+**All Pending/In progress Issue list**:
+*None. All previous bugs (mobile UI overflows, z-index, outdated emails) were fixed.*
+
+**In progress Task List**:
+- **Task 1**: Project/Blog Editor Enhancements (Aşama 1)
+  - **Where to resume**:  and 
+  - **What will be achieved with this?**: Admin will have SEO title, SEO description, and Tag chips for projects. When uploading images to the Markdown editor, admin can select 100%, 75%, or 50% sizes which will append respective width classes (e.g., , , ) to the markdown image string.
+  - **Status**: IN PROGRESS
+  - **Should Test frontend/backend/both after fix?**: Frontend
+
+**Upcoming and Future Tasks**:
+- **Task 1**: Brand Management & AI Image Generation System (Aşama 2) (P0)
+  - **Phases**:
+    1. **Brand/Firma CRUD & Auth**: Create a new  collection. Admin can create brands, upload logos, set brand URL, main color, and select 9-point layout grid positions for logos (top-left, top, top-right, middle-left, center, middle-right, bottom-left, bottom-center, bottom-right). Admin creates a brand user (email/password) and assigns monthly credits (e.g., 25). Passwords must be visible/manageable in the admin panel (DO NOT use Resend/Email sending).
+    2. **Brand Portal**: Create  and . Brand user logs in to a ChatGPT-like interface.
+    3. **AI Generation**: User prompts for an image. System uses OpenAI  integration. *CRITICAL: User explicitly rejected using PIL/Pillow for logo placement.* The AI prompt must instruct  natively to generate the image AND place the brand's logo in the specific 9-point grid slots.
+    4. **Image Formats & Post-Generation**: System must support 1080x1350 (Post) and 1080x1920 (Story) resolutions. After the image is generated, AI must generate a relevant caption based on the image. Users can copy the caption and download the image. Deduct 1 credit per generation.
+  - **Priority**: P0 (Execute immediately after Task 1 is finished)
+
+**Completed work in this session**:
+- Initial project scaffolding and dependency installation (DONE)
+- FastAPI backend with MongoDB CRUD for forms, blog, projects (DONE)
+- React frontend with TailwindCSS, Framer Motion, and shadcn/ui components (DONE)
+- JWT Auth Admin panel () (DONE)
+- Web scraping existing case studies and downloading 42 images to seed DB (DONE)
+- Image uploading endpoint and Markdown text editor for admin (DONE)
+- Dynamic Site Ayarları (Site Settings) in admin for SEO, Favicon, Contact Info, and App Links (DONE)
+- Mobile UI fixes (z-index, hero text overflow, mobile menu opacity) (DONE)
+
+**Earlier issues found/mentioned but not fixed**:
+*None.*
+
+**Known issue recurrence from previous fork**:
+- Recurrence count: 0
+- Status: NOT STARTED
+
+**Code Architecture**:
+
+
+**Key Technical Concepts**:
+React SPA, FastAPI, MongoDB (Motor async), JWT Authentication, Tailwind CSS, Framer Motion animations, Markdown Rendering (custom lightweight parser), File Uploads (multipart/form-data).
+
+**key DB schema**:
+- : 
+- : 
+- : 
+- : 
+- : 
+- : 
+
+**changes in tech stack**:
+- None.
+
+**All files of reference**:
+-  (Core backend logic)
+-  (Admin panel UI)
+-  (Markdown renderer used in detail pages)
+-  (Image upload logic for markdown)
+
+**Areas that need refactoring**:
+-  is getting very large. As the Brand Management features get added, consider splitting it into sub-components.
+
+**key api endpoints**:
+- 
+- 
+- 
+- 
+-  and 
+
+**Critical Info for New Agent**:
+- **Admin Credentials**:  /  (Configured in ).
+- **AI Image Logo Placement**: The user strongly insisted that ** must handle the logo placement natively** via prompt instructions (using a 9-point grid layout: top-left, top, top-right, etc.). You must NOT use Python PIL/Pillow to overlay the logos.
+- **Passwords**: Do not integrate an email service like Resend to send passwords to Brand users. Passwords must be shown and managed directly in the admin panel.
+- Always use  before starting the implementation of the AI Image Generation and Brand Auth features.
+
+**documents and test reports created in this job**:
+- 
+- 
+- 
+- 
+
+**Last 10 User Messages and any pending HUMAN messages**:
+1. *User*: Change email to byaliozer@gmail.com. Add Instagram, Google Play, App store buttons to footer. (COMPLETED)
+2. *User*: Change DR AI Üretim Sistemi ile yayında. to Bu web sitesi de DR AI yapay zekası tarafından yapılmıştır. 😊. (COMPLETED)
+3. *User*: Test mobile responsiveness heavily. Are texts readable? Does the menu work? (COMPLETED - Several overflow and z-index fixes applied).
+4. *User*: Asked for backend, database, environment, and frontend tech stack info. (COMPLETED - Agent explained the stack).
+5. *User*: Asked for admin credentials. Requested a huge new feature: Brand Management system where firms log in, generate social media images using GPT, with predefined logo placements, and a specific admin upload flow for projects with % sizing options. (COMPLETED - Agent explained credentials and proposed a 2-phase approach).
+6. *User (Pending/In Progress)*: Approved Phase 1 (Project Editor Enhancements). Corrected the agent on Phase 2: Refused PIL/Pillow for logos, insisted  handle logo placement natively via 9-point grid slots. Clarified image sizes (1080x1350, 1080x1920), password management (Admin panel only, no email), and credit system limits (e.g., 25 credits/month). Also requested an AI caption generator based on the generated image.
+
+**Project Health Check**:
+Healthy.
+
+**3rd Party Integrations**:
+- OpenAI GPT-Image-2 (Emergent LLM Key applicability to be checked via playbook / User API key present in ).
+
+**Testing status**:
+- Testing agent used after significant changes: YES (After MVP setup)
+- Troubleshoot agent used after agent stuck in loop: NO
+- Test files created: 
+- Known regressions: None
+
+**Credentials to test flow**:
+- Email: 
+- Password: 
+
+**What agent forgot to execute**:
+Nothing was forgotten. The agent gathered the requirements for the massive new Brand/Image Generation feature and the immediate Project Editor Enhancements feature, and is ready to start coding them now.</analysis>

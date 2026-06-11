@@ -162,6 +162,9 @@ class BlogPost(BaseModel):
     cover_image: Optional[str] = ""
     read_time: int = 5
     published: bool = True
+    seo_title: Optional[str] = ""
+    seo_description: Optional[str] = ""
+    tags: List[str] = []
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
@@ -175,6 +178,9 @@ class BlogPostCreate(BaseModel):
     cover_image: Optional[str] = ""
     read_time: int = 5
     published: bool = True
+    seo_title: Optional[str] = ""
+    seo_description: Optional[str] = ""
+    tags: List[str] = []
 
 
 class CaseStudy(BaseModel):
@@ -192,6 +198,8 @@ class CaseStudy(BaseModel):
     content: Optional[str] = ""
     gallery: List[dict] = []
     external_url: Optional[str] = ""
+    seo_title: Optional[str] = ""
+    seo_description: Optional[str] = ""
     published: bool = True
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
@@ -209,6 +217,8 @@ class CaseStudyCreate(BaseModel):
     content: Optional[str] = ""
     gallery: List[dict] = []
     external_url: Optional[str] = ""
+    seo_title: Optional[str] = ""
+    seo_description: Optional[str] = ""
     published: bool = True
 
 
