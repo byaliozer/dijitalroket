@@ -36,21 +36,49 @@ export default function BrandPortal() {
   const generate = async () => {
     if (!prompt.trim()) { toast.error("Lütfen bir görsel açıklaması yazın."); return; }
     if (remaining <= 0) { toast.error("Kredi yetersiz. Bu ay için üretim hakkınız doldu."); return; }
+    const usedPrompt = prompt.trim();
     setBusy(true);
     setResult(null);
     setCopied(false);
     try {
-      const { data } = await brandApi.post("/brand/generate", { prompt: prompt.trim(), format });
-      setResult({ ...data, prompt: prompt.trim() });
+      const { data } = await brandApi.post("/brand/generate", { prompt: usedPrompt, format });
+      // Credit is reserved on the backend immediately
       setBrand({ ...brand, credits_used: brand.credits_total - data.credits_remaining, credits_remaining: data.credits_remaining });
-      loadHistory();
-      toast.success("Görsel üretildi");
-      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+      const jobId = data.job_id;
+      const started = Date.now();
+      const poll = async () => {
+        try {
+          const { data: job } = await brandApi.get(`/brand/generation/${jobId}`);
+          if (job.status === "done") {
+            setResult({ image_url: job.image_url, caption: job.caption, format: job.format, prompt: usedPrompt });
+            loadHistory();
+            toast.success("Görsel üretildi");
+            setBusy(false);
+            setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+            return;
+          }
+          if (job.status === "failed") {
+            toast.error(job.error || "Görsel üretilemedi");
+            refresh(); // backend refunds the credit on failure
+            setBusy(false);
+            return;
+          }
+          if (Date.now() - started > 240000) {
+            toast.error("Üretim beklenenden uzun sürdü. Lütfen geçmişi birazdan kontrol edin.");
+            refresh();
+            setBusy(false);
+            return;
+          }
+          setTimeout(poll, 3000);
+        } catch {
+          setTimeout(poll, 3000);
+        }
+      };
+      setTimeout(poll, 3000);
     } catch (err) {
       const detail = formatApiError(err.response?.data?.detail);
       toast.error(detail || "Görsel üretilemedi");
       if (err.response?.status === 402) refresh();
-    } finally {
       setBusy(false);
     }
   };
@@ -156,6 +184,7 @@ export default function BrandPortal() {
           <div className="mt-8 grid place-items-center rounded-2xl border border-white/10 bg-white/[0.02] py-20">
             <Loader2 className="h-8 w-8 animate-spin text-[#22D3EE]" />
             <p className="mt-3 text-sm text-white/50">DR AI Image Engine 2.0 görselinizi hazırlıyor...</p>
+            <p className="mt-1 text-xs text-white/30">Bu işlem 1-2 dakika sürebilir, lütfen sayfadan ayrılmayın.</p>
           </div>
         )}
 

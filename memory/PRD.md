@@ -28,6 +28,7 @@ Build a premium corporate Turkish website for **Dijital Roket** — repositioned
 - **Auth**: Separate brand JWT (`dr_brand_token`, type=brand, 7d). Token isolation enforced (admin↔brand 401). Backend `OPENAI_API_KEY` from .env used for image+caption.
 - **Testing**: 15/15 new + 18/18 existing pytest pass; frontend flows 100% (iteration_2.json). Generation gracefully handles OpenAI 502.
 - **KNOWN BLOCKER**: OpenAI account returns `billing_hard_limit_reached` → live generation needs the user to add billing/credit to their OpenAI account. Code is correct & ready.
+- **(2026-06-11 update) RESOLVED**: User added OpenAI billing. End-to-end VALIDATED live: gpt-image-2 edits 200 OK with native logo placement (DR logo composited bottom-right, no PIL), gpt-4o Turkish caption + hashtags, 1088x1920 story + 1088x1344 post. Generation takes ~90-150s which exceeds the 60s ingress gateway limit, so generation was refactored to an **async job pattern**: `POST /api/brand/generate` reserves 1 credit + returns `{job_id}` instantly; a background task runs the generation; `GET /api/brand/generation/{job_id}` is polled by the frontend (every 3s, up to 4min). Credit is refunded on failure. Admin audit + history count only completed (image_url != "") generations.
 
 ## What's Been Implemented (2026-05-13)
 - **Backend**: JWT auth (login, me), contact + project-request submission, blog/projects CRUD (admin), public listing endpoints, admin stats, brute-force-not-implemented (flagged), seed admin + 5 blog posts + 4 case studies on startup.

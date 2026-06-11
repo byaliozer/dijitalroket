@@ -7,6 +7,7 @@ load_dotenv(ROOT_DIR / '.env')
 import os
 import logging
 import uuid
+import asyncio
 import base64
 import httpx
 import bcrypt
@@ -795,13 +796,13 @@ async def admin_delete_brand(brand_id: str, current=Depends(get_current_admin)):
 
 @api_router.get("/admin/brands/{brand_id}/generations")
 async def admin_brand_generations(brand_id: str, month: Optional[str] = None, current=Depends(get_current_admin)):
-    q = {"brand_id": brand_id}
+    q = {"brand_id": brand_id, "image_url": {"$ne": ""}}
     if month:
         q["month"] = month
     items = await db.generations.find(q, {"_id": 0}).sort("created_at", -1).to_list(1000)
-    # monthly counts summary
+    # monthly counts summary (only successful/completed generations)
     pipeline = [
-        {"$match": {"brand_id": brand_id}},
+        {"$match": {"brand_id": brand_id, "image_url": {"$ne": ""}}},
         {"$group": {"_id": "$month", "count": {"$sum": 1}}},
         {"$sort": {"_id": -1}},
     ]
@@ -829,6 +830,34 @@ async def brand_me(brand=Depends(get_current_brand)):
     return _brand_public(brand)
 
 
+async def _run_generation_job(job_id: str, brand: dict, prompt: str, fmt: str):
+    """Background worker: generates image + caption, then finalizes the job doc.
+    Credit was already reserved (incremented) before the job started; refund on failure."""
+    try:
+        image_b64 = await dr_generate_image(prompt, fmt, brand)
+        name = f"dr_{uuid.uuid4().hex}.png"
+        (UPLOAD_DIR / name).write_bytes(base64.b64decode(image_b64))
+        image_url = f"/uploads/{name}"
+        caption = await dr_generate_caption(image_b64, prompt, brand)
+        await db.generations.update_one(
+            {"id": job_id},
+            {"$set": {
+                "status": "done",
+                "image_url": image_url,
+                "caption": caption,
+                "completed_at": datetime.now(timezone.utc).isoformat(),
+            }},
+        )
+    except Exception as e:
+        logger.error("generation job %s failed: %s", job_id, e)
+        # Refund the reserved credit
+        await db.brands.update_one({"id": brand["id"]}, {"$inc": {"credits_used": -1}})
+        await db.generations.update_one(
+            {"id": job_id},
+            {"$set": {"status": "failed", "error": "Görsel üretilemedi. Lütfen tekrar deneyin."}},
+        )
+
+
 @api_router.post("/brand/generate")
 async def brand_generate(payload: BrandGenerateRequest, brand=Depends(get_current_brand)):
     brand = await _ensure_credit_period(brand)
@@ -838,44 +867,48 @@ async def brand_generate(payload: BrandGenerateRequest, brand=Depends(get_curren
         raise HTTPException(status_code=402, detail="Kredi yetersiz. Bu ay için üretim hakkınız doldu.")
 
     fmt = payload.format if payload.format in SIZE_MAP else "post"
-    image_b64 = await dr_generate_image(payload.prompt, fmt, brand)
 
-    # Persist image
-    name = f"dr_{uuid.uuid4().hex}.png"
-    (UPLOAD_DIR / name).write_bytes(base64.b64decode(image_b64))
-    image_url = f"/uploads/{name}"
-
-    caption = await dr_generate_caption(image_b64, payload.prompt, brand)
-
-    # Deduct credit + audit log
-    month = _current_month()
+    # Reserve 1 credit up-front so concurrent jobs can't overspend (refunded on failure)
     await db.brands.update_one({"id": brand["id"]}, {"$inc": {"credits_used": 1}})
-    gen_doc = {
-        "id": str(uuid.uuid4()),
+
+    job_id = str(uuid.uuid4())
+    job = {
+        "id": job_id,
         "brand_id": brand["id"],
         "brand_name": brand.get("name", ""),
         "prompt": payload.prompt,
         "format": fmt,
         "logo_position": brand.get("logo_position", "bottom-right"),
-        "image_url": image_url,
-        "caption": caption,
-        "month": month,
+        "status": "processing",
+        "image_url": "",
+        "caption": "",
+        "month": _current_month(),
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
-    await db.generations.insert_one(gen_doc)
-    gen_doc.pop("_id", None)
+    await db.generations.insert_one(job)
+    asyncio.create_task(_run_generation_job(job_id, brand, payload.prompt, fmt))
 
     return {
-        "image_url": image_url,
-        "caption": caption,
+        "job_id": job_id,
+        "status": "processing",
         "format": fmt,
         "credits_remaining": max(0, total - (used + 1)),
     }
 
 
+@api_router.get("/brand/generation/{job_id}")
+async def brand_generation_status(job_id: str, brand=Depends(get_current_brand)):
+    doc = await db.generations.find_one({"id": job_id, "brand_id": brand["id"]}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Üretim bulunamadı")
+    return doc
+
+
 @api_router.get("/brand/generations")
 async def brand_generations(brand=Depends(get_current_brand)):
-    items = await db.generations.find({"brand_id": brand["id"]}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    items = await db.generations.find(
+        {"brand_id": brand["id"], "image_url": {"$ne": ""}}, {"_id": 0}
+    ).sort("created_at", -1).to_list(500)
     return items
 
 
