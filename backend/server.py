@@ -15,6 +15,7 @@ import jwt
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, status, UploadFile, File
+from fastapi.responses import FileResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -277,7 +278,41 @@ async def admin_upload(file: UploadFile = File(...), current=Depends(get_current
         raise HTTPException(status_code=400, detail="Boş dosya yüklenemez.")
     name = f"{uuid.uuid4().hex}{ext}"
     (UPLOAD_DIR / name).write_bytes(data)
-    return {"url": f"/uploads/{name}", "size": len(data), "filename": name}
+    # Served through the backend (/api/uploads) so it works in both preview and production.
+    return {"url": f"/api/uploads/{name}", "size": len(data), "filename": name}
+
+
+# Public file serving — uploaded images are stored on the backend disk and served via /api
+# so they resolve correctly behind the production ingress (where the frontend is a static build).
+_SERVE_MIME = {
+    ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
+    ".webp": "image/webp", ".gif": "image/gif",
+}
+
+
+@api_router.get("/uploads/{filename}")
+async def serve_upload(filename: str):
+    # Prevent path traversal
+    safe = Path(filename).name
+    path = UPLOAD_DIR / safe
+    if not path.exists() or not path.is_file():
+        raise HTTPException(status_code=404, detail="Dosya bulunamadı")
+    media = _SERVE_MIME.get(path.suffix.lower(), "application/octet-stream")
+    return FileResponse(str(path), media_type=media)
+
+
+def _local_upload_path(url: str):
+    """Resolve a stored image url (/api/uploads/x, /uploads/x, or /something) to a local file path."""
+    if not url or url.startswith("http"):
+        return None
+    name = Path(url).name
+    p = UPLOAD_DIR / name
+    if p.exists():
+        return p
+    p2 = PUBLIC_DIR / url.lstrip("/")
+    if p2.exists():
+        return p2
+    return None
 
 
 @api_router.post("/contact", response_model=ContactForm)
@@ -657,9 +692,8 @@ async def dr_generate_image(prompt: str, fmt: str, brand: dict) -> str:
     fmt_label = "Instagram story (vertical 9:16)" if fmt == "story" else "Instagram post (vertical 4:5)"
     placement = LOGO_POSITIONS.get(brand.get("logo_position", "bottom-right"), LOGO_POSITIONS["bottom-right"])
 
-    logo_rel = (brand.get("logo_url") or "").lstrip("/")
-    logo_path = PUBLIC_DIR / logo_rel if logo_rel else None
-    has_logo = bool(logo_rel) and logo_path and logo_path.exists()
+    logo_path = _local_upload_path(brand.get("logo_url") or "")
+    has_logo = logo_path is not None
 
     headers = {"Authorization": f"Bearer {OPENAI_API_KEY}"}
 
@@ -668,8 +702,10 @@ async def dr_generate_image(prompt: str, fmt: str, brand: dict) -> str:
             full_prompt = (
                 f"{prompt}. Design a professional, modern, high-end {fmt_label} social media visual. "
                 f"Use the uploaded image as the official '{brand_name}' brand logo. {placement} "
-                f"Do not redesign, redraw, distort or recolor the logo; keep its colors, proportions and aspect ratio "
-                f"exactly as in the input image. Tastefully incorporate the brand accent color {brand_color} into the design. "
+                f"Do not redesign, redraw, distort, stretch, squash, crop or recolor the logo; keep the ENTIRE logo fully "
+                f"visible with its original colors, proportions and aspect ratio exactly as in the input image. You may decide "
+                f"the most aesthetic size and integration spot within the requested corner, but never alter the logo itself. "
+                f"Tastefully incorporate the brand accent color {brand_color} into the design. "
                 f"Make sure any text rendered in the image is correctly spelled and legible. Premium corporate aesthetic."
             )
             files = {"image": (logo_path.name, logo_path.read_bytes(), "image/png")}
@@ -719,14 +755,12 @@ async def dr_edit_image(instruction: str, base_image_url: str, fmt: str, brand: 
     brand_name = brand.get("name") or "marka"
     placement = LOGO_POSITIONS.get(brand.get("logo_position", "bottom-right"), LOGO_POSITIONS["bottom-right"])
 
-    base_rel = (base_image_url or "").lstrip("/")
-    base_path = PUBLIC_DIR / base_rel
-    if not base_path.exists():
+    base_path = _local_upload_path(base_image_url or "")
+    if base_path is None:
         raise HTTPException(status_code=404, detail="Düzenlenecek kaynak görsel bulunamadı.")
 
-    logo_rel = (brand.get("logo_url") or "").lstrip("/")
-    logo_path = PUBLIC_DIR / logo_rel if logo_rel else None
-    has_logo = bool(logo_rel) and logo_path and logo_path.exists()
+    logo_path = _local_upload_path(brand.get("logo_url") or "")
+    has_logo = logo_path is not None
 
     prompt = (
         f"Edit the first provided social media image according to this instruction: \"{instruction}\". "
@@ -736,7 +770,8 @@ async def dr_edit_image(instruction: str, base_image_url: str, fmt: str, brand: 
     if has_logo:
         prompt += (
             f" The second provided image is the official '{brand_name}' brand logo. {placement} "
-            f"Do not redesign, redraw, distort or recolor the logo; keep its colors and proportions intact."
+            f"Do not redesign, redraw, distort, stretch, crop or recolor the logo; keep the entire logo fully visible "
+            f"with its original colors and proportions intact."
         )
 
     headers = {"Authorization": f"Bearer {OPENAI_API_KEY}"}
@@ -903,7 +938,7 @@ async def _run_generation_job(job_id: str, brand: dict, prompt: str, fmt: str):
         image_b64 = await dr_generate_image(prompt, fmt, brand)
         name = f"dr_{uuid.uuid4().hex}.png"
         (UPLOAD_DIR / name).write_bytes(base64.b64decode(image_b64))
-        image_url = f"/uploads/{name}"
+        image_url = f"/api/uploads/{name}"
         caption = await dr_generate_caption(image_b64, prompt, brand)
         await db.generations.update_one(
             {"id": job_id},
@@ -984,7 +1019,7 @@ async def _run_edit_job(job_id: str, brand: dict, base_image_url: str, instructi
         image_b64 = await dr_edit_image(instruction, base_image_url, fmt, brand)
         name = f"dr_{uuid.uuid4().hex}.png"
         (UPLOAD_DIR / name).write_bytes(base64.b64decode(image_b64))
-        image_url = f"/uploads/{name}"
+        image_url = f"/api/uploads/{name}"
         caption = await dr_generate_caption(image_b64, instruction, brand)
         await db.generations.update_one(
             {"id": job_id},
