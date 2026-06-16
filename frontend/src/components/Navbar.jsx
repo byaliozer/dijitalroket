@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { to: "/", label: "Ana Sayfa" },
   { to: "/kurumsal-cozumler", label: "Kurumsal Çözümler" },
   { to: "/projeler", label: "Projeler" },
+  { to: "/blog", label: "Blog" },
   { to: "/hakkimizda", label: "Hakkımızda" },
   { to: "/iletisim", label: "İletişim" },
 ];
