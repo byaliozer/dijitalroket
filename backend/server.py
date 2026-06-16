@@ -572,6 +572,11 @@ class BrandGenerateRequest(BaseModel):
     format: str = "post"  # post | story
 
 
+class BrandEditRequest(BaseModel):
+    source_id: str
+    instruction: str = Field(min_length=2, max_length=1000)
+
+
 def _current_month() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m")
 
@@ -702,6 +707,67 @@ async def dr_generate_image(prompt: str, fmt: str, brand: dict) -> str:
     except (KeyError, IndexError, TypeError):
         logger.error("gpt-image-2 unexpected response: %s", str(data)[:500])
         raise HTTPException(status_code=502, detail="Görsel üretilemedi.")
+
+
+async def dr_edit_image(instruction: str, base_image_url: str, fmt: str, brand: dict) -> str:
+    """Edit an already generated image with gpt-image-2 (e.g. 'logoyu büyüt', 'daha minimal yap').
+    Passes the previous image as the base and the brand logo as a second reference. Returns base64 PNG."""
+    if not OPENAI_API_KEY:
+        raise HTTPException(status_code=500, detail="Görsel üretim servisi yapılandırılmamış.")
+    size = SIZE_MAP.get(fmt, SIZE_MAP["post"])
+    brand_color = brand.get("brand_color") or "#2563EB"
+    brand_name = brand.get("name") or "marka"
+    placement = LOGO_POSITIONS.get(brand.get("logo_position", "bottom-right"), LOGO_POSITIONS["bottom-right"])
+
+    base_rel = (base_image_url or "").lstrip("/")
+    base_path = PUBLIC_DIR / base_rel
+    if not base_path.exists():
+        raise HTTPException(status_code=404, detail="Düzenlenecek kaynak görsel bulunamadı.")
+
+    logo_rel = (brand.get("logo_url") or "").lstrip("/")
+    logo_path = PUBLIC_DIR / logo_rel if logo_rel else None
+    has_logo = bool(logo_rel) and logo_path and logo_path.exists()
+
+    prompt = (
+        f"Edit the first provided social media image according to this instruction: \"{instruction}\". "
+        f"Keep the overall composition, layout and quality professional and high-end unless the instruction asks otherwise. "
+        f"Keep the brand accent color {brand_color}. Make sure any text rendered in the image is correctly spelled and legible."
+    )
+    if has_logo:
+        prompt += (
+            f" The second provided image is the official '{brand_name}' brand logo. {placement} "
+            f"Do not redesign, redraw, distort or recolor the logo; keep its colors and proportions intact."
+        )
+
+    headers = {"Authorization": f"Bearer {OPENAI_API_KEY}"}
+    form = {
+        "model": DR_IMAGE_MODEL,
+        "prompt": prompt,
+        "size": size,
+        "quality": "high",
+        "background": "opaque",
+        "output_format": "png",
+    }
+    if has_logo:
+        files = [
+            ("image[]", (base_path.name, base_path.read_bytes(), "image/png")),
+            ("image[]", (logo_path.name, logo_path.read_bytes(), "image/png")),
+        ]
+    else:
+        files = {"image": (base_path.name, base_path.read_bytes(), "image/png")}
+
+    async with httpx.AsyncClient(timeout=240) as cx:
+        resp = await cx.post("https://api.openai.com/v1/images/edits", headers=headers, data=form, files=files)
+
+    if resp.status_code >= 400:
+        logger.error("gpt-image-2 edit error %s: %s", resp.status_code, resp.text[:500])
+        raise HTTPException(status_code=502, detail="Görsel düzenlenemedi. Lütfen tekrar deneyin.")
+    data = resp.json()
+    try:
+        return data["data"][0]["b64_json"]
+    except (KeyError, IndexError, TypeError):
+        logger.error("gpt-image-2 edit unexpected response: %s", str(data)[:500])
+        raise HTTPException(status_code=502, detail="Görsel düzenlenemedi.")
 
 
 async def dr_generate_caption(image_b64: str, user_prompt: str, brand: dict) -> str:
@@ -910,6 +976,81 @@ async def brand_generations(brand=Depends(get_current_brand)):
         {"brand_id": brand["id"], "image_url": {"$ne": ""}}, {"_id": 0}
     ).sort("created_at", -1).to_list(500)
     return items
+
+
+async def _run_edit_job(job_id: str, brand: dict, base_image_url: str, instruction: str, fmt: str):
+    """Background worker for image editing. Credit reserved before start; refunded on failure."""
+    try:
+        image_b64 = await dr_edit_image(instruction, base_image_url, fmt, brand)
+        name = f"dr_{uuid.uuid4().hex}.png"
+        (UPLOAD_DIR / name).write_bytes(base64.b64decode(image_b64))
+        image_url = f"/uploads/{name}"
+        caption = await dr_generate_caption(image_b64, instruction, brand)
+        await db.generations.update_one(
+            {"id": job_id},
+            {"$set": {
+                "status": "done",
+                "image_url": image_url,
+                "caption": caption,
+                "completed_at": datetime.now(timezone.utc).isoformat(),
+            }},
+        )
+    except Exception as e:
+        logger.error("edit job %s failed: %s", job_id, e)
+        await db.brands.update_one({"id": brand["id"]}, {"$inc": {"credits_used": -1}})
+        await db.generations.update_one(
+            {"id": job_id},
+            {"$set": {"status": "failed", "error": "Görsel düzenlenemedi. Lütfen tekrar deneyin."}},
+        )
+
+
+@api_router.post("/brand/edit")
+async def brand_edit(payload: BrandEditRequest, brand=Depends(get_current_brand)):
+    brand = await _ensure_credit_period(brand)
+    total = brand.get("credits_total", 0)
+    used = brand.get("credits_used", 0)
+    if used >= total:
+        raise HTTPException(status_code=402, detail="Kredi yetersiz. Bu ay için üretim hakkınız doldu.")
+
+    source = await db.generations.find_one(
+        {"id": payload.source_id, "brand_id": brand["id"], "image_url": {"$ne": ""}}, {"_id": 0}
+    )
+    if not source:
+        raise HTTPException(status_code=404, detail="Düzenlenecek görsel bulunamadı.")
+
+    fmt = source.get("format", "post")
+    if fmt not in SIZE_MAP:
+        fmt = "post"
+
+    # Reserve 1 credit (refunded on failure)
+    await db.brands.update_one({"id": brand["id"]}, {"$inc": {"credits_used": 1}})
+
+    job_id = str(uuid.uuid4())
+    job = {
+        "id": job_id,
+        "brand_id": brand["id"],
+        "brand_name": brand.get("name", ""),
+        "prompt": f"Düzenleme: {payload.instruction}",
+        "instruction": payload.instruction,
+        "source_id": payload.source_id,
+        "is_edit": True,
+        "format": fmt,
+        "logo_position": brand.get("logo_position", "bottom-right"),
+        "status": "processing",
+        "image_url": "",
+        "caption": "",
+        "month": _current_month(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.generations.insert_one(job)
+    asyncio.create_task(_run_edit_job(job_id, brand, source["image_url"], payload.instruction, fmt))
+
+    return {
+        "job_id": job_id,
+        "status": "processing",
+        "format": fmt,
+        "credits_remaining": max(0, total - (used + 1)),
+    }
 
 
 # -----------------------------------------------------------------------------

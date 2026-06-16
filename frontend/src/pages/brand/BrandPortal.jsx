@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
-  Loader2, Sparkles, LogOut, Download, Copy, Check, Wand2, Image as ImageIcon, History, Zap,
+  Loader2, Sparkles, LogOut, Download, Copy, Check, Wand2, Image as ImageIcon, History, Zap, RefreshCw,
 } from "lucide-react";
 import { useBrandAuth } from "../../context/BrandAuthContext";
 import { brandApi, formatApiError } from "../../lib/api";
@@ -11,6 +11,8 @@ const FORMATS = [
   { id: "post", label: "Gönderi", dim: "1080 × 1350", ratio: "aspect-[4/5]" },
   { id: "story", label: "Hikâye", dim: "1080 × 1920", ratio: "aspect-[9/16]" },
 ];
+
+const EDIT_SUGGESTIONS = ["Logoyu büyüt", "Logoyu küçült", "Yazıyı değiştir", "Daha minimal yap", "Renkleri canlandır", "Arka planı sadeleştir"];
 
 export default function BrandPortal() {
   const { brand, loading, logout, setBrand, refresh } = useBrandAuth();
@@ -21,6 +23,7 @@ export default function BrandPortal() {
   const [result, setResult] = useState(null);
   const [history, setHistory] = useState([]);
   const [copied, setCopied] = useState(false);
+  const [editText, setEditText] = useState("");
   const resultRef = useRef(null);
 
   const loadHistory = () => brandApi.get("/brand/generations").then((r) => setHistory(r.data)).catch(() => {});
@@ -33,51 +36,72 @@ export default function BrandPortal() {
 
   const remaining = brand.credits_remaining ?? 0;
 
+  const pollJob = (jobId, successLabel) => {
+    const started = Date.now();
+    const poll = async () => {
+      try {
+        const { data: job } = await brandApi.get(`/brand/generation/${jobId}`);
+        if (job.status === "done") {
+          setResult({ id: job.id, image_url: job.image_url, caption: job.caption, format: job.format, prompt: job.prompt });
+          setEditText("");
+          loadHistory();
+          toast.success(successLabel);
+          setBusy(false);
+          setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+          return;
+        }
+        if (job.status === "failed") {
+          toast.error(job.error || "İşlem başarısız oldu");
+          refresh(); // backend refunds the credit on failure
+          setBusy(false);
+          return;
+        }
+        if (Date.now() - started > 240000) {
+          toast.error("İşlem beklenenden uzun sürdü. Lütfen geçmişi birazdan kontrol edin.");
+          refresh();
+          setBusy(false);
+          return;
+        }
+        setTimeout(poll, 3000);
+      } catch {
+        setTimeout(poll, 3000);
+      }
+    };
+    setTimeout(poll, 3000);
+  };
+
   const generate = async () => {
     if (!prompt.trim()) { toast.error("Lütfen bir görsel açıklaması yazın."); return; }
     if (remaining <= 0) { toast.error("Kredi yetersiz. Bu ay için üretim hakkınız doldu."); return; }
-    const usedPrompt = prompt.trim();
     setBusy(true);
     setResult(null);
     setCopied(false);
     try {
-      const { data } = await brandApi.post("/brand/generate", { prompt: usedPrompt, format });
-      // Credit is reserved on the backend immediately
+      const { data } = await brandApi.post("/brand/generate", { prompt: prompt.trim(), format });
       setBrand({ ...brand, credits_used: brand.credits_total - data.credits_remaining, credits_remaining: data.credits_remaining });
-      const jobId = data.job_id;
-      const started = Date.now();
-      const poll = async () => {
-        try {
-          const { data: job } = await brandApi.get(`/brand/generation/${jobId}`);
-          if (job.status === "done") {
-            setResult({ image_url: job.image_url, caption: job.caption, format: job.format, prompt: usedPrompt });
-            loadHistory();
-            toast.success("Görsel üretildi");
-            setBusy(false);
-            setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
-            return;
-          }
-          if (job.status === "failed") {
-            toast.error(job.error || "Görsel üretilemedi");
-            refresh(); // backend refunds the credit on failure
-            setBusy(false);
-            return;
-          }
-          if (Date.now() - started > 240000) {
-            toast.error("Üretim beklenenden uzun sürdü. Lütfen geçmişi birazdan kontrol edin.");
-            refresh();
-            setBusy(false);
-            return;
-          }
-          setTimeout(poll, 3000);
-        } catch {
-          setTimeout(poll, 3000);
-        }
-      };
-      setTimeout(poll, 3000);
+      pollJob(data.job_id, "Görsel üretildi");
     } catch (err) {
       const detail = formatApiError(err.response?.data?.detail);
       toast.error(detail || "Görsel üretilemedi");
+      if (err.response?.status === 402) refresh();
+      setBusy(false);
+    }
+  };
+
+  const editImage = async (suggestion) => {
+    if (!result?.id) return;
+    const instruction = (suggestion || editText).trim();
+    if (!instruction) { toast.error("Lütfen bir düzenleme isteği yazın."); return; }
+    if (remaining <= 0) { toast.error("Kredi yetersiz. Bu ay için üretim hakkınız doldu."); return; }
+    setBusy(true);
+    setCopied(false);
+    try {
+      const { data } = await brandApi.post("/brand/edit", { source_id: result.id, instruction });
+      setBrand({ ...brand, credits_used: brand.credits_total - data.credits_remaining, credits_remaining: data.credits_remaining });
+      pollJob(data.job_id, "Görsel güncellendi");
+    } catch (err) {
+      const detail = formatApiError(err.response?.data?.detail);
+      toast.error(detail || "Görsel düzenlenemedi");
       if (err.response?.status === 402) refresh();
       setBusy(false);
     }
@@ -98,6 +122,12 @@ export default function BrandPortal() {
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(a.href);
     } catch { toast.error("İndirilemedi"); }
+  };
+
+  const openHistoryItem = (h) => {
+    setResult({ id: h.id, image_url: h.image_url, caption: h.caption, format: h.format, prompt: h.prompt });
+    setEditText("");
+    setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   };
 
   const activeRatio = FORMATS.find((f) => f.id === format)?.ratio || "aspect-[4/5]";
@@ -190,12 +220,12 @@ export default function BrandPortal() {
 
         {result && !busy && (
           <section ref={resultRef} className="mt-8 grid gap-6 md:grid-cols-2" data-testid="brand-result">
-            <div className={`overflow-hidden rounded-2xl border border-white/10 bg-black/30 ${activeRatio} max-h-[70vh]`}>
+            <div className={`overflow-hidden rounded-2xl border border-white/10 bg-black/30 ${FORMATS.find((f) => f.id === result.format)?.ratio || "aspect-[4/5]"} max-h-[70vh]`}>
               <img src={result.image_url} alt="Üretilen görsel" className="h-full w-full object-contain" />
             </div>
             <div className="flex flex-col">
               <div className="text-sm font-semibold flex items-center gap-2"><ImageIcon className="h-4 w-4 text-[#22D3EE]" /> Üretilen Açıklama</div>
-              <div className="mt-3 flex-1 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm leading-relaxed text-white/85 whitespace-pre-wrap" data-testid="brand-caption">
+              <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm leading-relaxed text-white/85 whitespace-pre-wrap" data-testid="brand-caption">
                 {result.caption || "Açıklama üretilemedi."}
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
@@ -205,6 +235,32 @@ export default function BrandPortal() {
                 <button onClick={() => download(result.image_url, `dr-ai-${result.format}.png`)} data-testid="brand-download" className="inline-flex items-center gap-2 rounded-lg bg-[#22D3EE] px-4 py-2.5 text-sm font-semibold text-[#07111F] hover:bg-[#0ea5c4]">
                   <Download className="h-4 w-4" /> Görseli İndir
                 </button>
+              </div>
+
+              {/* Edit / regenerate panel */}
+              <div className="mt-5 border-t border-white/10 pt-4" data-testid="brand-edit-panel">
+                <div className="text-xs font-semibold flex items-center gap-2 text-white/80"><Wand2 className="h-3.5 w-3.5 text-[#22D3EE]" /> Bu görseli düzenle / yeniden üret</div>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {EDIT_SUGGESTIONS.map((s) => (
+                    <button key={s} type="button" onClick={() => editImage(s)} data-testid={`brand-edit-suggestion-${s}`} className="rounded-full border border-white/10 px-3 py-1 text-[11px] text-white/60 hover:text-white hover:border-[#22D3EE] transition">
+                      {s}
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <input
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); editImage(); } }}
+                    data-testid="brand-edit-input"
+                    placeholder="Örn: logoyu büyüt, yazıyı kaldır, daha minimal yap"
+                    className="flex-1 rounded-lg border border-white/10 bg-[#07111F] px-3 py-2 text-sm outline-none focus:border-[#22D3EE] placeholder-white/30"
+                  />
+                  <button onClick={() => editImage()} data-testid="brand-edit-btn" className="inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-semibold hover:bg-[#1d4ed8] whitespace-nowrap">
+                    <RefreshCw className="h-4 w-4" /> Yeniden Üret
+                  </button>
+                </div>
+                <p className="mt-1.5 text-[11px] text-white/30">Her düzenleme yeni bir görsel üretir ve 1 kredi kullanır.</p>
               </div>
             </div>
           </section>
@@ -216,7 +272,7 @@ export default function BrandPortal() {
             <div className="flex items-center gap-2 text-sm font-semibold text-white/80"><History className="h-4 w-4" /> Geçmiş Üretimler ({history.length})</div>
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {history.map((h) => (
-                <div key={h.id} className="group rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden" data-testid="brand-history-item">
+                <div key={h.id} onClick={() => openHistoryItem(h)} className="group cursor-pointer rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden hover:border-[#22D3EE]/50 transition" data-testid="brand-history-item">
                   <div className="aspect-square overflow-hidden bg-black/30">
                     <img src={h.image_url} alt="" className="h-full w-full object-cover" />
                   </div>
@@ -224,7 +280,7 @@ export default function BrandPortal() {
                     <p className="line-clamp-2 text-[11px] text-white/60">{h.prompt}</p>
                     <div className="mt-2 flex items-center justify-between">
                       <span className="text-[10px] uppercase tracking-wide text-white/30">{h.format}</span>
-                      <button onClick={() => download(h.image_url, `dr-ai-${h.id}.png`)} className="text-white/50 hover:text-[#22D3EE]" title="İndir"><Download className="h-3.5 w-3.5" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); download(h.image_url, `dr-ai-${h.id}.png`); }} className="text-white/50 hover:text-[#22D3EE]" title="İndir"><Download className="h-3.5 w-3.5" /></button>
                     </div>
                   </div>
                 </div>
