@@ -46,7 +46,7 @@ export default function AdminLogin() {
         <form onSubmit={submit} className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-7 space-y-5">
           <label className="block">
             <span className="block text-xs font-semibold text-white/80 mb-1.5">E-posta</span>
-            <input data-testid="admin-email" required type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-xl border border-white/15 bg-white/5 text-white px-4 py-3 outline-none transition focus:border-[#22D3EE]/60 focus:bg-white/10" placeholder="admin@dijitalroket.com" />
+            <input data-testid="admin-email" required type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-xl border border-white/15 bg-white/5 text-white px-4 py-3 outline-none transition focus:border-[#22D3EE]/60 focus:bg-white/10" placeholder="E-posta adresiniz" />
           </label>
           <label className="block">
             <span className="block text-xs font-semibold text-white/80 mb-1.5">Şifre</span>
