@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
-  Loader2, Sparkles, LogOut, Download, Copy, Check, Wand2, Image as ImageIcon, History, Zap, RefreshCw,
+  Loader2, Sparkles, LogOut, Download, Copy, Check, Wand2, Image as ImageIcon, History, Zap, RefreshCw, Settings, KeyRound, X,
 } from "lucide-react";
 import { useBrandAuth } from "../../context/BrandAuthContext";
 import { brandApi, formatApiError } from "../../lib/api";
@@ -14,6 +14,12 @@ const FORMATS = [
 
 const EDIT_SUGGESTIONS = ["Logoyu büyüt", "Logoyu küçült", "Yazıyı değiştir", "Daha minimal yap", "Renkleri canlandır", "Arka planı sadeleştir"];
 
+const POSITIONS = [
+  ["top-left", "Üst Sol"], ["top-center", "Üst Orta"], ["top-right", "Üst Sağ"],
+  ["middle-left", "Orta Sol"], ["center", "Merkez"], ["middle-right", "Orta Sağ"],
+  ["bottom-left", "Alt Sol"], ["bottom-center", "Alt Orta"], ["bottom-right", "Alt Sağ"],
+];
+
 export default function BrandPortal() {
   const { brand, loading, logout, setBrand, refresh } = useBrandAuth();
   const navigate = useNavigate();
@@ -24,6 +30,7 @@ export default function BrandPortal() {
   const [history, setHistory] = useState([]);
   const [copied, setCopied] = useState(false);
   const [editText, setEditText] = useState("");
+  const [showSettings, setShowSettings] = useState(false);
   const resultRef = useRef(null);
 
   const loadHistory = () => brandApi.get("/brand/generations").then((r) => setHistory(r.data)).catch(() => {});
@@ -154,6 +161,9 @@ export default function BrandPortal() {
               <span className={remaining <= 0 ? "text-red-400" : "text-white"}>{remaining}</span>
               <span className="text-white/40">/ {brand.credits_total} kredi</span>
             </div>
+            <button onClick={() => setShowSettings(true)} data-testid="brand-settings-btn" className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/70 hover:text-white hover:bg-white/5">
+              <Settings className="h-3.5 w-3.5" /> Ayarlar
+            </button>
             <button onClick={onLogout} data-testid="brand-logout" className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/70 hover:text-white hover:bg-white/5">
               <LogOut className="h-3.5 w-3.5" /> Çıkış
             </button>
@@ -289,6 +299,149 @@ export default function BrandPortal() {
           </section>
         )}
       </main>
+
+      {showSettings && (
+        <BrandSettingsModal
+          brand={brand}
+          onClose={() => setShowSettings(false)}
+          onSaved={(b) => setBrand(b)}
+        />
+      )}
+    </div>
+  );
+}
+
+function Field({ label, hint, children }) {
+  return (
+    <label className="block">
+      {label && <span className="block text-xs font-semibold text-white/70 mb-1.5">{label}</span>}
+      {children}
+      {hint && <span className="block text-[11px] text-white/30 mt-1">{hint}</span>}
+    </label>
+  );
+}
+
+function BrandSettingsModal({ brand, onClose, onSaved }) {
+  const inputCls = "w-full rounded-lg border border-white/10 bg-[#07111F] px-3 py-2 text-sm text-white outline-none focus:border-[#22D3EE] placeholder-white/30";
+  const [f, setF] = useState({
+    name: brand.name || "",
+    logo_url: brand.logo_url || "",
+    brand_url: brand.brand_url || "",
+    brand_color: brand.brand_color || "#2563EB",
+    logo_position: brand.logo_position || "bottom-right",
+    about: brand.about || "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [pw, setPw] = useState({ current_password: "", new_password: "", confirm: "" });
+  const [pwSaving, setPwSaving] = useState(false);
+  const fileRef = useRef(null);
+  const set = (patch) => setF((s) => ({ ...s, ...patch }));
+
+  const uploadLogo = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const { data } = await brandApi.post("/brand/upload", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      set({ logo_url: data.url });
+      toast.success("Logo yüklendi");
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Yüklenemedi");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      const { data } = await brandApi.put("/brand/settings", f);
+      onSaved(data);
+      toast.success("Ayarlar kaydedildi");
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Kaydedilemedi");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const changePassword = async () => {
+    if (!pw.current_password || !pw.new_password) { toast.error("Lütfen tüm şifre alanlarını doldurun."); return; }
+    if (pw.new_password !== pw.confirm) { toast.error("Yeni şifreler eşleşmiyor."); return; }
+    setPwSaving(true);
+    try {
+      await brandApi.post("/brand/change-password", { current_password: pw.current_password, new_password: pw.new_password });
+      toast.success("Şifre değiştirildi");
+      setPw({ current_password: "", new_password: "", confirm: "" });
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Değiştirilemedi");
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="relative my-8 w-full max-w-lg rounded-2xl border border-white/10 bg-[#0c1726] p-6 text-white" onClick={(e) => e.stopPropagation()} data-testid="brand-settings-modal">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold flex items-center gap-2"><Settings className="h-5 w-5 text-[#22D3EE]" /> Marka Ayarları</h2>
+          <button onClick={onClose} data-testid="settings-close" className="text-white/50 hover:text-white"><X className="h-5 w-5" /></button>
+        </div>
+
+        <div className="mt-5 space-y-4">
+          <Field label="Logo">
+            <div className="flex items-center gap-3">
+              <div className="h-16 w-16 rounded-lg bg-white/10 grid place-items-center overflow-hidden shrink-0">
+                {f.logo_url ? <img src={f.logo_url} alt="" className="h-full w-full object-contain p-1" /> : <ImageIcon className="h-5 w-5 text-white/30" />}
+              </div>
+              <input ref={fileRef} type="file" accept="image/*" hidden onChange={uploadLogo} />
+              <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} data-testid="settings-logo-upload" className="rounded-lg border border-white/15 px-3 py-2 text-sm hover:bg-white/5 disabled:opacity-60">
+                {uploading ? "Yükleniyor..." : "Logo Yükle"}
+              </button>
+            </div>
+          </Field>
+
+          <Field label="Marka Adı">
+            <input value={f.name} onChange={(e) => set({ name: e.target.value })} data-testid="settings-name" className={inputCls} />
+          </Field>
+
+          <Field label="Marka Web Sitesi">
+            <input value={f.brand_url} onChange={(e) => set({ brand_url: e.target.value })} className={inputCls} />
+          </Field>
+
+          <Field label="Marka Ana Rengi">
+            <div className="flex items-center gap-2">
+              <input type="color" value={f.brand_color} onChange={(e) => set({ brand_color: e.target.value })} className="h-10 w-14 rounded cursor-pointer bg-transparent border border-white/10" />
+              <input value={f.brand_color} onChange={(e) => set({ brand_color: e.target.value })} className={`${inputCls} flex-1`} />
+            </div>
+          </Field>
+
+          <Field label="Logo Yerleşim Konumu">
+            <div className="inline-grid grid-cols-3 gap-1.5">
+              {POSITIONS.map(([pos, label]) => (
+                <button key={pos} type="button" onClick={() => set({ logo_position: pos })} data-testid={`settings-pos-${pos}`} className={`h-11 w-20 rounded-lg border text-[10px] font-medium transition ${f.logo_position === pos ? "border-[#22D3EE] bg-[#2563EB] text-white" : "border-white/10 text-white/50 hover:border-white/30"}`}>{label}</button>
+              ))}
+            </div>
+          </Field>
+
+          <Field label="Firma Hakkında" hint="Firmanızın ne iş yaptığı / sektörü. AI görselleri bu bilgiye göre üretir.">
+            <textarea rows={3} value={f.about} onChange={(e) => set({ about: e.target.value })} data-testid="settings-about" placeholder="Örn: İlk yardım eğitimleri ve sağlık danışmanlığı veren bir merkez..." className={`${inputCls} resize-none`} />
+          </Field>
+
+          <button onClick={save} disabled={saving} data-testid="settings-save" className="w-full rounded-lg bg-[#2563EB] py-2.5 text-sm font-semibold hover:bg-[#1d4ed8] disabled:opacity-60">{saving ? "Kaydediliyor..." : "Ayarları Kaydet"}</button>
+        </div>
+
+        <div className="mt-7 border-t border-white/10 pt-5 space-y-3">
+          <div className="text-sm font-semibold flex items-center gap-2"><KeyRound className="h-4 w-4 text-[#22D3EE]" /> Şifre Değiştir</div>
+          <input type="password" placeholder="Mevcut şifre" value={pw.current_password} onChange={(e) => setPw({ ...pw, current_password: e.target.value })} data-testid="settings-current-pw" className={inputCls} />
+          <input type="password" placeholder="Yeni şifre" value={pw.new_password} onChange={(e) => setPw({ ...pw, new_password: e.target.value })} data-testid="settings-new-pw" className={inputCls} />
+          <input type="password" placeholder="Yeni şifre (tekrar)" value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} data-testid="settings-confirm-pw" className={inputCls} />
+          <button onClick={changePassword} disabled={pwSaving} data-testid="settings-change-pw" className="w-full rounded-lg border border-white/15 py-2.5 text-sm font-semibold hover:bg-white/5 disabled:opacity-60">{pwSaving ? "Değiştiriliyor..." : "Şifreyi Değiştir"}</button>
+        </div>
+      </div>
     </div>
   );
 }

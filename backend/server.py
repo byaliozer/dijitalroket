@@ -579,6 +579,7 @@ class BrandCreate(BaseModel):
     brand_url: Optional[str] = ""
     brand_color: Optional[str] = "#2563EB"
     logo_position: str = "bottom-right"
+    about: Optional[str] = ""
     portal_email: EmailStr
     portal_password: str = Field(min_length=4, max_length=120)
     credits_total: int = 25
@@ -591,6 +592,7 @@ class BrandUpdate(BaseModel):
     brand_url: Optional[str] = None
     brand_color: Optional[str] = None
     logo_position: Optional[str] = None
+    about: Optional[str] = None
     portal_email: Optional[EmailStr] = None
     portal_password: Optional[str] = None
     credits_total: Optional[int] = None
@@ -610,6 +612,20 @@ class BrandGenerateRequest(BaseModel):
 class BrandEditRequest(BaseModel):
     source_id: str
     instruction: str = Field(min_length=2, max_length=1000)
+
+
+class BrandSelfUpdate(BaseModel):
+    name: Optional[str] = None
+    logo_url: Optional[str] = None
+    brand_url: Optional[str] = None
+    brand_color: Optional[str] = None
+    logo_position: Optional[str] = None
+    about: Optional[str] = None
+
+
+class BrandPasswordChange(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=4, max_length=120)
 
 
 def _current_month() -> str:
@@ -668,6 +684,7 @@ def _brand_public(brand: dict) -> dict:
         "brand_url": brand.get("brand_url", ""),
         "brand_color": brand.get("brand_color", "#2563EB"),
         "logo_position": brand.get("logo_position", "bottom-right"),
+        "about": brand.get("about", ""),
         "credits_total": total,
         "credits_used": used,
         "credits_remaining": max(0, total - used),
@@ -691,6 +708,8 @@ async def dr_generate_image(prompt: str, fmt: str, brand: dict) -> str:
     brand_name = brand.get("name") or "marka"
     fmt_label = "Instagram story (vertical 9:16)" if fmt == "story" else "Instagram post (vertical 4:5)"
     placement = LOGO_POSITIONS.get(brand.get("logo_position", "bottom-right"), LOGO_POSITIONS["bottom-right"])
+    about = (brand.get("about") or "").strip()
+    about_ctx = f" The brand/company operates in this field — make the imagery, theme, mood and props relevant to their sector and business: {about}." if about else ""
 
     logo_path = _local_upload_path(brand.get("logo_url") or "")
     has_logo = logo_path is not None
@@ -706,7 +725,7 @@ async def dr_generate_image(prompt: str, fmt: str, brand: dict) -> str:
                 f"visible with its original colors, proportions and aspect ratio exactly as in the input image. You may decide "
                 f"the most aesthetic size and integration spot within the requested corner, but never alter the logo itself. "
                 f"Tastefully incorporate the brand accent color {brand_color} into the design. "
-                f"Make sure any text rendered in the image is correctly spelled and legible. Premium corporate aesthetic."
+                f"Make sure any text rendered in the image is correctly spelled and legible. Premium corporate aesthetic.{about_ctx}"
             )
             files = {"image": (logo_path.name, logo_path.read_bytes(), "image/png")}
             form = {
@@ -722,7 +741,7 @@ async def dr_generate_image(prompt: str, fmt: str, brand: dict) -> str:
             full_prompt = (
                 f"{prompt}. Design a professional, modern, high-end {fmt_label} social media visual for the brand "
                 f"'{brand_name}'. Tastefully incorporate the brand accent color {brand_color}. Make sure any text is "
-                f"correctly spelled and legible. Premium corporate aesthetic."
+                f"correctly spelled and legible. Premium corporate aesthetic.{about_ctx}"
             )
             body = {
                 "model": DR_IMAGE_MODEL,
@@ -767,6 +786,9 @@ async def dr_edit_image(instruction: str, base_image_url: str, fmt: str, brand: 
         f"Keep the overall composition, layout and quality professional and high-end unless the instruction asks otherwise. "
         f"Keep the brand accent color {brand_color}. Make sure any text rendered in the image is correctly spelled and legible."
     )
+    about = (brand.get("about") or "").strip()
+    if about:
+        prompt += f" Brand/company context (keep visuals relevant to their sector): {about}."
     if has_logo:
         prompt += (
             f" The second provided image is the official '{brand_name}' brand logo. {placement} "
@@ -929,6 +951,47 @@ async def brand_login(payload: BrandLogin):
 async def brand_me(brand=Depends(get_current_brand)):
     brand = await _ensure_credit_period(brand)
     return _brand_public(brand)
+
+
+@api_router.post("/brand/upload")
+async def brand_upload(file: UploadFile = File(...), brand=Depends(get_current_brand)):
+    content_type = (file.content_type or "").lower()
+    ext = ALLOWED_IMAGE_TYPES.get(content_type)
+    if not ext:
+        raise HTTPException(status_code=400, detail="Sadece JPG, PNG, WEBP veya GIF görseller yüklenebilir.")
+    data = await file.read()
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=400, detail="Görsel 8MB'dan büyük olamaz.")
+    if len(data) == 0:
+        raise HTTPException(status_code=400, detail="Boş dosya yüklenemez.")
+    name = f"{uuid.uuid4().hex}{ext}"
+    (UPLOAD_DIR / name).write_bytes(data)
+    return {"url": f"/api/uploads/{name}", "size": len(data), "filename": name}
+
+
+@api_router.put("/brand/settings")
+async def brand_update_settings(payload: BrandSelfUpdate, brand=Depends(get_current_brand)):
+    update = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if not update:
+        return _brand_public(await _ensure_credit_period(brand))
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    result = await db.brands.find_one_and_update(
+        {"id": brand["id"]}, {"$set": update}, return_document=True, projection={"_id": 0}
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="Marka bulunamadı")
+    return _brand_public(result)
+
+
+@api_router.post("/brand/change-password")
+async def brand_change_password(payload: BrandPasswordChange, brand=Depends(get_current_brand)):
+    if brand.get("portal_password") != payload.current_password:
+        raise HTTPException(status_code=400, detail="Mevcut şifre hatalı.")
+    await db.brands.update_one(
+        {"id": brand["id"]},
+        {"$set": {"portal_password": payload.new_password, "updated_at": datetime.now(timezone.utc).isoformat()}},
+    )
+    return {"ok": True}
 
 
 async def _run_generation_job(job_id: str, brand: dict, prompt: str, fmt: str):

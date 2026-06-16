@@ -827,7 +827,7 @@ function BrandsAdmin() {
     } catch (err) { toast.error(formatApiError(err.response?.data?.detail)); }
   };
 
-  const newBrand = { name: "", slug: "", logo_url: "", brand_url: "", brand_color: "#2563EB", logo_position: "bottom-right", portal_email: "", portal_password: "", credits_total: 25 };
+  const newBrand = { name: "", slug: "", logo_url: "", brand_url: "", brand_color: "#2563EB", logo_position: "bottom-right", about: "", portal_email: "", portal_password: "", credits_total: 25 };
 
   return (
     <div>
@@ -887,6 +887,10 @@ function BrandForm({ initial, onSubmit }) {
 
       <FormSection title="Marka Logosu" hint="Logo, üretilen görsele DR AI tarafından doğrudan yerleştirilir (PNG, şeffaf zemin önerilir).">
         <ImageUploader value={f.logo_url} onChange={(v) => set({ logo_url: v })} label="" />
+      </FormSection>
+
+      <FormSection title="Firma Hakkında" hint="Firmanın ne iş yaptığı / sektörü. AI bu bilgiyi kullanarak sektöre uygun görseller üretir.">
+        <FormTextarea label="" rows={3} value={f.about} onChange={(v) => set({ about: v })} />
       </FormSection>
 
       <FormSection title="Logo Yerleşim Konumu" hint="9 noktalı ızgaradan logonun görselde duracağı konumu seçin.">

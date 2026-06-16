@@ -1,0 +1,31 @@
+{
+  "summary": "E2E test of brand Settings modal + 'Firma Hakkında' (about) field + brand password change. Backend: 11/11 pytest cases PASS (token isolation, /api/brand/me returns about, PUT /api/brand/settings persists about+logo_position, POST /api/brand/change-password validates current_password and updates, wrong-current returns 400, /api/brand/upload requires brand token, admin token rejected on /brand/settings, POST /api/admin/brands accepts 'about' and PUT/GET persists). Frontend: brand login → /firma/panel → click 'Ayarlar' opens brand-settings-modal with ALL 11 expected data-testids (settings-logo-upload, settings-name, settings-about, settings-save, settings-current-pw, settings-new-pw, settings-confirm-pw, settings-change-pw, settings-pos-* x9). Typed about + clicked settings-pos-center + Ayarları Kaydet → 'Ayarlar kaydedildi' toast and /api/brand/me reflects new values. Password mismatch → 'Yeni şifreler eşleşmiyor.' toast; wrong current → 'Mevcut şifre hatalı.' toast; valid change → 'Şifre değiştirildi'. Password reverted to Marka2026! and final /api/brand/login confirms 200 status. About + logo_position restored to '' / bottom-right so testmarka brand is clean. No issues found.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_brand_settings.py",
+    "/app/test_reports/pytest/brand_settings_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py now 1314 lines (was 1043) — still growing; strongly recommend extracting routers (brand_router.py, admin_router.py, public_router.py), models.py, auth.py, ai_service.py.",
+    "BrandForm 'about' uses FormTextarea with label='' inside a FormSection — title is on the section. Works visually but consider passing label='Firmanın ne iş yaptığı' for screen-reader users.",
+    "Password change endpoint compares brand.portal_password == payload.current_password in plain text (matches PRD admin-visible requirement). This is intentional but should be documented in code comment alongside the comparison to deter future devs from 'fixing' it with hashing.",
+    "BrandSelfUpdate has no explicit allow-list constraint on logo_position — server happily saves any string. Consider Enum/Literal['top-left',...,'bottom-right'] on logo_position to prevent typos from breaking generation. Same for brand_color (could validate '#RRGGBB' regex).",
+    "POST /api/brand/upload returns absolute path '/api/uploads/...' which is good; ensure UPLOAD_DIR is mounted on a persistent volume in prod (not container ephemeral fs).",
+    "BrandSettingsModal handles password state separately from form state (good). Consider clearing password fields after successful change for security (currently they retain the just-typed new password).",
+    "data-testids on the 9-grid pos buttons match the backend logo_position keys (settings-pos-center, etc.) — clean mapping."
+  ],
+  "updated_files": ["/app/backend/tests/test_brand_settings.py (new)"],
+  "success_rate": {"backend": "100% (11/11 new + 15/15 + 18/18 existing)", "frontend": "100% of tested critical flows"},
+  "test_credentials": "admin@dijitalroket.com / Roket2026! ✓ ; testmarka@firma.com / Marka2026! ✓ (verified post-test relogin = 200)",
+  "seed_data_creation": "Admin about-field test creates+deletes TEST_AboutBrand (slug=test-aboutbrand). UI test set about='TEST_UI Tekstil...' on testmarka then restored to about='' + logo_position='bottom-right'. Brand password temporarily changed to Temp_Ui_2026! during UI test and Temp_Marka_2026! during backend test, both reverted to Marka2026!.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Brand settings + about + password change feature is fully validated. Test file: /app/backend/tests/test_brand_settings.py (11 cases, all assert on response body + GET-after-write). Key data-testids on /firma/panel: brand-settings-btn (header gear), brand-settings-modal (overlay), settings-name|brand_url|brand_color|about|save|current-pw|new-pw|confirm-pw|change-pw|logo-upload|pos-{top-left,top-center,top-right,center-left,center,center-right,bottom-left,bottom-center,bottom-right}. Admin BrandForm has FormSection 'Firma Hakkında' with FormTextarea bound to f.about. Sonner toasts persist across renders — when checking sequential toasts via document.querySelectorAll('[data-sonner-toast]') you'll see stacked content; use the LAST item if you need to verify the most recent. Brand credentials are intact at task end.",
+  "rca of the issue": "No bug. One test failure during initial run was self-inflicted: admin POST /api/admin/brands requires 'slug' field (BrandCreate schema). Fixed test payload to include slug='test-aboutbrand'. All 11 backend + full UI flow now green."
+}
