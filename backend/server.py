@@ -559,17 +559,6 @@ DR_CAPTION_MODEL = "gpt-4o"             # Vision model for caption generation
 PUBLIC_DIR = Path("/app/frontend/public")
 
 SIZE_MAP = {"post": "1088x1344", "story": "1088x1920"}
-LOGO_POSITIONS = {
-    "top-left": "Place the provided brand logo in the top-left corner, close to the top and left edges, with a small margin.",
-    "top-center": "Place the provided brand logo centered horizontally at the top edge with a small top margin.",
-    "top-right": "Place the provided brand logo in the top-right corner, close to the top and right edges, with a small margin.",
-    "middle-left": "Place the provided brand logo along the left edge, vertically centered.",
-    "center": "Place the provided brand logo exactly at the visual center of the image.",
-    "middle-right": "Place the provided brand logo along the right edge, vertically centered.",
-    "bottom-left": "Place the provided brand logo in the bottom-left corner, close to the bottom and left edges, with a small margin.",
-    "bottom-center": "Place the provided brand logo centered horizontally near the bottom edge with a small bottom margin.",
-    "bottom-right": "Place the provided brand logo in the bottom-right corner, close to the bottom and right edges, with a small margin.",
-}
 
 
 class BrandCreate(BaseModel):
@@ -578,7 +567,8 @@ class BrandCreate(BaseModel):
     logo_url: Optional[str] = ""
     brand_url: Optional[str] = ""
     brand_color: Optional[str] = "#2563EB"
-    logo_position: str = "bottom-right"
+    instagram: Optional[str] = ""
+    phone: Optional[str] = ""
     about: Optional[str] = ""
     portal_email: EmailStr
     portal_password: str = Field(min_length=4, max_length=120)
@@ -591,7 +581,8 @@ class BrandUpdate(BaseModel):
     logo_url: Optional[str] = None
     brand_url: Optional[str] = None
     brand_color: Optional[str] = None
-    logo_position: Optional[str] = None
+    instagram: Optional[str] = None
+    phone: Optional[str] = None
     about: Optional[str] = None
     portal_email: Optional[EmailStr] = None
     portal_password: Optional[str] = None
@@ -607,6 +598,9 @@ class BrandLogin(BaseModel):
 class BrandGenerateRequest(BaseModel):
     prompt: str = Field(min_length=3, max_length=2000)
     format: str = "post"  # post | story
+    include_website: bool = False
+    include_instagram: bool = False
+    include_phone: bool = False
 
 
 class BrandEditRequest(BaseModel):
@@ -619,7 +613,8 @@ class BrandSelfUpdate(BaseModel):
     logo_url: Optional[str] = None
     brand_url: Optional[str] = None
     brand_color: Optional[str] = None
-    logo_position: Optional[str] = None
+    instagram: Optional[str] = None
+    phone: Optional[str] = None
     about: Optional[str] = None
 
 
@@ -683,7 +678,8 @@ def _brand_public(brand: dict) -> dict:
         "logo_url": brand.get("logo_url", ""),
         "brand_url": brand.get("brand_url", ""),
         "brand_color": brand.get("brand_color", "#2563EB"),
-        "logo_position": brand.get("logo_position", "bottom-right"),
+        "instagram": brand.get("instagram", ""),
+        "phone": brand.get("phone", ""),
         "about": brand.get("about", ""),
         "credits_total": total,
         "credits_used": used,
@@ -699,7 +695,24 @@ def _extract_chat_text(data: dict) -> str:
         return ""
 
 
-async def dr_generate_image(prompt: str, fmt: str, brand: dict) -> str:
+def _contact_block(brand: dict, include_website: bool, include_instagram: bool, include_phone: bool) -> str:
+    parts = []
+    if include_website and (brand.get("brand_url") or "").strip():
+        parts.append(f"website: {brand['brand_url'].strip()}")
+    if include_instagram and (brand.get("instagram") or "").strip():
+        parts.append(f"Instagram: {brand['instagram'].strip()}")
+    if include_phone and (brand.get("phone") or "").strip():
+        parts.append(f"phone: {brand['phone'].strip()}")
+    if not parts:
+        return ""
+    return (
+        " Also include the following contact details as small, clean, perfectly legible text integrated tastefully into the "
+        "design (for example along a bottom strip or a corner): " + ", ".join(parts) + ". Spell them EXACTLY as given."
+    )
+
+
+async def dr_generate_image(prompt: str, fmt: str, brand: dict, include_website: bool = False,
+                            include_instagram: bool = False, include_phone: bool = False) -> str:
     """Generate an image with gpt-image-2. Logo is composited natively by the model. Returns base64 PNG."""
     if not OPENAI_API_KEY:
         raise HTTPException(status_code=500, detail="Görsel üretim servisi yapılandırılmamış.")
@@ -707,9 +720,9 @@ async def dr_generate_image(prompt: str, fmt: str, brand: dict) -> str:
     brand_color = brand.get("brand_color") or "#2563EB"
     brand_name = brand.get("name") or "marka"
     fmt_label = "Instagram story (vertical 9:16)" if fmt == "story" else "Instagram post (vertical 4:5)"
-    placement = LOGO_POSITIONS.get(brand.get("logo_position", "bottom-right"), LOGO_POSITIONS["bottom-right"])
     about = (brand.get("about") or "").strip()
     about_ctx = f" The brand/company operates in this field — make the imagery, theme, mood and props relevant to their sector and business: {about}." if about else ""
+    contact_ctx = _contact_block(brand, include_website, include_instagram, include_phone)
 
     logo_path = _local_upload_path(brand.get("logo_url") or "")
     has_logo = logo_path is not None
@@ -720,12 +733,11 @@ async def dr_generate_image(prompt: str, fmt: str, brand: dict) -> str:
         if has_logo:
             full_prompt = (
                 f"{prompt}. Design a professional, modern, high-end {fmt_label} social media visual. "
-                f"Use the uploaded image as the official '{brand_name}' brand logo. {placement} "
-                f"Do not redesign, redraw, distort, stretch, squash, crop or recolor the logo; keep the ENTIRE logo fully "
-                f"visible with its original colors, proportions and aspect ratio exactly as in the input image. You may decide "
-                f"the most aesthetic size and integration spot within the requested corner, but never alter the logo itself. "
-                f"Tastefully incorporate the brand accent color {brand_color} into the design. "
-                f"Make sure any text rendered in the image is correctly spelled and legible. Premium corporate aesthetic.{about_ctx}"
+                f"Use the uploaded image as the official '{brand_name}' brand logo and integrate it naturally and creatively "
+                f"into the composition. You are free to place the logo wherever it looks best and to resize it (larger or "
+                f"smaller) as needed for an organic, well-balanced design. Do NOT crop, cut off or recolor the logo, and keep "
+                f"the whole logo clearly visible. Tastefully incorporate the brand accent color {brand_color} into the design. "
+                f"Make sure any text rendered in the image is correctly spelled and legible. Premium corporate aesthetic.{about_ctx}{contact_ctx}"
             )
             files = {"image": (logo_path.name, logo_path.read_bytes(), "image/png")}
             form = {
@@ -741,7 +753,7 @@ async def dr_generate_image(prompt: str, fmt: str, brand: dict) -> str:
             full_prompt = (
                 f"{prompt}. Design a professional, modern, high-end {fmt_label} social media visual for the brand "
                 f"'{brand_name}'. Tastefully incorporate the brand accent color {brand_color}. Make sure any text is "
-                f"correctly spelled and legible. Premium corporate aesthetic.{about_ctx}"
+                f"correctly spelled and legible. Premium corporate aesthetic.{about_ctx}{contact_ctx}"
             )
             body = {
                 "model": DR_IMAGE_MODEL,
@@ -772,7 +784,6 @@ async def dr_edit_image(instruction: str, base_image_url: str, fmt: str, brand: 
     size = SIZE_MAP.get(fmt, SIZE_MAP["post"])
     brand_color = brand.get("brand_color") or "#2563EB"
     brand_name = brand.get("name") or "marka"
-    placement = LOGO_POSITIONS.get(brand.get("logo_position", "bottom-right"), LOGO_POSITIONS["bottom-right"])
 
     base_path = _local_upload_path(base_image_url or "")
     if base_path is None:
@@ -791,9 +802,8 @@ async def dr_edit_image(instruction: str, base_image_url: str, fmt: str, brand: 
         prompt += f" Brand/company context (keep visuals relevant to their sector): {about}."
     if has_logo:
         prompt += (
-            f" The second provided image is the official '{brand_name}' brand logo. {placement} "
-            f"Do not redesign, redraw, distort, stretch, crop or recolor the logo; keep the entire logo fully visible "
-            f"with its original colors and proportions intact."
+            f" The second provided image is the official '{brand_name}' brand logo. Integrate it naturally; you may place and "
+            f"resize it freely, but do NOT crop, cut off or recolor it — keep the whole logo clearly visible."
         )
 
     headers = {"Authorization": f"Bearer {OPENAI_API_KEY}"}
@@ -994,11 +1004,12 @@ async def brand_change_password(payload: BrandPasswordChange, brand=Depends(get_
     return {"ok": True}
 
 
-async def _run_generation_job(job_id: str, brand: dict, prompt: str, fmt: str):
+async def _run_generation_job(job_id: str, brand: dict, prompt: str, fmt: str,
+                              include_website: bool = False, include_instagram: bool = False, include_phone: bool = False):
     """Background worker: generates image + caption, then finalizes the job doc.
     Credit was already reserved (incremented) before the job started; refund on failure."""
     try:
-        image_b64 = await dr_generate_image(prompt, fmt, brand)
+        image_b64 = await dr_generate_image(prompt, fmt, brand, include_website, include_instagram, include_phone)
         name = f"dr_{uuid.uuid4().hex}.png"
         (UPLOAD_DIR / name).write_bytes(base64.b64decode(image_b64))
         image_url = f"/api/uploads/{name}"
@@ -1042,7 +1053,6 @@ async def brand_generate(payload: BrandGenerateRequest, brand=Depends(get_curren
         "brand_name": brand.get("name", ""),
         "prompt": payload.prompt,
         "format": fmt,
-        "logo_position": brand.get("logo_position", "bottom-right"),
         "status": "processing",
         "image_url": "",
         "caption": "",
@@ -1050,7 +1060,10 @@ async def brand_generate(payload: BrandGenerateRequest, brand=Depends(get_curren
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.generations.insert_one(job)
-    asyncio.create_task(_run_generation_job(job_id, brand, payload.prompt, fmt))
+    asyncio.create_task(_run_generation_job(
+        job_id, brand, payload.prompt, fmt,
+        payload.include_website, payload.include_instagram, payload.include_phone,
+    ))
 
     return {
         "job_id": job_id,
@@ -1133,7 +1146,6 @@ async def brand_edit(payload: BrandEditRequest, brand=Depends(get_current_brand)
         "source_id": payload.source_id,
         "is_edit": True,
         "format": fmt,
-        "logo_position": brand.get("logo_position", "bottom-right"),
         "status": "processing",
         "image_url": "",
         "caption": "",

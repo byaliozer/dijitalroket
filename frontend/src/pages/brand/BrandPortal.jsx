@@ -14,12 +14,6 @@ const FORMATS = [
 
 const EDIT_SUGGESTIONS = ["Logoyu büyüt", "Logoyu küçült", "Yazıyı değiştir", "Daha minimal yap", "Renkleri canlandır", "Arka planı sadeleştir"];
 
-const POSITIONS = [
-  ["top-left", "Üst Sol"], ["top-center", "Üst Orta"], ["top-right", "Üst Sağ"],
-  ["middle-left", "Orta Sol"], ["center", "Merkez"], ["middle-right", "Orta Sağ"],
-  ["bottom-left", "Alt Sol"], ["bottom-center", "Alt Orta"], ["bottom-right", "Alt Sağ"],
-];
-
 export default function BrandPortal() {
   const { brand, loading, logout, setBrand, refresh } = useBrandAuth();
   const navigate = useNavigate();
@@ -31,6 +25,7 @@ export default function BrandPortal() {
   const [copied, setCopied] = useState(false);
   const [editText, setEditText] = useState("");
   const [showSettings, setShowSettings] = useState(false);
+  const [contact, setContact] = useState({ website: false, instagram: false, phone: false });
   const resultRef = useRef(null);
 
   const loadHistory = () => brandApi.get("/brand/generations").then((r) => setHistory(r.data)).catch(() => {});
@@ -84,7 +79,13 @@ export default function BrandPortal() {
     setResult(null);
     setCopied(false);
     try {
-      const { data } = await brandApi.post("/brand/generate", { prompt: prompt.trim(), format });
+      const { data } = await brandApi.post("/brand/generate", {
+        prompt: prompt.trim(),
+        format,
+        include_website: contact.website,
+        include_instagram: contact.instagram,
+        include_phone: contact.phone,
+      });
       setBrand({ ...brand, credits_used: brand.credits_total - data.credits_remaining, credits_remaining: data.credits_remaining });
       pollJob(data.job_id, "Görsel üretildi");
     } catch (err) {
@@ -177,7 +178,7 @@ export default function BrandPortal() {
           <div className="flex items-center gap-2 text-sm font-semibold">
             <Wand2 className="h-4 w-4 text-[#22D3EE]" /> Yeni Görsel Üret
           </div>
-          <p className="mt-1.5 text-xs text-white/50">Logonuz <span className="text-white/80">"{brand.logo_position}"</span> konumuna otomatik yerleştirilir.</p>
+          <p className="mt-1.5 text-xs text-white/50">Logonuz görsele DR AI tarafından en uygun yere, en uygun boyutta yerleştirilir.</p>
 
           <textarea
             value={prompt}
@@ -187,6 +188,25 @@ export default function BrandPortal() {
             placeholder="Örn: Yaz indirimi kampanyası, sıcak tonlar, modern tipografi, %50'ye varan indirim yazısı..."
             className="mt-4 w-full rounded-xl border border-white/10 bg-[#07111F] px-4 py-3 text-sm outline-none focus:border-[#22D3EE] resize-none placeholder-white/30"
           />
+
+          {/* Contact info toggles — included in the image only if checked */}
+          {(brand.brand_url || brand.instagram || brand.phone) && (
+            <div className="mt-4">
+              <div className="text-xs font-semibold text-white/70 mb-2">Görsele eklenecek iletişim bilgileri</div>
+              <div className="flex flex-wrap gap-2">
+                {brand.brand_url && (
+                  <ContactToggle active={contact.website} onClick={() => setContact((c) => ({ ...c, website: !c.website }))} testid="contact-website" label="Web Sitesi" value={brand.brand_url} />
+                )}
+                {brand.instagram && (
+                  <ContactToggle active={contact.instagram} onClick={() => setContact((c) => ({ ...c, instagram: !c.instagram }))} testid="contact-instagram" label="Instagram" value={brand.instagram} />
+                )}
+                {brand.phone && (
+                  <ContactToggle active={contact.phone} onClick={() => setContact((c) => ({ ...c, phone: !c.phone }))} testid="contact-phone" label="Telefon" value={brand.phone} />
+                )}
+              </div>
+              <p className="mt-1.5 text-[11px] text-white/30">İşaretlediğiniz bilgiler görselin içine yerleştirilir. (Bu bilgileri "Ayarlar"dan düzenleyebilirsiniz.)</p>
+            </div>
+          )}
 
           <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -321,6 +341,26 @@ function Field({ label, hint, children }) {
   );
 }
 
+function ContactToggle({ active, onClick, testid, label, value }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      data-testid={testid}
+      title={value}
+      className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition ${
+        active ? "border-[#22D3EE] bg-[#22D3EE]/10 text-white" : "border-white/10 text-white/60 hover:border-white/30"
+      }`}
+    >
+      <span className={`grid h-4 w-4 place-items-center rounded border ${active ? "border-[#22D3EE] bg-[#22D3EE] text-[#07111F]" : "border-white/30"}`}>
+        {active && <Check className="h-3 w-3" />}
+      </span>
+      <span className="font-medium">{label}</span>
+      <span className="text-white/35 max-w-[140px] truncate">{value}</span>
+    </button>
+  );
+}
+
 function BrandSettingsModal({ brand, onClose, onSaved }) {
   const inputCls = "w-full rounded-lg border border-white/10 bg-[#07111F] px-3 py-2 text-sm text-white outline-none focus:border-[#22D3EE] placeholder-white/30";
   const [f, setF] = useState({
@@ -328,7 +368,8 @@ function BrandSettingsModal({ brand, onClose, onSaved }) {
     logo_url: brand.logo_url || "",
     brand_url: brand.brand_url || "",
     brand_color: brand.brand_color || "#2563EB",
-    logo_position: brand.logo_position || "bottom-right",
+    instagram: brand.instagram || "",
+    phone: brand.phone || "",
     about: brand.about || "",
   });
   const [saving, setSaving] = useState(false);
@@ -409,21 +450,21 @@ function BrandSettingsModal({ brand, onClose, onSaved }) {
           </Field>
 
           <Field label="Marka Web Sitesi">
-            <input value={f.brand_url} onChange={(e) => set({ brand_url: e.target.value })} className={inputCls} />
+            <input value={f.brand_url} onChange={(e) => set({ brand_url: e.target.value })} data-testid="settings-website" className={inputCls} placeholder="https://markaniz.com" />
+          </Field>
+
+          <Field label="Instagram">
+            <input value={f.instagram} onChange={(e) => set({ instagram: e.target.value })} data-testid="settings-instagram" className={inputCls} placeholder="@markaadi" />
+          </Field>
+
+          <Field label="Telefon">
+            <input value={f.phone} onChange={(e) => set({ phone: e.target.value })} data-testid="settings-phone" className={inputCls} placeholder="0212 000 00 00" />
           </Field>
 
           <Field label="Marka Ana Rengi">
             <div className="flex items-center gap-2">
               <input type="color" value={f.brand_color} onChange={(e) => set({ brand_color: e.target.value })} className="h-10 w-14 rounded cursor-pointer bg-transparent border border-white/10" />
               <input value={f.brand_color} onChange={(e) => set({ brand_color: e.target.value })} className={`${inputCls} flex-1`} />
-            </div>
-          </Field>
-
-          <Field label="Logo Yerleşim Konumu">
-            <div className="inline-grid grid-cols-3 gap-1.5">
-              {POSITIONS.map(([pos, label]) => (
-                <button key={pos} type="button" onClick={() => set({ logo_position: pos })} data-testid={`settings-pos-${pos}`} className={`h-11 w-20 rounded-lg border text-[10px] font-medium transition ${f.logo_position === pos ? "border-[#22D3EE] bg-[#2563EB] text-white" : "border-white/10 text-white/50 hover:border-white/30"}`}>{label}</button>
-              ))}
             </div>
           </Field>
 

@@ -795,12 +795,6 @@ function TagInput({ label = "Etiketler", value = [], onChange }) {
 // -----------------------------------------------------------------------------
 // Brands (DR AI Image Engine 2.0) tab
 // -----------------------------------------------------------------------------
-const POSITION_GRID = [
-  ["top-left", "Üst Sol"], ["top-center", "Üst Orta"], ["top-right", "Üst Sağ"],
-  ["middle-left", "Orta Sol"], ["center", "Merkez"], ["middle-right", "Orta Sağ"],
-  ["bottom-left", "Alt Sol"], ["bottom-center", "Alt Orta"], ["bottom-right", "Alt Sağ"],
-];
-
 function BrandsAdmin() {
   const [rows, setRows] = useState([]);
   const [edit, setEdit] = useState(null);
@@ -827,7 +821,7 @@ function BrandsAdmin() {
     } catch (err) { toast.error(formatApiError(err.response?.data?.detail)); }
   };
 
-  const newBrand = { name: "", slug: "", logo_url: "", brand_url: "", brand_color: "#2563EB", logo_position: "bottom-right", about: "", portal_email: "", portal_password: "", credits_total: 25 };
+  const newBrand = { name: "", slug: "", logo_url: "", brand_url: "", brand_color: "#2563EB", instagram: "", phone: "", about: "", portal_email: "", portal_password: "", credits_total: 25 };
 
   return (
     <div>
@@ -844,7 +838,6 @@ function BrandsAdmin() {
           { key: "portal_email", label: "Giriş E-postası" },
           { key: "portal_password", label: "Şifre" },
           { key: "credits", label: "Kredi (Ay)", render: (_, r) => `${r.credits_used || 0} / ${r.credits_total || 0}` },
-          { key: "logo_position", label: "Logo Konumu" },
         ]}
         actions={(r) => (
           <>
@@ -875,6 +868,8 @@ function BrandForm({ initial, onSubmit }) {
           <FormInput label="Marka Adı" required value={f.name} onChange={(v) => set({ name: v })} />
           <FormInput label="Slug (benzersiz)" required value={f.slug} onChange={(v) => set({ slug: v })} />
           <FormInput label="Marka Web Sitesi" value={f.brand_url} onChange={(v) => set({ brand_url: v })} />
+          <FormInput label="Instagram (örn. @markaadi)" value={f.instagram} onChange={(v) => set({ instagram: v })} />
+          <FormInput label="Telefon" value={f.phone} onChange={(v) => set({ phone: v })} />
           <label className="block">
             <span className="block text-xs font-semibold text-[#07111F] mb-1">Marka Ana Rengi</span>
             <div className="flex items-center gap-2">
@@ -885,16 +880,12 @@ function BrandForm({ initial, onSubmit }) {
         </div>
       </FormSection>
 
-      <FormSection title="Marka Logosu" hint="Logo, üretilen görsele DR AI tarafından doğrudan yerleştirilir (PNG, şeffaf zemin önerilir).">
+      <FormSection title="Marka Logosu" hint="Logo, üretilen görsele DR AI tarafından doğrudan yerleştirilir (PNG, şeffaf zemin önerilir). Konum ve boyutu AI özgürce seçer.">
         <ImageUploader value={f.logo_url} onChange={(v) => set({ logo_url: v })} label="" />
       </FormSection>
 
       <FormSection title="Firma Hakkında" hint="Firmanın ne iş yaptığı / sektörü. AI bu bilgiyi kullanarak sektöre uygun görseller üretir.">
         <FormTextarea label="" rows={3} value={f.about} onChange={(v) => set({ about: v })} />
-      </FormSection>
-
-      <FormSection title="Logo Yerleşim Konumu" hint="9 noktalı ızgaradan logonun görselde duracağı konumu seçin.">
-        <LogoPositionPicker value={f.logo_position} onChange={(v) => set({ logo_position: v })} />
       </FormSection>
 
       <FormSection title="Portal Erişimi" hint="Bu bilgiler markaya iletilir. Şifre burada açıkça görünür ve dilediğinizde değiştirebilirsiniz.">
@@ -917,27 +908,6 @@ function BrandForm({ initial, onSubmit }) {
         <button className="btn-primary" data-testid="brand-save-btn">Kaydet</button>
       </div>
     </form>
-  );
-}
-
-function LogoPositionPicker({ value, onChange }) {
-  return (
-    <div className="inline-grid grid-cols-3 gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-2">
-      {POSITION_GRID.map(([pos, label]) => (
-        <button
-          key={pos}
-          type="button"
-          onClick={() => onChange(pos)}
-          data-testid={`logo-pos-${pos}`}
-          title={label}
-          className={`h-14 w-20 rounded-lg border text-[11px] font-medium transition ${
-            value === pos ? "border-[#2563EB] bg-[#2563EB] text-white" : "border-slate-200 bg-white text-slate-500 hover:border-[#2563EB]"
-          }`}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
   );
 }
 
