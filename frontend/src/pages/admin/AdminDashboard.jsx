@@ -529,7 +529,7 @@ function ProjectForm({ initial, onSubmit }) {
                     className="w-full rounded-md border border-slate-200 px-3 py-1.5 text-xs outline-none focus:border-[#2563EB]"
                   />
                   <input
-                    type="url"
+                    type="text"
                     value={g.url}
                     onChange={(e) => updateGalleryItem(i, { url: e.target.value })}
                     className="w-full rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] text-slate-500 outline-none truncate"

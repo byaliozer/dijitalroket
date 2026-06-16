@@ -80,7 +80,7 @@ export default function ImageUploader({ value, onChange, label = "Görsel", comp
             onChange={(e) => upload(e.target.files?.[0])}
           />
           <input
-            type="url"
+            type="text"
             placeholder="veya URL yapıştırın"
             value={value || ""}
             onChange={(e) => onChange(e.target.value)}
