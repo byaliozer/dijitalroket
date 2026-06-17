@@ -949,6 +949,8 @@ async def dr_generate_caption(image_b64: str, user_prompt: str, brand: dict) -> 
 @api_router.get("/admin/brands")
 async def admin_list_brands(current=Depends(get_current_admin)):
     brands = await db.brands.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    for b in brands:
+        b.setdefault("status", "approved")
     return brands
 
 

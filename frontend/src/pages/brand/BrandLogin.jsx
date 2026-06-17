@@ -75,7 +75,7 @@ function LoginForm({ login, navigate, onRegister }) {
 }
 
 function RegisterForm({ onBack, onSuccess, openLegal }) {
-  const [f, setF] = useState({ full_name: "", phone: "", email: "", password: "", company_name: "", brand_url: "", instagram: "" });
+  const [f, setF] = useState({ full_name: "", phone: "", email: "", password: "", company_name: "", brand_url: "", instagram: "", about: "" });
   const [kvkk, setKvkk] = useState(false);
   const [terms, setTerms] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -108,6 +108,14 @@ function RegisterForm({ onBack, onSuccess, openLegal }) {
         <Input label="Firma / Marka Adı" value={f.company_name} onChange={set("company_name")} testid="reg-company" />
         <Input label="Web Sitesi" value={f.brand_url} onChange={set("brand_url")} testid="reg-website" placeholder="https://..." />
         <Input label="Instagram" value={f.instagram} onChange={set("instagram")} testid="reg-instagram" placeholder="@markaadi" />
+        <label className="block">
+          <span className="block text-xs font-semibold text-white/70 mb-1.5">Firma Hakkında (ne iş yapıyorsunuz?)</span>
+          <textarea
+            value={f.about} onChange={(e) => setF((s) => ({ ...s, about: e.target.value }))}
+            data-testid="reg-about" rows={2} placeholder="Örn: İlk yardım eğitimleri veren bir merkez..."
+            className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm outline-none focus:border-[#22D3EE] text-white placeholder-white/30 resize-none"
+          />
+        </label>
 
         <label className="flex items-start gap-2.5 pt-2 cursor-pointer">
           <input type="checkbox" checked={kvkk} onChange={(e) => setKvkk(e.target.checked)} data-testid="reg-kvkk" className="mt-0.5 h-4 w-4 accent-[#2563EB]" />
