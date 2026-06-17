@@ -799,6 +799,7 @@ function BrandsAdmin() {
   const [rows, setRows] = useState([]);
   const [edit, setEdit] = useState(null);
   const [usage, setUsage] = useState(null);
+  const [approving, setApproving] = useState(null); // brand pending approval (credits modal)
   const load = () => api.get("/admin/brands").then((r) => setRows(r.data)).catch(() => {});
   useEffect(() => { load(); }, []);
 
@@ -806,6 +807,20 @@ function BrandsAdmin() {
     if (!confirm("Bu markayı ve tüm üretim geçmişini silmek istediğinize emin misiniz?")) return;
     await api.delete(`/admin/brands/${id}`);
     toast.success("Marka silindi"); load();
+  };
+
+  const reject = async (id) => {
+    if (!confirm("Bu başvuruyu reddetmek istediğinize emin misiniz?")) return;
+    await api.post(`/admin/brands/${id}/reject`);
+    toast.success("Başvuru reddedildi"); load();
+  };
+
+  const approve = async (id, credits) => {
+    try {
+      await api.post(`/admin/brands/${id}/approve`, { credits_total: Number(credits) || 0 });
+      toast.success("Firma onaylandı ve bilgilendirme e-postası gönderildi");
+      setApproving(null); load();
+    } catch (err) { toast.error(formatApiError(err.response?.data?.detail)); }
   };
 
   const save = async (form) => {
@@ -823,21 +838,46 @@ function BrandsAdmin() {
 
   const newBrand = { name: "", slug: "", logo_url: "", brand_url: "", brand_color: "#2563EB", instagram: "", phone: "", about: "", portal_email: "", portal_password: "", credits_total: 25 };
 
+  const pending = rows.filter((r) => r.status === "pending");
+  const others = rows.filter((r) => r.status !== "pending");
+
   return (
     <div>
       <div className="mb-5 flex items-center justify-between gap-3">
-        <p className="text-sm text-[#334155]">Markalar <span className="font-semibold">/firma/giris</span> adresinden giriş yapıp DR AI Image Engine 2.0 ile görsel üretir.</p>
+        <p className="text-sm text-[#334155]">Firmalar <span className="font-semibold">/firma/giris</span> adresinden kayıt olur; onayladığınızda DR AI Image Engine 2.0 ile görsel üretir.</p>
         <button onClick={() => setEdit(newBrand)} data-testid="brand-new-btn" className="btn-primary py-2 text-sm shrink-0">
           <Plus className="h-4 w-4" /> Yeni Marka
         </button>
       </div>
+
+      {pending.length > 0 && (
+        <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4" data-testid="pending-section">
+          <div className="text-sm font-bold text-amber-800 mb-3">Onay Bekleyen Başvurular ({pending.length})</div>
+          <div className="space-y-2">
+            {pending.map((r) => (
+              <div key={r.id} data-testid="pending-row" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white border border-amber-200 px-4 py-3">
+                <div className="min-w-0">
+                  <div className="font-semibold text-[#07111F]">{r.name} <span className="text-xs font-normal text-slate-400">({r.full_name})</span></div>
+                  <div className="text-xs text-slate-500">{r.portal_email} · {r.phone}{r.brand_url ? ` · ${r.brand_url}` : ""}{r.instagram ? ` · ${r.instagram}` : ""}</div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button onClick={() => setApproving(r)} data-testid="approve-btn" className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700">Onayla</button>
+                  <button onClick={() => reject(r.id)} data-testid="reject-btn" className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50">Reddet</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <DataTable
-        rows={rows}
+        rows={others}
         columns={[
           { key: "name", label: "Marka" },
           { key: "portal_email", label: "Giriş E-postası" },
           { key: "portal_password", label: "Şifre" },
           { key: "credits", label: "Kredi (Ay)", render: (_, r) => `${r.credits_used || 0} / ${r.credits_total || 0}` },
+          { key: "status", label: "Durum", render: (v) => (v === "rejected" ? "Reddedildi" : "Onaylı") },
         ]}
         actions={(r) => (
           <>
@@ -853,7 +893,25 @@ function BrandsAdmin() {
       {usage && <Modal onClose={() => setUsage(null)} title={`${usage.name} — Kullanım`} wide>
         <BrandUsage brand={usage} />
       </Modal>}
+      {approving && <Modal onClose={() => setApproving(null)} title={`${approving.name} — Onayla`}>
+        <ApproveForm brand={approving} onApprove={approve} />
+      </Modal>}
     </div>
+  );
+}
+
+function ApproveForm({ brand, onApprove }) {
+  const [credits, setCredits] = useState(25);
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); onApprove(brand.id, credits); }} className="space-y-4">
+      <p className="text-sm text-[#334155]">
+        <strong>{brand.name}</strong> ({brand.full_name}) firmasını onaylıyorsunuz. Onaylandığında <strong>{brand.portal_email}</strong> adresine bilgilendirme e-postası gönderilecektir.
+      </p>
+      <FormInput label="Aylık Kredi" type="number" value={credits} onChange={setCredits} />
+      <div className="flex justify-end">
+        <button className="btn-primary" data-testid="approve-confirm">Onayla ve E-posta Gönder</button>
+      </div>
+    </form>
   );
 }
 

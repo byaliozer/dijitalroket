@@ -12,6 +12,7 @@ import base64
 import httpx
 import bcrypt
 import jwt
+import resend
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, status, UploadFile, File
@@ -554,6 +555,8 @@ async def seed_settings():
 # Brand Management & DR AI Image Engine 2.0 (gpt-image-2)
 # -----------------------------------------------------------------------------
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
 DR_IMAGE_MODEL = "gpt-image-2"          # Shown to users as "DR AI Image Engine 2.0"
 DR_CAPTION_MODEL = "gpt-4o"             # Vision model for caption generation
 PUBLIC_DIR = Path("/app/frontend/public")
@@ -572,6 +575,23 @@ class BrandCreate(BaseModel):
     about: Optional[str] = ""
     portal_email: EmailStr
     portal_password: str = Field(min_length=4, max_length=120)
+    credits_total: int = 25
+
+
+class BrandRegister(BaseModel):
+    full_name: str = Field(min_length=2, max_length=120)
+    phone: str = Field(min_length=5, max_length=40)
+    email: EmailStr
+    password: str = Field(min_length=4, max_length=120)
+    company_name: Optional[str] = ""
+    brand_url: Optional[str] = ""
+    instagram: Optional[str] = ""
+    about: Optional[str] = ""
+    kvkk_accepted: bool = False
+    terms_accepted: bool = False
+
+
+class BrandApprove(BaseModel):
     credits_total: int = 25
 
 
@@ -681,11 +701,59 @@ def _brand_public(brand: dict) -> dict:
         "instagram": brand.get("instagram", ""),
         "phone": brand.get("phone", ""),
         "about": brand.get("about", ""),
+        "full_name": brand.get("full_name", ""),
+        "status": brand.get("status", "approved"),
         "credits_total": total,
         "credits_used": used,
         "credits_remaining": max(0, total - used),
         "credit_month": brand.get("credit_month", _current_month()),
     }
+
+
+async def _send_approval_email(to_email: str, brand_name: str):
+    """Send the 'account approved' email via Resend. Skips gracefully if not configured."""
+    if not RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY not set — skipping approval email to %s", to_email)
+        return
+    display = brand_name or "Markanız"
+    html = f"""
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0f172a">
+      <div style="background:#07111F;border-radius:14px;padding:28px;text-align:center">
+        <h1 style="color:#fff;margin:0;font-size:22px">Dijital Roket</h1>
+        <p style="color:#22D3EE;margin:6px 0 0;font-size:13px;letter-spacing:.5px">DR AI Image Engine 2.0</p>
+      </div>
+      <div style="padding:28px 8px">
+        <h2 style="font-size:20px;margin:0 0 12px">Hesabınız onaylandı 🎉</h2>
+        <p style="font-size:15px;line-height:1.7;color:#334155">
+          Merhaba <strong>{display}</strong>,<br><br>
+          <strong>Dijital Roket hesabınız onaylanmıştır.</strong> Artık marka portalına giriş yaparak
+          yapay zeka ile sosyal medya görselleri üretmeye başlayabilirsiniz.
+        </p>
+        <div style="text-align:center;margin:26px 0">
+          <a href="https://dijitalroket.com/firma/giris"
+             style="background:#2563EB;color:#fff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:600;font-size:14px;display:inline-block">
+            Portala Giriş Yap
+          </a>
+        </div>
+        <p style="font-size:13px;color:#64748b">Kayıt olurken belirlediğiniz e-posta ve şifre ile giriş yapabilirsiniz.</p>
+      </div>
+      <p style="font-size:12px;color:#94a3b8;text-align:center;border-top:1px solid #e2e8f0;padding-top:16px">
+        Dijital Roket · byaliozer@gmail.com
+      </p>
+    </div>
+    """
+    params = {
+        "from": SENDER_EMAIL,
+        "to": [to_email],
+        "subject": "Dijital Roket hesabınız onaylanmıştır",
+        "html": html,
+    }
+    try:
+        resend.api_key = RESEND_API_KEY
+        await asyncio.to_thread(resend.Emails.send, params)
+        logger.info("Approval email sent to %s", to_email)
+    except Exception as e:
+        logger.error("Failed to send approval email to %s: %s", to_email, e)
 
 
 def _extract_chat_text(data: dict) -> str:
@@ -894,6 +962,8 @@ async def admin_create_brand(payload: BrandCreate, current=Depends(get_current_a
     doc = payload.model_dump()
     doc["portal_email"] = email
     doc["id"] = str(uuid.uuid4())
+    doc["status"] = "approved"
+    doc["created_via"] = "admin"
     doc["credits_used"] = 0
     doc["credit_month"] = _current_month()
     doc["created_at"] = datetime.now(timezone.utc).isoformat()
@@ -901,6 +971,72 @@ async def admin_create_brand(payload: BrandCreate, current=Depends(get_current_a
     await db.brands.insert_one(doc)
     doc.pop("_id", None)
     return doc
+
+
+@api_router.post("/brand/register")
+async def brand_register(payload: BrandRegister):
+    if not payload.kvkk_accepted or not payload.terms_accepted:
+        raise HTTPException(status_code=400, detail="KVKK Aydınlatma Metni ve Kullanıcı Sözleşmesi'ni onaylamanız gerekir.")
+    email = payload.email.lower().strip()
+    if await db.brands.find_one({"portal_email": email}):
+        raise HTTPException(status_code=400, detail="Bu e-posta ile zaten bir kayıt mevcut.")
+    now = datetime.now(timezone.utc).isoformat()
+    doc = {
+        "id": str(uuid.uuid4()),
+        "name": (payload.company_name or payload.full_name).strip(),
+        "slug": f"reg-{uuid.uuid4().hex[:10]}",
+        "full_name": payload.full_name.strip(),
+        "phone": payload.phone.strip(),
+        "portal_email": email,
+        "portal_password": payload.password,
+        "brand_url": (payload.brand_url or "").strip(),
+        "instagram": (payload.instagram or "").strip(),
+        "about": (payload.about or "").strip(),
+        "logo_url": "",
+        "brand_color": "#2563EB",
+        "status": "pending",
+        "created_via": "self",
+        "kvkk_accepted": True,
+        "terms_accepted": True,
+        "credits_total": 0,
+        "credits_used": 0,
+        "credit_month": _current_month(),
+        "created_at": now,
+        "updated_at": now,
+    }
+    await db.brands.insert_one(doc)
+    return {"ok": True, "message": "Kaydınız alındı. Hesabınız onaylandığında e-posta ile bilgilendirileceksiniz."}
+
+
+@api_router.post("/admin/brands/{brand_id}/approve")
+async def admin_approve_brand(brand_id: str, payload: BrandApprove, current=Depends(get_current_admin)):
+    brand = await db.brands.find_one_and_update(
+        {"id": brand_id},
+        {"$set": {
+            "status": "approved",
+            "credits_total": payload.credits_total,
+            "credits_used": 0,
+            "credit_month": _current_month(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }},
+        return_document=True, projection={"_id": 0},
+    )
+    if not brand:
+        raise HTTPException(status_code=404, detail="Marka bulunamadı")
+    await _send_approval_email(brand["portal_email"], brand.get("name", ""))
+    return brand
+
+
+@api_router.post("/admin/brands/{brand_id}/reject")
+async def admin_reject_brand(brand_id: str, current=Depends(get_current_admin)):
+    result = await db.brands.find_one_and_update(
+        {"id": brand_id},
+        {"$set": {"status": "rejected", "updated_at": datetime.now(timezone.utc).isoformat()}},
+        return_document=True, projection={"_id": 0},
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="Marka bulunamadı")
+    return result
 
 
 @api_router.put("/admin/brands/{brand_id}")
@@ -951,6 +1087,11 @@ async def brand_login(payload: BrandLogin):
     brand = await db.brands.find_one({"portal_email": email})
     if not brand or brand.get("portal_password") != payload.password:
         raise HTTPException(status_code=401, detail="E-posta veya şifre hatalı")
+    status_val = brand.get("status", "approved")
+    if status_val == "pending":
+        raise HTTPException(status_code=403, detail="Hesabınız onay bekliyor. Onaylandığında e-posta ile bilgilendirileceksiniz.")
+    if status_val == "rejected":
+        raise HTTPException(status_code=403, detail="Başvurunuz onaylanmadı. Lütfen Dijital Roket ekibiyle iletişime geçin.")
     token = create_brand_token(brand["id"], email)
     await _ensure_credit_period(brand)
     brand = await db.brands.find_one({"id": brand["id"]}, {"_id": 0})

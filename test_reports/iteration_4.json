@@ -1,0 +1,35 @@
+{
+  "summary": "E2E validation of Brand SELF-REGISTRATION + KVKK/Terms + Admin Approval flow. All scenarios pass. Backend: 7/7 pytest cases PASS (KVKK off → 400, Terms off → 400, password<4 → 422, full register→pending→duplicate 400→pending login 403→approve(credits=17)→approved login 200+/brand/me 200, register→reject→login 403, approve unknown id → 404, testmarka login still 200). Frontend: At /firma/giris clicked 'Kayıt Olun' → brand-register-form visible with all 10 testids (fullname/phone/email/password/company/website/instagram/kvkk/terms/submit). KVKK & Kullanıcı Sözleşmesi modals open showing the Turkish text from legalTexts.js (KVKK=2098 chars, Terms=1795 chars) and close via legal-close. Submitting without KVKK/Terms shows toast 'KVKK ve Kullanıcı Sözleşmesi'ni onaylamalısınız.' and stays on form. With both ticked, register-submitted shows 'Firmanız onay bekliyor'. Pending login → red toast 'Hesabınız onay bekliyor. Onaylandığında e-posta ile bilgilendirileceksiniz.'. Admin login → Markalar (AI) tab → Onay Bekleyen Başvurular section shows the new row; clicked approve-btn → entered credits=12 → approve-confirm → toast 'Firma onaylandı ve bilgilendirme e-postası gönderildi' → row removed from pending. Newly approved firm logged in at /firma/giris and reached /firma/panel showing 'QA UI Marka' brand with '12 / 12 kredi'. Backend log confirms 'RESEND_API_KEY not set — skipping approval email' WARNING (expected) and the approve endpoint still returned 200. Cleanup: QA-created brand deleted via admin DELETE; testmarka@firma.com left intact and login verified (200).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_brand_registration.py",
+    "/app/test_reports/pytest/brand_registration_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is now ~1468 lines. Still growing — strongly recommend extracting brand_router.py, admin_router.py, public_router.py, auth.py, email_service.py.",
+    "BrandRegister stores portal_password in plain text (consistent with existing testmarka design — admin-visible by PRD). Keep a short code comment near brand_register insertion to deter future devs from 'fixing' it with hashing.",
+    "BrandRegister accepts an 'about' field but the RegisterForm UI does NOT collect it. Either remove from schema or add an optional textarea to the form (currently it's always saved as empty string on self-register).",
+    "/api/brand/register creates slug as 'reg-<10hex>'. There is no uniqueness check on slug (collision probability is astronomically low, but still — if any other route lists/uses slug for public lookup, add an index + check).",
+    "Admin /api/admin/brands list does not currently default status='approved' for legacy testmarka brand in the response (the seeded brand has no 'status' field). _brand_public defaults to 'approved' for /brand/me + login, but the admin list returns raw documents — old brands display 'status: null' in the admin table. Consider projecting/normalizing status when serving GET /api/admin/brands so the admin UI doesn't show empty Durum cells for legacy rows. Functionally harmless (filter rows.filter(r=>r.status==='pending') still works), but a UX wart.",
+    "Approval credit input in ApproveForm is reached via 'last input[type=number]' in tests because it doesn't expose a dedicated data-testid (e.g. approve-credits-input). Add data-testid='approve-credits-input' for resilient testing.",
+    "RegisterForm.set('password') uses min 4-char on backend (Field(min_length=4)) but UI placeholder says 'En az 4 karakter' — consistent. However the existing testmarka uses 'Marka2026!' (10 chars) — fine, no issue.",
+    "BrandRegister has 'about' field but no 'about' input in RegisterForm; consider removing from schema to keep API tight (or render the field).",
+    "POST /api/brand/register returns plain dict {ok, message} (not 201 Created). Acceptable, but consider returning 201 + Location-less payload for REST hygiene."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_brand_registration.py (new)"
+  ],
+  "success_rate": {"backend": "100% (7/7 new) + previous suites still green", "frontend": "100% of critical flows (registration UI + legal modals + validation + pending block + admin approve + post-approval login)"},
+  "test_credentials": "admin@dijitalroket.com / Roket2026! ✓ ; testmarka@firma.com / Marka2026! ✓ verified after cleanup (200)",
+  "seed_data_creation": "Backend tests create 2 throw-away brands per run (qa_full_*, qa_reject_*) and clean them up via module fixture teardown. UI test created qa_uireg_<ts>@firma.com which was deleted manually after approval verification. No persistent QA data left in DB; testmarka@firma.com is intact.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Full brand registration + KVKK/Terms + admin approval/reject feature is fully validated. Key data-testids on /firma/giris: brand-login-form, brand-show-register, brand-register-form, reg-{fullname,phone,email,password,company,website,instagram,kvkk,terms,submit}, legal-modal, legal-close, register-submitted, back-to-login. Admin Markalar (AI) tab: pending-section, pending-row, approve-btn, reject-btn, approve-confirm (credits input has NO data-testid — uses last <input type='number'> in the modal). Backend endpoints: POST /api/brand/register (returns {ok,message}, requires kvkk_accepted+terms_accepted else 400), POST /api/admin/brands/{id}/approve (BrandApprove body, sets status=approved+credits, fires _send_approval_email which is a no-op WARNING when RESEND_API_KEY missing — endpoint still returns 200), POST /api/admin/brands/{id}/reject. brand_login returns 403 for status='pending' or 'rejected' with Turkish messages. test_brand_registration.py is safe to re-run; it self-cleans created brands.",
+  "rca of the issue": "No bugs found. RESEND email warning in logs is EXPECTED behavior since RESEND_API_KEY is intentionally not set; the approve endpoint correctly returns 200 + persists status=approved + credits, and the brand can log in immediately. Behaviour matches PRD."
+}
