@@ -1,123 +1,136 @@
 <analysis>**original_problem_statement**: 
 Dijital Roket için 2026 standartlarında, ultra profesyonel, kurumsal, modern, premium görünümlü bir B2B web sitesi geliştirilmesi. Sitede ChatGPT veya OpenAI gibi kelimeler kullanılmayacak, bunun yerine DR AI Üretim Sistemi konsepti kullanılacak. Hedef kitle: Orta/büyük şirketler, kurumsal firmalar. Ana sayfada DR AI özellikleri, sprint modeli, iletişim ve proje formları olacak. Ayrıca sitenin kendi yönetilebilir admin paneli olacak. 
+**Eklenen Gereksinimler:** Firmalar için AI görsel üretim paneli (gpt-image-2), kredi sistemi, admin paneli üzerinden marka onay/red yönetimi (Resend ile e-posta gönderimi), asenkron görsel üretimi ve düzenleme (edit) mekanizması, dinamik logo ve iletişim bilgisi yerleşimi.
 
-**User's preferred language**: Turkish (Türkçe) 
-*INSTRUCT NEXT AGENT: You MUST respond to the user in Turkish only.*
+**User's preferred language**: Turkish
+*INSTRUCT NEXT AGENT: You MUST automatically detect the user's primary language from their messages inside the <trajectory> tag and INSTRUCT next agent to respond in the user's preferred language only. RESPOND IN TURKISH.*
 
 **what currently exists?**: 
-A fully functional React + FastAPI + MongoDB full-stack application. It features a premium corporate dark/light hybrid design with advanced animations (like CodeRain). It includes 6 real case studies scraped from the original website, a blog system, detailed contact/project request forms, and a comprehensive Admin Panel (JWT auth). Admin can manage SEO, footer links, blog posts, projects (with markdown and image uploads), and contact messages dynamically. Mobile responsiveness issues have been resolved.
+Tamamen fonksiyonel React + FastAPI + MongoDB uygulaması. Brand Portal (Marka Paneli) özellikleri eklendi. Firmalar sisteme kayıt olabilir, admin kaydı onaylar (Resend üzerinden e-posta gider). Firmalar kendi panellerinden ayarlarını (şifre, firma hakkında, sosyal medya) yönetebilir ve gpt-image-2 kullanarak asenkron polling yöntemiyle sosyal medya görseli üretebilir/düzenleyebilir. AI görsellere logoyu ve sosyal medya hesaplarını serbest olarak yerleştirebiliyor. Geçici dosya sistemi sorunları nedeniyle Object Storage altyapısına geçiş süreci başlatıldı.
 
 **Last working item**:
-- **Last item agent was working**: Project Editor Enhancements (Aşama 1). Adding specific features to the project/blog editor in the admin panel: HTML/Markdown support, tags UI (chips), SEO title, SEO description, and adding 100%, 75%, 50% width sizing options to the Image Uploader. The agent just agreed to start this in the last message.
+- **Last item agent was working**: Tüm dosya yüklemelerinin (Logolar, AI görselleri, blog/proje resimleri) kalıcı Object Storage (bulut depolama) sistemine taşınması. Docker pod'larının (ephemeral disk) yeniden başlatılması durumunda sunucuya yüklenen resimlerin kaybolması (kırık link) sorununu çözmek için  kullanılarak object storage playbook'u okundu.
 - **Status**: IN PROGRESS
 - **Agent Testing Done**: N
-- **Which testing method agent to use?**: Frontend testing agent
+- **Which testing method agent to use?**: backend testing agent
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-*None. All previous bugs (mobile UI overflows, z-index, outdated emails) were fixed.*
+  - Issue 1: Yüklenen görsellerin birkaç gün sonra kırık (broken) gözükmesi (Ephemeral Disk Wipe Issue) - P0
+     - Attempted fixes: Daha önce frontend'in statik dizin erişim sorunu olarak düşünülüp  adında bir endpoint yazıldı, fakat asıl sorun production ortamındaki konteyner disklerinin (ephemeral storage) deploy sonrası sıfırlanması.
+     - Next debug checklist:  içerisinde ,  ve  fonksiyonlarını  kütüphanesini kullanarak Object Storage'a kaydedecek ve cloud linki döndürecek şekilde güncelleyin.
+     - Why fix this issue and what will be achieved with the fix?: Production ortamında yüklenen marka logolarının, proje resimlerinin ve üretilen AI görsellerinin kalıcı olmasını, deploy sonrası kaybolmamasını sağlayacak.
+     - Status: IN PROGRESS
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix?: Both (Backend testi ile cloud url dönüşü kontrol edilmeli, frontend test ile UI gösterimi onaylanmalı)
+     - Blocked on other issue: None
 
 **In progress Task List**:
-- **Task 1**: Project/Blog Editor Enhancements (Aşama 1)
-  - **Where to resume**:  and 
-  - **What will be achieved with this?**: Admin will have SEO title, SEO description, and Tag chips for projects. When uploading images to the Markdown editor, admin can select 100%, 75%, or 50% sizes which will append respective width classes (e.g., , , ) to the markdown image string.
-  - **Status**: IN PROGRESS
-  - **Should Test frontend/backend/both after fix?**: Frontend
+  - Task 1: Object Storage Entegrasyonu
+     - Where to resume:  aracı yeni çağrıldı. Playbook içeriğine göre backend ortamına  kurularak, dosyaların local disk () yerine Object Storage'a kaydedilmesini sağlayın.
+     - What will be achieved with this?: Dosyaların kalıcılığı sağlanacak.
+     - Status: IN PROGRESS
+     - Should Test frontend/backend/both after fix?: Backend
+     - Blocked on something: Yok
 
 **Upcoming and Future Tasks**:
-- **Task 1**: Brand Management & AI Image Generation System (Aşama 2) (P0)
-  - **Phases**:
-    1. **Brand/Firma CRUD & Auth**: Create a new  collection. Admin can create brands, upload logos, set brand URL, main color, and select 9-point layout grid positions for logos (top-left, top, top-right, middle-left, center, middle-right, bottom-left, bottom-center, bottom-right). Admin creates a brand user (email/password) and assigns monthly credits (e.g., 25). Passwords must be visible/manageable in the admin panel (DO NOT use Resend/Email sending).
-    2. **Brand Portal**: Create  and . Brand user logs in to a ChatGPT-like interface.
-    3. **AI Generation**: User prompts for an image. System uses OpenAI  integration. *CRITICAL: User explicitly rejected using PIL/Pillow for logo placement.* The AI prompt must instruct  natively to generate the image AND place the brand's logo in the specific 9-point grid slots.
-    4. **Image Formats & Post-Generation**: System must support 1080x1350 (Post) and 1080x1920 (Story) resolutions. After the image is generated, AI must generate a relevant caption based on the image. Users can copy the caption and download the image. Deduct 1 credit per generation.
-  - **Priority**: P0 (Execute immediately after Task 1 is finished)
+- Task 1: Resend Production Domain Doğrulaması (P1)
+  - Kullanıcı alan adını () Resend üzerinde doğruladığında,  ayarını  yerine  olarak güncelleyin ve test modu kısıtlamasını kaldırın.
+- Task 2: Marka Panelinde Hazır Şablonlar / Kampanya Tipleri (P2)
+  - Kullanıcıya önerilmişti: İndirim, Duyuru, Yeni Ürün gibi ön tanımlı şablon seçeneklerinin marka portalı üretici (generator) formuna eklenmesi.
 
 **Completed work in this session**:
-- Initial project scaffolding and dependency installation (DONE)
-- FastAPI backend with MongoDB CRUD for forms, blog, projects (DONE)
-- React frontend with TailwindCSS, Framer Motion, and shadcn/ui components (DONE)
-- JWT Auth Admin panel () (DONE)
-- Web scraping existing case studies and downloading 42 images to seed DB (DONE)
-- Image uploading endpoint and Markdown text editor for admin (DONE)
-- Dynamic Site Ayarları (Site Settings) in admin for SEO, Favicon, Contact Info, and App Links (DONE)
-- Mobile UI fixes (z-index, hero text overflow, mobile menu opacity) (DONE)
+- Asenkron Job + Polling mimarisiyle AI Görsel Üretimi (60s timeout sorunu çözüldü) (DONE)
+- Marka Portalı Giriş, Panel ve Geçmiş Üretimlerin Gösterimi (DONE)
+- Görsel Düzenleme / Yeniden Üretme (Edit/Regenerate) özelliği (DONE)
+- Frontend Navbar Modifikasyonları (Portal Girişi ve Blog linkleri) (DONE)
+- Resim/URL Input Validation Düzeltmesi ( -> ) (DONE)
+- Marka Kayıt, Admin Onayı ve KVKK/Sözleşme Modalları (DONE)
+- Resend e-posta entegrasyonu (Test modunda) (DONE)
+- Firma Hakkında ile AI prompt'a dinamik iletişim bilgisi / logo entegrasyonu (9-nokta seçimi kaldırılarak özgür bırakıldı) (DONE)
 
 **Earlier issues found/mentioned but not fixed**:
-*None.*
+*None* (Object Storage issue is currently in progress)
 
 **Known issue recurrence from previous fork**:
-- Recurrence count: 0
-- Status: NOT STARTED
+  - Issue recurrence in previous fork: Resimlerin deploy sonrası kırık gözükmesi. (Önce path sorunu sanılıp düzeltildi, sonra disk silinme sorunu olduğu anlaşıldı).
+  - Recurrence count: 2
+  - Status: IN PROGRESS
 
 **Code Architecture**:
 
 
 **Key Technical Concepts**:
-React SPA, FastAPI, MongoDB (Motor async), JWT Authentication, Tailwind CSS, Framer Motion animations, Markdown Rendering (custom lightweight parser), File Uploads (multipart/form-data).
+React SPA, FastAPI, MongoDB (Motor async), JWT Auth (Admin & Brand), Asynchronous API Polling (Image Generation takes >60s), OpenAI API ( for images,  for vision captions), Resend API (Email notifications).
 
 **key DB schema**:
-- : 
-- : 
-- : 
-- : 
-- : 
-- : 
+  - : 
+  - : 
 
 **changes in tech stack**:
-- None.
+  -  kütüphanesi eklendi.
+  -  (Object storage için) ekleniyor.
 
 **All files of reference**:
--  (Core backend logic)
--  (Admin panel UI)
--  (Markdown renderer used in detail pages)
--  (Image upload logic for markdown)
+-  (Object storage migration için düzenlenecek ana dosya)
+- 
+- 
+- 
 
 **Areas that need refactoring**:
--  is getting very large. As the Brand Management features get added, consider splitting it into sub-components.
+-  dosyası 1300 satırı geçti. Modeller, route'lar ve arka plan işleri (background tasks) olarak ileride bölünmesi gerekebilir.
 
 **key api endpoints**:
-- 
-- 
-- 
-- 
--  and 
+- , 
+- , , 
+-  (Onaylama ve kredi atama)
+-  (LOCAL DİSKTEN OBJECT STORAGE'A TAŞINACAK)
 
 **Critical Info for New Agent**:
-- **Admin Credentials**:  /  (Configured in ).
-- **AI Image Logo Placement**: The user strongly insisted that ** must handle the logo placement natively** via prompt instructions (using a 9-point grid layout: top-left, top, top-right, etc.). You must NOT use Python PIL/Pillow to overlay the logos.
-- **Passwords**: Do not integrate an email service like Resend to send passwords to Brand users. Passwords must be shown and managed directly in the admin panel.
-- Always use  before starting the implementation of the AI Image Generation and Brand Auth features.
+- **Dil**: Yanıtları her zaman Türkçe (Turkish) verin.
+- **Mimari Sorun**: Kubernetes ortamında local file system geçicidir (ephemeral). Asla dosyaları  veya backend içindeki yerel bir klasöre kaydetmeyin. Yeni görev, her türlü upload'u Object Storage sistemine bağlamaktır.
+- **Timeout**:  ile görsel üretimi ~90 saniye sürebildiği için Ingress limitine (60s) takılır. Bu yüzden asenkron Job ID ve Polling sistemi  olarak kodlanmıştır; generation logic'ini bozmamaya dikkat edin.
+- **E-posta (Resend)**: Kullanıcı domain doğrulaması yapmak istemediği için Resend test modundadır.  olarak sabittir. E-postalar sadece kullanıcının Resend'e kayıtlı hesabına gider.
 
 **documents and test reports created in this job**:
-- 
-- 
-- 
-- 
+  - 
+  - 
+  - 
 
 **Last 10 User Messages and any pending HUMAN messages**:
-1. *User*: Change email to byaliozer@gmail.com. Add Instagram, Google Play, App store buttons to footer. (COMPLETED)
-2. *User*: Change DR AI Üretim Sistemi ile yayında. to Bu web sitesi de DR AI yapay zekası tarafından yapılmıştır. 😊. (COMPLETED)
-3. *User*: Test mobile responsiveness heavily. Are texts readable? Does the menu work? (COMPLETED - Several overflow and z-index fixes applied).
-4. *User*: Asked for backend, database, environment, and frontend tech stack info. (COMPLETED - Agent explained the stack).
-5. *User*: Asked for admin credentials. Requested a huge new feature: Brand Management system where firms log in, generate social media images using GPT, with predefined logo placements, and a specific admin upload flow for projects with % sizing options. (COMPLETED - Agent explained credentials and proposed a 2-phase approach).
-6. *User (Pending/In Progress)*: Approved Phase 1 (Project Editor Enhancements). Corrected the agent on Phase 2: Refused PIL/Pillow for logos, insisted  handle logo placement natively via 9-point grid slots. Clarified image sizes (1080x1350, 1080x1920), password management (Admin panel only, no email), and credit system limits (e.g., 25 credits/month). Also requested an AI caption generator based on the generated image.
+ 1. User: İletişim bilgisi/logo alanı ekleyelim, 9 nokta olayını kaldıralım, AI serbest yerleştirsin. (COMPLETED)
+ 2. User: Brand Portal üzerinden kayıt olabilsinler, KVKK/Sözleşme onayı zorunlu olsun, Admin panelde onaya düşsün, onaylanınca Resend üzerinden e-posta gitsin. (COMPLETED)
+ 3. Agent: Resend e-posta detaylarını ve API anahtarını sordu.
+ 4. User: Resend API anahtarını verdi. (COMPLETED)
+ 5. User: Resend'de domain doğrulaması için hangi bölgeyi (Region) seçeceğim? (COMPLETED)
+ 6. User: Mail eklemekten vazgeçtim, noreply@resend.dev kalsın. (COMPLETED - Agent test modunda çalışacağını belirtti).
+ 7. User: markanın logosu kırık görünüyor. Önceden vardı... 4 gün sonra girdim kırık. (IN PROGRESS - Agent sorunun kalıcı storage eksikliği olduğunu bulup Object Storage Playbook'unu çağırdı.)
 
 **Project Health Check**:
-Healthy.
+- Broken: Yüklenen resimlerin deploy sonrası kaybolması (Local Ephemeral Disk problemi).
+- Mocked: Resend Email sistemi (Sadece test adresine gönderiyor).
 
 **3rd Party Integrations**:
-- OpenAI GPT-Image-2 (Emergent LLM Key applicability to be checked via playbook / User API key present in ).
+ - OpenAI GPT-Image-2 (Emergent LLM Key ile)
+ - Resend (Emails) — User API Key ile ('de mevcut)
+ - Object Storage — Emergent Integrations ile (Şu an entegre ediliyor)
 
 **Testing status**:
-- Testing agent used after significant changes: YES (After MVP setup)
-- Troubleshoot agent used after agent stuck in loop: NO
-- Test files created: 
-- Known regressions: None
+  - Testing agent used after significant changes: YES (Iteration 4)
+  - Troubleshoot agent used after agent stuck in loop: NO
+  - Test files created: 
+  - Known regressions: Dosya yüklemeleri disk sıfırlandığı için çalışmıyor (URL var, resim yok).
 
 **Credentials to test flow**:
-- Email: 
-- Password: 
+- Admin:  /  (Diğerleri  dosyasındadır).
 
 **What agent forgot to execute**:
-Nothing was forgotten. The agent gathered the requirements for the massive new Brand/Image Generation feature and the immediate Project Editor Enhancements feature, and is ready to start coding them now.</analysis>
+Object storage kodlaması tamamlanmadı. Agent sorunu buldu, playbook'u çağırdı ancak dosyayı (server.py) editlemeden task yarım kaldı.
+
+**Debugging checklist for current issue**:
+    Issue: Ephemeral File Storage (Images break after pod restart)
+    Backend files to check: 
+    - Check  method.
+    - Check  method (saving AI image).
+    - Check  method (saving edited AI image).
+    - Remove local file saving logic and implement  object storage client logic according to the playbook retrieved in the last step. Update the DB models/endpoints to return the cloud URL.</analysis>
