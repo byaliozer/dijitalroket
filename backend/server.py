@@ -10,13 +10,14 @@ import uuid
 import asyncio
 import base64
 import httpx
+import requests
 import bcrypt
 import jwt
 import resend
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, status, UploadFile, File
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -265,6 +266,88 @@ ALLOWED_IMAGE_TYPES = {
 }
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024  # 8 MB
 
+# -----------------------------------------------------------------------------
+# Persistent Object Storage (Emergent) — survives pod restarts / deploys.
+# Local disk is ephemeral in production, so all uploads go to object storage.
+# -----------------------------------------------------------------------------
+STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
+EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY")
+STORAGE_APP = "dijital-roket"
+_storage_key = None
+
+
+def _init_storage():
+    global _storage_key
+    if _storage_key:
+        return _storage_key
+    resp = requests.post(f"{STORAGE_URL}/init", json={"emergent_key": EMERGENT_KEY}, timeout=30)
+    resp.raise_for_status()
+    _storage_key = resp.json()["storage_key"]
+    return _storage_key
+
+
+def _storage_put(name: str, data: bytes, content_type: str):
+    global _storage_key
+    path = f"{STORAGE_APP}/uploads/{name}"
+    for attempt in range(2):
+        key = _init_storage()
+        resp = requests.put(
+            f"{STORAGE_URL}/objects/{path}",
+            headers={"X-Storage-Key": key, "Content-Type": content_type},
+            data=data, timeout=120,
+        )
+        if resp.status_code == 403 and attempt == 0:
+            _storage_key = None  # refresh and retry once
+            continue
+        resp.raise_for_status()
+        return resp.json()
+
+
+def _storage_get(name: str):
+    global _storage_key
+    path = f"{STORAGE_APP}/uploads/{name}"
+    for attempt in range(2):
+        key = _init_storage()
+        resp = requests.get(
+            f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key}, timeout=60
+        )
+        if resp.status_code == 403 and attempt == 0:
+            _storage_key = None
+            continue
+        resp.raise_for_status()
+        return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
+
+
+async def _save_upload_bytes(data: bytes, ext: str, content_type: str) -> str:
+    """Persist bytes to object storage and return the generated filename."""
+    name = f"{uuid.uuid4().hex}{ext}"
+    await asyncio.to_thread(_storage_put, name, data, content_type or "application/octet-stream")
+    return name
+
+
+async def _read_image_bytes(url: str):
+    """Read image bytes from a stored url (object storage), external http url, or legacy disk."""
+    if not url:
+        return None
+    if url.startswith("http"):
+        try:
+            async with httpx.AsyncClient(timeout=60) as cx:
+                r = await cx.get(url)
+                r.raise_for_status()
+                return r.content
+        except Exception:
+            return None
+    name = Path(url).name
+    # legacy local disk fallback
+    p = UPLOAD_DIR / name
+    if p.exists():
+        return p.read_bytes()
+    try:
+        data, _ = await asyncio.to_thread(_storage_get, name)
+        return data
+    except Exception:
+        return None
+
 
 @api_router.post("/admin/upload")
 async def admin_upload(file: UploadFile = File(...), current=Depends(get_current_admin)):
@@ -277,8 +360,7 @@ async def admin_upload(file: UploadFile = File(...), current=Depends(get_current
         raise HTTPException(status_code=400, detail="Görsel 8MB'dan büyük olamaz.")
     if len(data) == 0:
         raise HTTPException(status_code=400, detail="Boş dosya yüklenemez.")
-    name = f"{uuid.uuid4().hex}{ext}"
-    (UPLOAD_DIR / name).write_bytes(data)
+    name = await _save_upload_bytes(data, ext, content_type)
     # Served through the backend (/api/uploads) so it works in both preview and production.
     return {"url": f"/api/uploads/{name}", "size": len(data), "filename": name}
 
@@ -295,11 +377,18 @@ _SERVE_MIME = {
 async def serve_upload(filename: str):
     # Prevent path traversal
     safe = Path(filename).name
+    media = _SERVE_MIME.get(Path(safe).suffix.lower(), "application/octet-stream")
+    # object storage (persistent) first
+    try:
+        data, ctype = await asyncio.to_thread(_storage_get, safe)
+        return Response(content=data, media_type=(media if media != "application/octet-stream" else ctype))
+    except Exception:
+        pass
+    # legacy local disk fallback
     path = UPLOAD_DIR / safe
-    if not path.exists() or not path.is_file():
-        raise HTTPException(status_code=404, detail="Dosya bulunamadı")
-    media = _SERVE_MIME.get(path.suffix.lower(), "application/octet-stream")
-    return FileResponse(str(path), media_type=media)
+    if path.exists() and path.is_file():
+        return FileResponse(str(path), media_type=media)
+    raise HTTPException(status_code=404, detail="Dosya bulunamadı")
 
 
 def _local_upload_path(url: str):
@@ -792,8 +881,8 @@ async def dr_generate_image(prompt: str, fmt: str, brand: dict, include_website:
     about_ctx = f" The brand/company operates in this field — make the imagery, theme, mood and props relevant to their sector and business: {about}." if about else ""
     contact_ctx = _contact_block(brand, include_website, include_instagram, include_phone)
 
-    logo_path = _local_upload_path(brand.get("logo_url") or "")
-    has_logo = logo_path is not None
+    logo_bytes = await _read_image_bytes(brand.get("logo_url") or "")
+    has_logo = logo_bytes is not None
 
     headers = {"Authorization": f"Bearer {OPENAI_API_KEY}"}
 
@@ -807,7 +896,7 @@ async def dr_generate_image(prompt: str, fmt: str, brand: dict, include_website:
                 f"the whole logo clearly visible. Tastefully incorporate the brand accent color {brand_color} into the design. "
                 f"Make sure any text rendered in the image is correctly spelled and legible. Premium corporate aesthetic.{about_ctx}{contact_ctx}"
             )
-            files = {"image": (logo_path.name, logo_path.read_bytes(), "image/png")}
+            files = {"image": ("logo.png", logo_bytes, "image/png")}
             form = {
                 "model": DR_IMAGE_MODEL,
                 "prompt": full_prompt,
@@ -853,12 +942,12 @@ async def dr_edit_image(instruction: str, base_image_url: str, fmt: str, brand: 
     brand_color = brand.get("brand_color") or "#2563EB"
     brand_name = brand.get("name") or "marka"
 
-    base_path = _local_upload_path(base_image_url or "")
-    if base_path is None:
+    base_bytes = await _read_image_bytes(base_image_url or "")
+    if base_bytes is None:
         raise HTTPException(status_code=404, detail="Düzenlenecek kaynak görsel bulunamadı.")
 
-    logo_path = _local_upload_path(brand.get("logo_url") or "")
-    has_logo = logo_path is not None
+    logo_bytes = await _read_image_bytes(brand.get("logo_url") or "")
+    has_logo = logo_bytes is not None
 
     prompt = (
         f"Edit the first provided social media image according to this instruction: \"{instruction}\". "
@@ -885,11 +974,11 @@ async def dr_edit_image(instruction: str, base_image_url: str, fmt: str, brand: 
     }
     if has_logo:
         files = [
-            ("image[]", (base_path.name, base_path.read_bytes(), "image/png")),
-            ("image[]", (logo_path.name, logo_path.read_bytes(), "image/png")),
+            ("image[]", ("base.png", base_bytes, "image/png")),
+            ("image[]", ("logo.png", logo_bytes, "image/png")),
         ]
     else:
-        files = {"image": (base_path.name, base_path.read_bytes(), "image/png")}
+        files = {"image": ("base.png", base_bytes, "image/png")}
 
     async with httpx.AsyncClient(timeout=240) as cx:
         resp = await cx.post("https://api.openai.com/v1/images/edits", headers=headers, data=form, files=files)
@@ -1117,8 +1206,7 @@ async def brand_upload(file: UploadFile = File(...), brand=Depends(get_current_b
         raise HTTPException(status_code=400, detail="Görsel 8MB'dan büyük olamaz.")
     if len(data) == 0:
         raise HTTPException(status_code=400, detail="Boş dosya yüklenemez.")
-    name = f"{uuid.uuid4().hex}{ext}"
-    (UPLOAD_DIR / name).write_bytes(data)
+    name = await _save_upload_bytes(data, ext, content_type)
     return {"url": f"/api/uploads/{name}", "size": len(data), "filename": name}
 
 
@@ -1154,7 +1242,7 @@ async def _run_generation_job(job_id: str, brand: dict, prompt: str, fmt: str,
     try:
         image_b64 = await dr_generate_image(prompt, fmt, brand, include_website, include_instagram, include_phone)
         name = f"dr_{uuid.uuid4().hex}.png"
-        (UPLOAD_DIR / name).write_bytes(base64.b64decode(image_b64))
+        await asyncio.to_thread(_storage_put, name, base64.b64decode(image_b64), "image/png")
         image_url = f"/api/uploads/{name}"
         caption = await dr_generate_caption(image_b64, prompt, brand)
         await db.generations.update_one(
@@ -1237,7 +1325,7 @@ async def _run_edit_job(job_id: str, brand: dict, base_image_url: str, instructi
     try:
         image_b64 = await dr_edit_image(instruction, base_image_url, fmt, brand)
         name = f"dr_{uuid.uuid4().hex}.png"
-        (UPLOAD_DIR / name).write_bytes(base64.b64decode(image_b64))
+        await asyncio.to_thread(_storage_put, name, base64.b64decode(image_b64), "image/png")
         image_url = f"/api/uploads/{name}"
         caption = await dr_generate_caption(image_b64, instruction, brand)
         await db.generations.update_one(
