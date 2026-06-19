@@ -878,7 +878,11 @@ async def dr_generate_image(prompt: str, fmt: str, brand: dict, include_website:
     brand_name = brand.get("name") or "marka"
     fmt_label = "Instagram story (vertical 9:16)" if fmt == "story" else "Instagram post (vertical 4:5)"
     about = (brand.get("about") or "").strip()
-    about_ctx = f" The brand/company operates in this field — make the imagery, theme, mood and props relevant to their sector and business: {about}." if about else ""
+    about_ctx = (
+        f" IMPORTANT CONTEXT (do NOT write this text in the image): the brand/company operates in this field — "
+        f"use it only to choose relevant imagery, theme, mood, colors and props. Do NOT render, print or display this "
+        f"description as literal text anywhere in the image: {about}."
+    ) if about else ""
     contact_ctx = _contact_block(brand, include_website, include_instagram, include_phone)
 
     logo_bytes = await _read_image_bytes(brand.get("logo_url") or "")
@@ -956,7 +960,10 @@ async def dr_edit_image(instruction: str, base_image_url: str, fmt: str, brand: 
     )
     about = (brand.get("about") or "").strip()
     if about:
-        prompt += f" Brand/company context (keep visuals relevant to their sector): {about}."
+        prompt += (
+            f" Brand/company context (do NOT write this text in the image — use it ONLY to keep visuals relevant "
+            f"to their sector/theme, never render it as literal text): {about}."
+        )
     if has_logo:
         prompt += (
             f" The second provided image is the official '{brand_name}' brand logo. Integrate it naturally; you may place and "
