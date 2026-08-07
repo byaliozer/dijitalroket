@@ -6,17 +6,17 @@ Dijital Roket; kurumsal firmalar, üreticiler ve KOBİ'ler için DR AI destekli 
 
 ## Hizmetler
 
-- [Kurumsal Çözümler](https://dijitalroket.com/kurumsal-cozumler): Kurumsal web siteleri, B2B/bayi panelleri, CRM benzeri özel yazılımlar, okul/eğitim yazılımları, e-ticaret, mobil uygulama, SEO ve dijital pazarlama.
-- [Projeler & Vaka Çalışmaları](https://dijitalroket.com/projeler): Gerçek müşteri projeleri ve sonuçları.
-- [Blog](https://dijitalroket.com/blog): Dijital dönüşüm, özel yazılım ve AI destekli üretim üzerine içerikler.
+- [Kurumsal Çözümler](https://www.dijitalroket.com/kurumsal-cozumler): Kurumsal web siteleri, B2B/bayi panelleri, CRM benzeri özel yazılımlar, okul/eğitim yazılımları, e-ticaret, mobil uygulama, SEO ve dijital pazarlama.
+- [Projeler & Vaka Çalışmaları](https://www.dijitalroket.com/projeler): Gerçek müşteri projeleri ve sonuçları.
+- [Blog](https://www.dijitalroket.com/blog): Dijital dönüşüm, özel yazılım ve AI destekli üretim üzerine içerikler.
 
 ## İletişim
 
-- [Proje Talebi](https://dijitalroket.com/proje-talep): Yeni proje için kapsam görüşmesi.
-- [İletişim](https://dijitalroket.com/iletisim): Telefon, e-posta ve adres bilgileri.
-- [Hakkımızda](https://dijitalroket.com/hakkimizda): Firma hakkında.
+- [Proje Talebi](https://www.dijitalroket.com/proje-talep): Yeni proje için kapsam görüşmesi.
+- [İletişim](https://www.dijitalroket.com/iletisim): Telefon, e-posta ve adres bilgileri.
+- [Hakkımızda](https://www.dijitalroket.com/hakkimizda): Firma hakkında.
 
 ## Detaylı İçerik
 
-- [Tüm proje ve blog içeriklerinin tam metni (LLM dostu)](https://dijitalroket.com/api/llms-full.txt)
-- [Sitemap](https://dijitalroket.com/sitemap.xml)
+- [Tüm proje ve blog içeriklerinin tam metni (LLM dostu)](https://www.dijitalroket.com/api/llms-full.txt)
+- [Sitemap](https://www.dijitalroket.com/sitemap.xml)

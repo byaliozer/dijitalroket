@@ -1,7 +1,7 @@
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import JsonLd from "./JsonLd";
 
-export const SITE_URL = "https://dijitalroket.com";
+export const SITE_URL = "https://www.dijitalroket.com";
 
 export const DR_SERVICES = [
   "Kurumsal web siteleri",

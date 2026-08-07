@@ -462,7 +462,7 @@ async def get_project(slug: str):
     return item
 
 
-SITE_URL = os.environ.get("SITE_URL", "https://dijitalroket.com").rstrip("/")
+SITE_URL = os.environ.get("SITE_URL", "https://www.dijitalroket.com").rstrip("/")
 
 
 @api_router.get("/sitemap.xml")
@@ -538,9 +538,9 @@ async def llms_full_txt():
         md.append(f"- {s}")
     md.append("")
     md.append("## İletişim")
-    md.append("- Web: https://dijitalroket.com")
-    md.append("- Proje talebi: https://dijitalroket.com/proje-talep")
-    md.append("- İletişim: https://dijitalroket.com/iletisim")
+    md.append("- Web: https://www.dijitalroket.com")
+    md.append("- Proje talebi: https://www.dijitalroket.com/proje-talep")
+    md.append("- İletişim: https://www.dijitalroket.com/iletisim")
     md.append("")
 
     projects = await db.case_studies.find({"published": True}, {"_id": 0}).sort("created_at", -1).to_list(1000)
@@ -1044,7 +1044,7 @@ async def _send_approval_email(to_email: str, brand_name: str):
           yapay zeka ile sosyal medya görselleri üretmeye başlayabilirsiniz.
         </p>
         <div style="text-align:center;margin:26px 0">
-          <a href="https://dijitalroket.com/firma/giris"
+          <a href="https://www.dijitalroket.com/firma/giris"
              style="background:#2563EB;color:#fff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:600;font-size:14px;display:inline-block">
             Portala Giriş Yap
           </a>

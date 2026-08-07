@@ -45,10 +45,11 @@ export default function SEO({ page, title, description, noindex = false, image }
     }
 
     // og:image / twitter:image — use page image (absolute) or fall back to default
-    const defaultImg = "https://dijitalroket.com/og-image.jpg";
+    const PRIMARY = "https://www.dijitalroket.com";
+    const defaultImg = `${PRIMARY}/og-image.jpg`;
     let finalImg = defaultImg;
     if (image) {
-      finalImg = image.startsWith("http") ? image : `${window.location.origin}${image}`;
+      finalImg = image.startsWith("http") ? image : `${PRIMARY}${image}`;
     }
     setMetaTag("property", "og:image", finalImg);
     setMetaTag("name", "twitter:image", finalImg);
@@ -56,15 +57,16 @@ export default function SEO({ page, title, description, noindex = false, image }
     // Robots directive (index/noindex)
     setMetaTag("name", "robots", noindex ? "noindex, nofollow" : "index, follow");
 
-    // Self-referencing canonical URL
+    // Canonical — always the primary (www) domain so non-www / preview hosts consolidate here
+    const canonicalUrl = `${PRIMARY}${window.location.pathname}`;
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) {
       canonical = document.createElement("link");
       canonical.setAttribute("rel", "canonical");
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute("href", window.location.origin + window.location.pathname);
-    setMetaTag("property", "og:url", window.location.origin + window.location.pathname);
+    canonical.setAttribute("href", canonicalUrl);
+    setMetaTag("property", "og:url", canonicalUrl);
   }, [page, title, description, noindex, image, settings]);
 
   return null;
