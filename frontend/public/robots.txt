@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /firma/
+Disallow: /api/
+
+Sitemap: https://dijitalroket.com/sitemap.xml
+Sitemap: https://dijitalroket.com/api/sitemap.xml

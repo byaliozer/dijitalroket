@@ -456,6 +456,50 @@ async def get_project(slug: str):
     return item
 
 
+SITE_URL = os.environ.get("SITE_URL", "https://dijitalroket.com").rstrip("/")
+
+
+@api_router.get("/sitemap.xml")
+async def dynamic_sitemap():
+    """Full sitemap including static pages + all published projects and blog posts."""
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    entries = [
+        ("/", "weekly", "1.0"),
+        ("/kurumsal-cozumler", "monthly", "0.8"),
+        ("/projeler", "weekly", "0.9"),
+        ("/hakkimizda", "monthly", "0.7"),
+        ("/blog", "weekly", "0.8"),
+        ("/iletisim", "monthly", "0.7"),
+        ("/proje-talep", "monthly", "0.7"),
+    ]
+    urls = [(f"{SITE_URL}{path}", now, cf, pr) for path, cf, pr in entries]
+
+    projects = await db.case_studies.find(
+        {"published": True}, {"_id": 0, "slug": 1, "updated_at": 1, "created_at": 1}
+    ).to_list(1000)
+    for p in projects:
+        lm = (p.get("updated_at") or p.get("created_at") or now)[:10]
+        urls.append((f"{SITE_URL}/projeler/{p['slug']}", lm, "monthly", "0.7"))
+
+    posts = await db.blog_posts.find(
+        {"published": True}, {"_id": 0, "slug": 1, "updated_at": 1, "created_at": 1}
+    ).to_list(1000)
+    for po in posts:
+        lm = (po.get("updated_at") or po.get("created_at") or now)[:10]
+        urls.append((f"{SITE_URL}/blog/{po['slug']}", lm, "monthly", "0.6"))
+
+    lines = ['<?xml version="1.0" encoding="UTF-8"?>',
+             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for loc, lm, cf, pr in urls:
+        lines.append(
+            f"  <url><loc>{loc}</loc><lastmod>{lm}</lastmod>"
+            f"<changefreq>{cf}</changefreq><priority>{pr}</priority></url>"
+        )
+    lines.append("</urlset>")
+    return Response(content="\n".join(lines), media_type="application/xml")
+
+
+
 # -----------------------------------------------------------------------------
 # Routes - Admin
 # -----------------------------------------------------------------------------

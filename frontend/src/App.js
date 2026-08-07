@@ -17,6 +17,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import { BrandAuthProvider } from "./context/BrandAuthContext";
 import BrandLogin from "./pages/brand/BrandLogin";
 import BrandPortal from "./pages/brand/BrandPortal";
+import SEO from "./components/SEO";
 import "./App.css";
 
 export default function App() {
@@ -54,6 +55,7 @@ export default function App() {
 function NotFound() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#07111F] text-white px-6 text-center">
+      <SEO title="Sayfa Bulunamadı (404) | Dijital Roket" description="Aradığınız sayfa bulunamadı. Dijital Roket ana sayfasına dönerek devam edebilirsiniz." noindex />
       <div className="font-heading text-7xl font-extrabold text-gradient">404</div>
       <p className="mt-4 text-white/70">Aradığınız sayfa bulunamadı.</p>
       <a href="/" className="mt-8 btn-primary">Ana Sayfaya Dön</a>
