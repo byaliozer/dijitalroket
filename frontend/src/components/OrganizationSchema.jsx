@@ -36,7 +36,7 @@ export default function OrganizationSchema() {
     "sosyal medya içerik üretimi ve SEO çözümleri geliştiren bir yazılım ve dijital dönüşüm şirketidir.";
 
   const org = {
-    "@type": "Organization",
+    "@type": ["Organization", "ProfessionalService"],
     "@id": `${SITE_URL}/#organization`,
     name: "Dijital Roket",
     alternateName: "DR AI",
@@ -50,9 +50,18 @@ export default function OrganizationSchema() {
     address: {
       "@type": "PostalAddress",
       addressLocality: "Bursa",
+      addressRegion: "Bursa",
       addressCountry: "TR",
     },
     areaServed: { "@type": "Country", name: "Türkiye" },
+    contactPoint: {
+      "@type": "ContactPoint",
+      telephone: phone,
+      email,
+      contactType: "sales",
+      areaServed: "TR",
+      availableLanguage: ["Turkish"],
+    },
     knowsAbout: DR_SERVICES,
     ...(sameAs.length ? { sameAs } : {}),
     makesOffer: DR_SERVICES.map((s) => ({

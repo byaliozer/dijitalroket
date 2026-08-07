@@ -58,7 +58,7 @@ export default function RoketPartnerSection() {
           </p>
 
           <div className="mt-8">
-            <Link to="/roket-partner" data-testid="partner-cta" className="btn-primary">
+            <Link to="/proje-talep" data-testid="partner-cta" className="btn-primary">
               Roket Partner Görüşmesi Planlayın
               <ArrowRight className="h-4 w-4" />
             </Link>

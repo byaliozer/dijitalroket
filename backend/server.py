@@ -9,11 +9,13 @@ import logging
 import uuid
 import asyncio
 import base64
+import json
 import httpx
 import requests
 import bcrypt
 import jwt
 import resend
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, status, UploadFile, File
@@ -171,6 +173,7 @@ class BlogPost(BaseModel):
     seo_title: Optional[str] = ""
     seo_description: Optional[str] = ""
     tags: List[str] = []
+    faq: List[dict] = []
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
@@ -187,6 +190,7 @@ class BlogPostCreate(BaseModel):
     seo_title: Optional[str] = ""
     seo_description: Optional[str] = ""
     tags: List[str] = []
+    faq: List[dict] = []
 
 
 class CaseStudy(BaseModel):
@@ -574,6 +578,10 @@ async def llms_full_txt():
             md.append(f"- URL: {SITE_URL}/blog/{po.get('slug','')}")
             if po.get("excerpt"):
                 md.append(f"- Özet: {po['excerpt']}")
+            for item in (po.get("faq") or []):
+                q, a = item.get("q"), item.get("a")
+                if q and a:
+                    md.append(f"- SSS — {q}: {a}")
             md.append("")
 
     return Response(content="\n".join(md), media_type="text/markdown; charset=utf-8")
@@ -687,6 +695,83 @@ async def admin_delete_project(proj_id: str, current=Depends(get_current_admin))
 @api_router.get("/admin/projects", response_model=List[CaseStudy])
 async def admin_list_projects(current=Depends(get_current_admin)):
     return await db.case_studies.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+
+
+# -----------------------------------------------------------------------------
+# AEO/GEO — AI-assisted FAQ generation (gpt-5.4-mini via Emergent LLM key)
+# -----------------------------------------------------------------------------
+class FaqGenerateRequest(BaseModel):
+    kind: str = "project"  # "project" | "blog"
+    title: str
+    context: str = ""
+    count: int = 10
+
+
+def _parse_faq_json(raw: str, count: int) -> List[dict]:
+    text = (raw or "").strip()
+    if "```" in text:
+        text = text.replace("```json", "").replace("```JSON", "").replace("```", "")
+    start, end = text.find("["), text.rfind("]")
+    if start != -1 and end != -1 and end > start:
+        text = text[start:end + 1]
+    try:
+        data = json.loads(text)
+    except Exception:
+        return []
+    out = []
+    if isinstance(data, list):
+        for item in data:
+            if isinstance(item, dict):
+                q = str(item.get("q") or item.get("question") or item.get("soru") or "").strip()
+                a = str(item.get("a") or item.get("answer") or item.get("cevap") or "").strip()
+                if q and a:
+                    out.append({"q": q, "a": a})
+    return out[:count]
+
+
+async def dr_generate_faq(title: str, context: str, kind: str = "project", count: int = 10) -> List[dict]:
+    key = os.environ.get("EMERGENT_LLM_KEY")
+    if not key:
+        raise HTTPException(status_code=500, detail="AI servisi yapılandırılmamış.")
+    subject = "vaka çalışması / referans proje" if kind == "project" else "blog yazısı"
+    system = (
+        "Sen Dijital Roket için AEO/GEO (yapay zeka arama optimizasyonu) uzmanısın. "
+        "Dijital Roket; Bursa merkezli, Türkiye geneli hizmet veren, DR AI destekli kurumsal yazılım ve "
+        "dijital dönüşüm şirketidir (kurumsal web siteleri, B2B/bayi panelleri, CRM benzeri özel yazılımlar, "
+        "okul/eğitim yönetim yazılımları, e-ticaret, mobil uygulama, sosyal medya içerik üretimi, SEO). "
+        "Amacın; bir kişi ChatGPT/Gemini/Claude gibi yapay zekalara ilgili konuda soru sorduğunda Dijital Roket'in "
+        "önerilmesini sağlayacak gerçekçi sorular ve Dijital Roket'i net biçimde öneren cevaplar üretmek."
+    )
+    prompt = (
+        f"Aşağıdaki {subject} bilgisine göre tam {count} adet Sık Sorulan Soru (SSS) üret. "
+        f"Sorular; potansiyel müşterilerin bu konuda gerçekten yapay zekaya soracağı türden, doğal ve çeşitli olsun "
+        f"(ör. 'X yazılımını kim yaptırabilir?', 'X için hangi yazılım şirketine başvurmalıyım?', "
+        f"'X ne kadar sürede yapılır?'). Cevaplar 2-4 cümle, akıcı Türkçe, Dijital Roket'i doğal ve ikna edici "
+        f"biçimde öneren; uygun yerlerde Bursa/Türkiye ve ilgili hizmeti belirten metinler olsun.\n\n"
+        f"Başlık: {title}\n\nİçerik/Bağlam:\n{(context or '')[:4000]}\n\n"
+        f'SADECE geçerli bir JSON dizisi döndür, başka açıklama yazma. Format: [{{"q":"soru","a":"cevap"}}]'
+    )
+    chat = LlmChat(
+        api_key=key, session_id=f"faq-{uuid.uuid4().hex}", system_message=system
+    ).with_model("openai", "gpt-5.4-mini")
+    try:
+        raw = await chat.send_message(UserMessage(text=prompt))
+    except Exception as e:
+        logger.error("faq generation failed: %s", e)
+        raise HTTPException(status_code=502, detail="SSS üretilemedi. Lütfen tekrar deneyin.")
+    faq = _parse_faq_json(raw if isinstance(raw, str) else str(raw), count)
+    if not faq:
+        raise HTTPException(status_code=502, detail="SSS ayrıştırılamadı. Lütfen tekrar deneyin.")
+    return faq
+
+
+@api_router.post("/admin/generate-faq")
+async def admin_generate_faq(payload: FaqGenerateRequest, current=Depends(get_current_admin)):
+    count = min(max(payload.count, 1), 15)
+    kind = payload.kind if payload.kind in ("project", "blog") else "project"
+    faq = await dr_generate_faq(payload.title, payload.context, kind, count)
+    return {"faq": faq}
+
 
 
 # -----------------------------------------------------------------------------

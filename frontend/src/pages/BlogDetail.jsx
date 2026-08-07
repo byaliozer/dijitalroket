@@ -28,9 +28,8 @@ export default function BlogDetail() {
   if (!post) return <div className="container-x py-32 text-center text-[#334155]">Yükleniyor...</div>;
 
   const postUrl = `${SITE_URL}/blog/${post.slug}`;
-  const articleJsonLd = {
-    "@context": "https://schema.org",
-    "@graph": [
+  const faq = (post.faq || []).filter((x) => x?.q && x?.a);
+  const graph = [
       {
         "@type": "Article",
         "@id": `${postUrl}#article`,
@@ -54,8 +53,19 @@ export default function BlogDetail() {
           { "@type": "ListItem", position: 3, name: post.title, item: postUrl },
         ],
       },
-    ],
-  };
+  ];
+  if (faq.length) {
+    graph.push({
+      "@type": "FAQPage",
+      "@id": `${postUrl}#faq`,
+      mainEntity: faq.map((x) => ({
+        "@type": "Question",
+        name: x.q,
+        acceptedAnswer: { "@type": "Answer", text: x.a },
+      })),
+    });
+  }
+  const articleJsonLd = { "@context": "https://schema.org", "@graph": graph };
 
   return (
     <>
@@ -87,6 +97,26 @@ export default function BlogDetail() {
           <Markdown source={post.content} />
         </div>
       </article>
+
+      {faq.length > 0 && (
+        <section className="pb-16 bg-white" data-testid="blog-faq">
+          <div className="container-x max-w-3xl">
+            <span className="eyebrow">Sık Sorulan Sorular</span>
+            <h2 className="mt-3 font-heading text-2xl sm:text-3xl font-bold text-[#07111F]">
+              Bu konuda merak edilenler
+            </h2>
+            <dl className="mt-8 space-y-4">
+              {faq.map((x, i) => (
+                <div key={i} className="rounded-2xl border border-slate-200 bg-[#F8FAFC] p-6" data-testid={`blog-faq-item-${i}`}>
+                  <dt className="font-heading text-base font-bold text-[#07111F]">{x.q}</dt>
+                  <dd className="mt-2 text-[15px] leading-relaxed text-[#334155]">{x.a}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </section>
+      )}
+
       <FinalCta />
     </>
   );

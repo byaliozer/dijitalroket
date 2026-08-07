@@ -262,7 +262,7 @@ function BlogAdmin() {
   return (
     <div>
       <div className="mb-5 flex justify-end">
-        <button onClick={() => setEdit({ slug: "", title: "", excerpt: "", content: "", category: "", cover_image: "", read_time: 5, tags: [], seo_title: "", seo_description: "", published: true })} className="btn-primary py-2 text-sm">
+        <button onClick={() => setEdit({ slug: "", title: "", excerpt: "", content: "", category: "", cover_image: "", read_time: 5, tags: [], faq: [], seo_title: "", seo_description: "", published: true })} className="btn-primary py-2 text-sm">
           <Plus className="h-4 w-4" /> Yeni Yazı
         </button>
       </div>
@@ -456,6 +456,66 @@ function SettingsAdmin() {
   );
 }
 
+function FaqEditor({ faq, onChange, onGenerate, generating }) {
+  const list = faq || [];
+  const add = () => onChange([...list, { q: "", a: "" }]);
+  const upd = (i, patch) => { const c = [...list]; c[i] = { ...c[i], ...patch }; onChange(c); };
+  const rem = (i) => { const c = [...list]; c.splice(i, 1); onChange(c); };
+  return (
+    <FormSection
+      title={`Sık Sorulan Sorular (SSS) — ${list.length} soru`}
+      hint="AEO/GEO: Bu sorular hem sayfada görünür hem de FAQPage şeması olarak yapay zekâlara (ChatGPT/Gemini/Claude) sunulur. 'AI ile 10 SSS Üret' ile içeriğe göre otomatik soru-cevap oluşturabilirsiniz."
+    >
+      <div className="mb-3">
+        <button
+          type="button"
+          onClick={onGenerate}
+          disabled={generating}
+          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#2563EB] to-[#22D3EE] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-[#2563EB]/25 hover:-translate-y-0.5 transition disabled:opacity-60 disabled:translate-y-0"
+          data-testid="ai-generate-faq-btn"
+        >
+          {generating
+            ? <><Loader2 className="h-4 w-4 animate-spin" /> Üretiliyor...</>
+            : <><Sparkles className="h-4 w-4" /> AI ile 10 SSS Üret</>}
+        </button>
+        <span className="ml-3 text-xs text-slate-400">gpt-5.4-mini · içeriğe göre otomatik</span>
+      </div>
+      {list.length > 0 && (
+        <ul className="space-y-3">
+          {list.map((item, i) => (
+            <li key={i} className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2" data-testid={`faq-editor-item-${i}`}>
+              <div className="flex items-start gap-2">
+                <div className="flex-1 space-y-2">
+                  <input
+                    type="text"
+                    placeholder="Soru (örn. Okul yazılımını kim yaptırabilir?)"
+                    value={item.q || ""}
+                    onChange={(e) => upd(i, { q: e.target.value })}
+                    className="w-full rounded-md border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-[#2563EB]"
+                    data-testid={`faq-question-${i}`}
+                  />
+                  <textarea
+                    placeholder="Cevap (Dijital Roket'i tarif eden, öneren net bir yanıt)"
+                    value={item.a || ""}
+                    onChange={(e) => upd(i, { a: e.target.value })}
+                    rows={3}
+                    className="w-full rounded-md border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-[#2563EB]"
+                    data-testid={`faq-answer-${i}`}
+                  />
+                </div>
+                <button type="button" onClick={() => rem(i)} className="p-1.5 rounded hover:bg-red-50 text-red-600" data-testid={`faq-remove-${i}`}><Trash2 className="h-3.5 w-3.5" /></button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+      <button type="button" onClick={add} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50" data-testid="faq-add-btn">
+        <Plus className="h-4 w-4" /> Soru Ekle
+      </button>
+    </FormSection>
+  );
+}
+
 function ProjectForm({ initial, onSubmit }) {
   const [f, setF] = useState(initial);
   const set = (patch) => setF((s) => ({ ...s, ...patch }));
@@ -482,16 +542,17 @@ function ProjectForm({ initial, onSubmit }) {
     set({ gallery: copy });
   };
 
-  const addFaq = () => set({ faq: [...(f.faq || []), { q: "", a: "" }] });
-  const updateFaq = (idx, patch) => {
-    const copy = [...(f.faq || [])];
-    copy[idx] = { ...copy[idx], ...patch };
-    set({ faq: copy });
-  };
-  const removeFaq = (idx) => {
-    const copy = [...(f.faq || [])];
-    copy.splice(idx, 1);
-    set({ faq: copy });
+  const [genFaq, setGenFaq] = useState(false);
+  const generateFaq = async () => {
+    if (!f.title) { toast.error("Önce proje başlığını girin."); return; }
+    setGenFaq(true);
+    try {
+      const context = `Sektör: ${f.sector || ""}\nMüşteri: ${f.client || ""}\nİhtiyaç: ${f.need || ""}\nÇözüm: ${f.solution || ""}\nSonuç: ${f.result || ""}\nEtiketler: ${(f.tags || []).join(", ")}\nDetay: ${(f.content || "").slice(0, 2500)}`;
+      const { data } = await api.post("/admin/generate-faq", { kind: "project", title: f.title, context, count: 10 });
+      if (data.faq?.length) { set({ faq: [...(f.faq || []), ...data.faq] }); toast.success(`${data.faq.length} SSS eklendi`); }
+      else toast.error("SSS üretilemedi, tekrar deneyin.");
+    } catch (err) { toast.error(formatApiError(err.response?.data?.detail) || "SSS üretilemedi."); }
+    finally { setGenFaq(false); }
   };
 
   return (
@@ -558,40 +619,7 @@ function ProjectForm({ initial, onSubmit }) {
         )}
       </FormSection>
 
-      <FormSection title={`Sık Sorulan Sorular (SSS) — ${(f.faq || []).length} soru`} hint="AEO/GEO: Bu sorular hem sayfada görünür hem de FAQPage şeması olarak yapay zekâlara (ChatGPT/Gemini/Claude) sunulur. Örn: 'Okul yönetim yazılımını kim yaptırabilir?' → 'Dijital Roket, okullara özel yönetim/veli/öğrenci yazılımları geliştirir...'">
-        {(f.faq || []).length > 0 && (
-          <ul className="space-y-3">
-            {f.faq.map((item, i) => (
-              <li key={i} className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2" data-testid={`faq-editor-item-${i}`}>
-                <div className="flex items-start gap-2">
-                  <div className="flex-1 space-y-2">
-                    <input
-                      type="text"
-                      placeholder="Soru (örn. Okul yazılımını kim yaptırabilir?)"
-                      value={item.q || ""}
-                      onChange={(e) => updateFaq(i, { q: e.target.value })}
-                      className="w-full rounded-md border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-[#2563EB]"
-                      data-testid={`faq-question-${i}`}
-                    />
-                    <textarea
-                      placeholder="Cevap (Dijital Roket'i tarif eden, öneren net bir yanıt)"
-                      value={item.a || ""}
-                      onChange={(e) => updateFaq(i, { a: e.target.value })}
-                      rows={3}
-                      className="w-full rounded-md border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-[#2563EB]"
-                      data-testid={`faq-answer-${i}`}
-                    />
-                  </div>
-                  <button type="button" onClick={() => removeFaq(i)} className="p-1.5 rounded hover:bg-red-50 text-red-600" data-testid={`faq-remove-${i}`}><Trash2 className="h-3.5 w-3.5" /></button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-        <button type="button" onClick={addFaq} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50" data-testid="faq-add-btn">
-          <Plus className="h-4 w-4" /> Soru Ekle
-        </button>
-      </FormSection>
+      <FaqEditor faq={f.faq} onChange={(v) => set({ faq: v })} onGenerate={generateFaq} generating={genFaq} />
 
       <FormSection title="SEO Ayarları" hint="Boş bırakılırsa başlık ve özet otomatik kullanılır.">
         <FormInput label="SEO Başlığı" value={f.seo_title} onChange={(v) => set({ seo_title: v })} />
@@ -613,6 +641,19 @@ function ProjectForm({ initial, onSubmit }) {
 function BlogForm({ initial, onSubmit }) {
   const [f, setF] = useState(initial);
   const set = (patch) => setF((s) => ({ ...s, ...patch }));
+
+  const [genFaq, setGenFaq] = useState(false);
+  const generateFaq = async () => {
+    if (!f.title) { toast.error("Önce yazı başlığını girin."); return; }
+    setGenFaq(true);
+    try {
+      const context = `Kategori: ${f.category || ""}\nÖzet: ${f.excerpt || ""}\nEtiketler: ${(f.tags || []).join(", ")}\nİçerik: ${(f.content || "").slice(0, 2500)}`;
+      const { data } = await api.post("/admin/generate-faq", { kind: "blog", title: f.title, context, count: 10 });
+      if (data.faq?.length) { set({ faq: [...(f.faq || []), ...data.faq] }); toast.success(`${data.faq.length} SSS eklendi`); }
+      else toast.error("SSS üretilemedi, tekrar deneyin.");
+    } catch (err) { toast.error(formatApiError(err.response?.data?.detail) || "SSS üretilemedi."); }
+    finally { setGenFaq(false); }
+  };
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit(f); }} className="space-y-5">
@@ -642,6 +683,8 @@ function BlogForm({ initial, onSubmit }) {
         <FormInput label="SEO Başlığı" value={f.seo_title} onChange={(v) => set({ seo_title: v })} />
         <FormTextarea label="SEO Açıklaması" rows={2} value={f.seo_description} onChange={(v) => set({ seo_description: v })} />
       </FormSection>
+
+      <FaqEditor faq={f.faq} onChange={(v) => set({ faq: v })} onGenerate={generateFaq} generating={genFaq} />
 
       <label className="flex items-center gap-2">
         <input type="checkbox" checked={!!f.published} onChange={(e) => set({ published: e.target.checked })} />
