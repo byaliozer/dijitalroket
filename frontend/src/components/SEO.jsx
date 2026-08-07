@@ -19,7 +19,7 @@ function setMetaTag(attr, key, value) {
  *  - title, description: explicit override (used for detail pages)
  *  - noindex: when true, tells crawlers not to index this page (e.g. 404)
  */
-export default function SEO({ page, title, description, noindex = false }) {
+export default function SEO({ page, title, description, noindex = false, image }) {
   const { settings } = useSiteSettings();
 
   useEffect(() => {
@@ -37,8 +37,21 @@ export default function SEO({ page, title, description, noindex = false }) {
     if (finalDesc) {
       setMetaTag("name", "description", finalDesc);
       setMetaTag("property", "og:description", finalDesc);
+      setMetaTag("name", "twitter:description", finalDesc);
     }
-    if (finalTitle) setMetaTag("property", "og:title", finalTitle);
+    if (finalTitle) {
+      setMetaTag("property", "og:title", finalTitle);
+      setMetaTag("name", "twitter:title", finalTitle);
+    }
+
+    // og:image / twitter:image — use page image (absolute) or fall back to default
+    const defaultImg = "https://dijitalroket.com/og-image.jpg";
+    let finalImg = defaultImg;
+    if (image) {
+      finalImg = image.startsWith("http") ? image : `${window.location.origin}${image}`;
+    }
+    setMetaTag("property", "og:image", finalImg);
+    setMetaTag("name", "twitter:image", finalImg);
 
     // Robots directive (index/noindex)
     setMetaTag("name", "robots", noindex ? "noindex, nofollow" : "index, follow");
@@ -52,7 +65,7 @@ export default function SEO({ page, title, description, noindex = false }) {
     }
     canonical.setAttribute("href", window.location.origin + window.location.pathname);
     setMetaTag("property", "og:url", window.location.origin + window.location.pathname);
-  }, [page, title, description, noindex, settings]);
+  }, [page, title, description, noindex, image, settings]);
 
   return null;
 }

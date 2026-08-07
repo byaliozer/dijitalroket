@@ -72,7 +72,7 @@ export default function ProjectDetail() {
 
   return (
     <>
-      <SEO title={`${item.title} | Dijital Roket`} description={item.seo_description || item.need} />
+      <SEO title={`${item.title} | Dijital Roket`} description={item.seo_description || item.need} image={item.cover_image} />
       <JsonLd id="project" data={projectJsonLd} />
       <section className="relative overflow-hidden bg-[#07111F] text-white">
         <div className="absolute inset-0 bg-grid opacity-30" />

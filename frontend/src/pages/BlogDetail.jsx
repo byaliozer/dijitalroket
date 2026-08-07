@@ -69,7 +69,7 @@ export default function BlogDetail() {
 
   return (
     <>
-      <SEO title={`${post.title} | Dijital Roket Blog`} description={post.seo_description || post.excerpt} />
+      <SEO title={`${post.title} | Dijital Roket Blog`} description={post.seo_description || post.excerpt} image={post.cover_image} />
       <JsonLd id="blog-post" data={articleJsonLd} />
       <section className="relative overflow-hidden bg-[#07111F] text-white">
         <div className="absolute inset-0 bg-grid opacity-30" />
