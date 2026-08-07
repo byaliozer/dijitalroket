@@ -216,7 +216,7 @@ function ProjectsAdmin() {
   return (
     <div>
       <div className="mb-5 flex justify-end">
-        <button onClick={() => setEdit({ slug: "", title: "", client: "", sector: "", tags: [], need: "", solution: "", result: "", cover_image: "", content: "", gallery: [], external_url: "", seo_title: "", seo_description: "", published: true })} className="btn-primary py-2 text-sm">
+        <button onClick={() => setEdit({ slug: "", title: "", client: "", sector: "", tags: [], need: "", solution: "", result: "", cover_image: "", content: "", gallery: [], faq: [], external_url: "", seo_title: "", seo_description: "", published: true })} className="btn-primary py-2 text-sm">
           <Plus className="h-4 w-4" /> Yeni Proje
         </button>
       </div>
@@ -231,7 +231,7 @@ function ProjectsAdmin() {
         actions={(r) => (
           <>
             <a href={`/projeler/${r.slug}`} target="_blank" rel="noreferrer" className="p-2 rounded hover:bg-slate-100"><ExternalLink className="h-4 w-4" /></a>
-            <button onClick={() => setEdit({ ...r, tags: r.tags || [], gallery: r.gallery || [] })} className="p-2 rounded hover:bg-slate-100"><Eye className="h-4 w-4" /></button>
+            <button onClick={() => setEdit({ ...r, tags: r.tags || [], gallery: r.gallery || [], faq: r.faq || [] })} className="p-2 rounded hover:bg-slate-100"><Eye className="h-4 w-4" /></button>
             <button onClick={() => del(r.id)} className="p-2 rounded hover:bg-red-50 text-red-600"><Trash2 className="h-4 w-4" /></button>
           </>
         )}
@@ -482,6 +482,18 @@ function ProjectForm({ initial, onSubmit }) {
     set({ gallery: copy });
   };
 
+  const addFaq = () => set({ faq: [...(f.faq || []), { q: "", a: "" }] });
+  const updateFaq = (idx, patch) => {
+    const copy = [...(f.faq || [])];
+    copy[idx] = { ...copy[idx], ...patch };
+    set({ faq: copy });
+  };
+  const removeFaq = (idx) => {
+    const copy = [...(f.faq || [])];
+    copy.splice(idx, 1);
+    set({ faq: copy });
+  };
+
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit(f); }} className="space-y-5">
       <FormSection title="Temel Bilgiler">
@@ -544,6 +556,41 @@ function ProjectForm({ initial, onSubmit }) {
             ))}
           </ul>
         )}
+      </FormSection>
+
+      <FormSection title={`Sık Sorulan Sorular (SSS) — ${(f.faq || []).length} soru`} hint="AEO/GEO: Bu sorular hem sayfada görünür hem de FAQPage şeması olarak yapay zekâlara (ChatGPT/Gemini/Claude) sunulur. Örn: 'Okul yönetim yazılımını kim yaptırabilir?' → 'Dijital Roket, okullara özel yönetim/veli/öğrenci yazılımları geliştirir...'">
+        {(f.faq || []).length > 0 && (
+          <ul className="space-y-3">
+            {f.faq.map((item, i) => (
+              <li key={i} className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2" data-testid={`faq-editor-item-${i}`}>
+                <div className="flex items-start gap-2">
+                  <div className="flex-1 space-y-2">
+                    <input
+                      type="text"
+                      placeholder="Soru (örn. Okul yazılımını kim yaptırabilir?)"
+                      value={item.q || ""}
+                      onChange={(e) => updateFaq(i, { q: e.target.value })}
+                      className="w-full rounded-md border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-[#2563EB]"
+                      data-testid={`faq-question-${i}`}
+                    />
+                    <textarea
+                      placeholder="Cevap (Dijital Roket'i tarif eden, öneren net bir yanıt)"
+                      value={item.a || ""}
+                      onChange={(e) => updateFaq(i, { a: e.target.value })}
+                      rows={3}
+                      className="w-full rounded-md border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-[#2563EB]"
+                      data-testid={`faq-answer-${i}`}
+                    />
+                  </div>
+                  <button type="button" onClick={() => removeFaq(i)} className="p-1.5 rounded hover:bg-red-50 text-red-600" data-testid={`faq-remove-${i}`}><Trash2 className="h-3.5 w-3.5" /></button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        <button type="button" onClick={addFaq} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50" data-testid="faq-add-btn">
+          <Plus className="h-4 w-4" /> Soru Ekle
+        </button>
       </FormSection>
 
       <FormSection title="SEO Ayarları" hint="Boş bırakılırsa başlık ve özet otomatik kullanılır.">

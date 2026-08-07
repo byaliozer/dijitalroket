@@ -1,0 +1,18 @@
+{
+  "summary": "AEO/GEO features fully verified. Backend: /api/llms-full.txt returns 200 text/markdown starting with '# Dijital Roket', lists services, includes '### <title>' dynamic project entries and '- SSS — ...' FAQ lines for project dr-ai-2026-sosyal-medya-kurallari (2 FAQs). Static /llms.txt returns 200 markdown (not HTML) with '# Dijital Roket'. GET /api/projects returns a 'faq' array on every project; the target project has 2 FAQs including 'Okul yönetim yazılımını kim yaptırabilir?'. Admin PUT /api/admin/projects/{id} accepts full CaseStudyCreate payload including faq (round-trip add+persist+cleanup verified, no 422). Frontend: home '/' has jsonld-organization (@graph: Organization + WebSite); footer social links carry aria-labels e.g. 'Dijital Roket Instagram'. Project detail /projeler/dr-ai-2026-sosyal-medya-kurallari has jsonld-project with @graph types [Article, BreadcrumbList, FAQPage], global jsonld-organization present, and visible <div data-testid=\"project-faq\"> containing both questions. Blog detail /blog/ai-destekli-icerik-uretimi has jsonld-blog-post (@graph includes Article + BreadcrumbList) and global jsonld-organization. Admin dashboard 'DR AI Çalışmaları' > edit project modal renders 'Sık Sorulan Sorular (SSS)' section with data-testids faq-add-btn, faq-editor-item-{i}, faq-question-{i}, faq-answer-{i}, faq-remove-{i} - add/fill/remove all work. Note: FAQ items are stored with keys q/a (not question/answer) - this is consistent across backend, frontend renderer and admin form.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/test_aeo.py", "/app/test_reports/pytest/aeo_results.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "FAQ item shape uses short keys q/a instead of question/answer. Fine functionally, but slightly less self-documenting; consider aliasing or renaming to question/answer in the Pydantic model for clarity while keeping backward-compat.",
+    "Admin login submit button lacks type=\"submit\" attribute; not a bug, but affects Enter-key submission and generic e2e selectors. Consider adding type=\"submit\"."
+  ],
+  "updated_files": ["/app/backend/tests/test_aeo.py"],
+  "success_rate": {"backend": "100% (6/6)", "frontend": "100%"},
+  "test_credentials": "admin@dijitalroket.com / Roket2026! (used, works)",
+  "seed_data_creation": "none (used existing seeded project dr-ai-2026-sosyal-medya-kurallari; admin PUT roundtrip added+removed a TEST_ FAQ item, restored original)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "AEO/GEO verified end-to-end. Backend pytest at /app/backend/tests/test_aeo.py (6 tests). Key detail: project FAQ items use {q, a} keys (not question/answer) - if you update the model, refactor rendering in ProjectDetail, ProjectForm and llms_full_txt() together. Admin login button has no type=submit; click by role name 'Giriş Yap'. Projects admin tab is labeled 'DR AI Çalışmaları'."
+}

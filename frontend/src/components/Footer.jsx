@@ -11,9 +11,9 @@ export default function Footer() {
   const address = settings?.contact_address || "Bursa, Türkiye";
 
   const socials = [
-    settings?.social_linkedin && { icon: Linkedin, href: settings.social_linkedin },
-    settings?.social_instagram && { icon: Instagram, href: settings.social_instagram },
-    settings?.social_twitter && { icon: Twitter, href: settings.social_twitter },
+    settings?.social_linkedin && { icon: Linkedin, href: settings.social_linkedin, label: "LinkedIn" },
+    settings?.social_instagram && { icon: Instagram, href: settings.social_instagram, label: "Instagram" },
+    settings?.social_twitter && { icon: Twitter, href: settings.social_twitter, label: "Twitter" },
   ].filter(Boolean);
 
   const googlePlayUrl = settings?.app_google_play || "";
@@ -35,10 +35,13 @@ export default function Footer() {
                   href={s.href}
                   target="_blank"
                   rel="noreferrer"
+                  aria-label={`Dijital Roket ${s.label}`}
+                  title={`Dijital Roket ${s.label}`}
                   data-testid={`footer-social-${i}`}
                   className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-white/70 transition hover:bg-white/5 hover:text-white"
                 >
-                  <s.icon className="h-4 w-4" />
+                  <s.icon className="h-4 w-4" aria-hidden="true" />
+                  <span className="sr-only">{s.label}</span>
                 </a>
               ))}
             </div>

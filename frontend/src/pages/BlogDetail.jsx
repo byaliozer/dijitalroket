@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Clock } from "lucide-react";
 import { api } from "../lib/api";
 import SEO from "../components/SEO";
+import JsonLd from "../components/JsonLd";
+import { SITE_URL } from "../components/OrganizationSchema";
 import Markdown from "../components/Markdown";
 import FinalCta from "../sections/FinalCta";
 
@@ -25,9 +27,40 @@ export default function BlogDetail() {
   }
   if (!post) return <div className="container-x py-32 text-center text-[#334155]">Yükleniyor...</div>;
 
+  const postUrl = `${SITE_URL}/blog/${post.slug}`;
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        "@id": `${postUrl}#article`,
+        headline: post.title,
+        description: post.seo_description || post.excerpt || "",
+        ...(post.cover_image ? { image: [post.cover_image] } : {}),
+        ...(post.category ? { articleSection: post.category } : {}),
+        ...(post.tags?.length ? { keywords: post.tags.join(", ") } : {}),
+        datePublished: post.created_at,
+        dateModified: post.updated_at || post.created_at,
+        author: { "@id": `${SITE_URL}/#organization` },
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        mainEntityOfPage: postUrl,
+        inLanguage: "tr-TR",
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Ana Sayfa", item: SITE_URL },
+          { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` },
+          { "@type": "ListItem", position: 3, name: post.title, item: postUrl },
+        ],
+      },
+    ],
+  };
+
   return (
     <>
-      <SEO title={`${post.title} | Dijital Roket Blog`} description={post.excerpt} />
+      <SEO title={`${post.title} | Dijital Roket Blog`} description={post.seo_description || post.excerpt} />
+      <JsonLd id="blog-post" data={articleJsonLd} />
       <section className="relative overflow-hidden bg-[#07111F] text-white">
         <div className="absolute inset-0 bg-grid opacity-30" />
         <div className="absolute -top-20 left-1/3 h-[420px] w-[420px] rounded-full bg-[#2563EB]/25 blur-[120px]" />

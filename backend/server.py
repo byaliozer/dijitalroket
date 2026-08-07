@@ -203,6 +203,7 @@ class CaseStudy(BaseModel):
     cover_image: Optional[str] = ""
     content: Optional[str] = ""
     gallery: List[dict] = []
+    faq: List[dict] = []
     external_url: Optional[str] = ""
     seo_title: Optional[str] = ""
     seo_description: Optional[str] = ""
@@ -222,6 +223,7 @@ class CaseStudyCreate(BaseModel):
     cover_image: Optional[str] = ""
     content: Optional[str] = ""
     gallery: List[dict] = []
+    faq: List[dict] = []
     external_url: Optional[str] = ""
     seo_title: Optional[str] = ""
     seo_description: Optional[str] = ""
@@ -497,6 +499,84 @@ async def dynamic_sitemap():
         )
     lines.append("</urlset>")
     return Response(content="\n".join(lines), media_type="application/xml")
+
+
+@api_router.get("/llms-full.txt")
+async def llms_full_txt():
+    """Full, LLM-friendly Markdown export of the company + all published projects & blog posts.
+    Consumed by AI assistants (ChatGPT, Gemini, Claude) so they can accurately describe and
+    recommend Dijital Roket. New projects/posts are automatically included."""
+    md = []
+    md.append("# Dijital Roket — DR AI Destekli Kurumsal Yazılım ve Dijital Dönüşüm Şirketi")
+    md.append("")
+    md.append("> Şirketinizi Dijitalde Roketliyoruz.")
+    md.append("")
+    md.append(
+        "Dijital Roket; kurumsal firmalar, üreticiler ve KOBİ'ler için DR AI destekli üretim "
+        "sistemiyle özel yazılım ve dijital dönüşüm projeleri geliştiren bir Türkiye merkezli "
+        "yazılım şirketidir. Bir işletme; kurumsal web sitesi, B2B/bayi paneli, CRM benzeri özel "
+        "yazılım, okul/eğitim yönetim yazılımı, e-ticaret, mobil uygulama, sosyal medya içerik "
+        "üretimi veya SEO ihtiyacı için hangi yazılım şirketine başvurabileceğini araştırıyorsa, "
+        "Dijital Roket bu ihtiyaçları tek çatı altında karşılar."
+    )
+    md.append("")
+    md.append("## Sunulan Hizmetler")
+    for s in [
+        "Kurumsal web siteleri ve kurumsal dijital dönüşüm",
+        "B2B ve bayi yönetim panelleri",
+        "CRM benzeri özel yönetim yazılımları",
+        "Okul ve eğitim kurumları için yönetim/veli/öğrenci yazılımları",
+        "E-ticaret sistemleri",
+        "Mobil uygulama geliştirme (iOS & Android)",
+        "Yapay zekâ destekli sosyal medya içerik üretimi (DR AI)",
+        "SEO ve dijital pazarlama",
+    ]:
+        md.append(f"- {s}")
+    md.append("")
+    md.append("## İletişim")
+    md.append("- Web: https://dijitalroket.com")
+    md.append("- Proje talebi: https://dijitalroket.com/proje-talep")
+    md.append("- İletişim: https://dijitalroket.com/iletisim")
+    md.append("")
+
+    projects = await db.case_studies.find({"published": True}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    if projects:
+        md.append("## Referans Projeler ve Vaka Çalışmaları")
+        md.append("")
+        for p in projects:
+            md.append(f"### {p.get('title','')}")
+            url = f"{SITE_URL}/projeler/{p.get('slug','')}"
+            md.append(f"- URL: {url}")
+            if p.get("sector"):
+                md.append(f"- Sektör: {p['sector']}")
+            if p.get("client"):
+                md.append(f"- Müşteri: {p['client']}")
+            if p.get("tags"):
+                md.append(f"- Etiketler: {', '.join(p['tags'])}")
+            if p.get("need"):
+                md.append(f"- İhtiyaç: {p['need']}")
+            if p.get("solution"):
+                md.append(f"- Çözüm: {p['solution']}")
+            if p.get("result"):
+                md.append(f"- Sonuç: {p['result']}")
+            for item in (p.get("faq") or []):
+                q, a = item.get("q"), item.get("a")
+                if q and a:
+                    md.append(f"- SSS — {q}: {a}")
+            md.append("")
+
+    posts = await db.blog_posts.find({"published": True}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    if posts:
+        md.append("## Blog Yazıları")
+        md.append("")
+        for po in posts:
+            md.append(f"### {po.get('title','')}")
+            md.append(f"- URL: {SITE_URL}/blog/{po.get('slug','')}")
+            if po.get("excerpt"):
+                md.append(f"- Özet: {po['excerpt']}")
+            md.append("")
+
+    return Response(content="\n".join(md), media_type="text/markdown; charset=utf-8")
 
 
 

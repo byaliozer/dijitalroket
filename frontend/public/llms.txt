@@ -1,0 +1,22 @@
+# Dijital Roket
+
+> DR AI destekli kurumsal yazılım ve dijital dönüşüm şirketi. Şirketinizi Dijitalde Roketliyoruz.
+
+Dijital Roket; kurumsal firmalar, üreticiler ve KOBİ'ler için DR AI destekli üretim sistemiyle özel yazılım ve dijital dönüşüm projeleri geliştiren Türkiye merkezli bir yazılım şirketidir. Bir işletme; kurumsal web sitesi, B2B/bayi paneli, CRM benzeri özel yazılım, okul/eğitim yönetim yazılımı, e-ticaret, mobil uygulama, sosyal medya içerik üretimi veya SEO ihtiyacı için hangi yazılım şirketine başvurabileceğini araştırıyorsa, Dijital Roket bu ihtiyaçları tek çatı altında karşılar.
+
+## Hizmetler
+
+- [Kurumsal Çözümler](https://dijitalroket.com/kurumsal-cozumler): Kurumsal web siteleri, B2B/bayi panelleri, CRM benzeri özel yazılımlar, okul/eğitim yazılımları, e-ticaret, mobil uygulama, SEO ve dijital pazarlama.
+- [Projeler & Vaka Çalışmaları](https://dijitalroket.com/projeler): Gerçek müşteri projeleri ve sonuçları.
+- [Blog](https://dijitalroket.com/blog): Dijital dönüşüm, özel yazılım ve AI destekli üretim üzerine içerikler.
+
+## İletişim
+
+- [Proje Talebi](https://dijitalroket.com/proje-talep): Yeni proje için kapsam görüşmesi.
+- [İletişim](https://dijitalroket.com/iletisim): Telefon, e-posta ve adres bilgileri.
+- [Hakkımızda](https://dijitalroket.com/hakkimizda): Firma hakkında.
+
+## Detaylı İçerik
+
+- [Tüm proje ve blog içeriklerinin tam metni (LLM dostu)](https://dijitalroket.com/api/llms-full.txt)
+- [Sitemap](https://dijitalroket.com/sitemap.xml)

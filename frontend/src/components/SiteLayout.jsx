@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import OrganizationSchema from "./OrganizationSchema";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -13,6 +14,7 @@ export default function SiteLayout() {
   return (
     <div className="min-h-screen bg-white">
       <ScrollToTop />
+      <OrganizationSchema />
       <Navbar />
       <main className="pt-16 lg:pt-20">
         <Outlet />

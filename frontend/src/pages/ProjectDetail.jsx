@@ -4,6 +4,8 @@ import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import { api } from "../lib/api";
 import SEO from "../components/SEO";
+import JsonLd from "../components/JsonLd";
+import { SITE_URL } from "../components/OrganizationSchema";
 import FinalCta from "../sections/FinalCta";
 import Markdown from "../components/Markdown";
 
@@ -30,10 +32,48 @@ export default function ProjectDetail() {
   if (!item) return <div className="container-x py-32 text-center text-[#334155]">Yükleniyor...</div>;
 
   const gallery = item.gallery || [];
+  const faq = (item.faq || []).filter((x) => x?.q && x?.a);
+  const projectUrl = `${SITE_URL}/projeler/${item.slug}`;
+  const jsonLdGraph = [
+    {
+      "@type": "Article",
+      "@id": `${projectUrl}#article`,
+      headline: item.title,
+      description: item.seo_description || item.need || "",
+      ...(item.cover_image ? { image: [item.cover_image] } : {}),
+      ...(item.sector ? { about: item.sector } : {}),
+      ...(item.tags?.length ? { keywords: item.tags.join(", ") } : {}),
+      author: { "@id": `${SITE_URL}/#organization` },
+      publisher: { "@id": `${SITE_URL}/#organization` },
+      mainEntityOfPage: projectUrl,
+      inLanguage: "tr-TR",
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Ana Sayfa", item: SITE_URL },
+        { "@type": "ListItem", position: 2, name: "Projeler", item: `${SITE_URL}/projeler` },
+        { "@type": "ListItem", position: 3, name: item.title, item: projectUrl },
+      ],
+    },
+  ];
+  if (faq.length) {
+    jsonLdGraph.push({
+      "@type": "FAQPage",
+      "@id": `${projectUrl}#faq`,
+      mainEntity: faq.map((x) => ({
+        "@type": "Question",
+        name: x.q,
+        acceptedAnswer: { "@type": "Answer", text: x.a },
+      })),
+    });
+  }
+  const projectJsonLd = { "@context": "https://schema.org", "@graph": jsonLdGraph };
 
   return (
     <>
-      <SEO title={`${item.title} | Dijital Roket`} description={item.need} />
+      <SEO title={`${item.title} | Dijital Roket`} description={item.seo_description || item.need} />
+      <JsonLd id="project" data={projectJsonLd} />
       <section className="relative overflow-hidden bg-[#07111F] text-white">
         <div className="absolute inset-0 bg-grid opacity-30" />
         <div className="absolute -top-20 left-1/4 h-[420px] w-[420px] rounded-full bg-[#2563EB]/25 blur-[120px]" />
@@ -130,6 +170,29 @@ export default function ProjectDetail() {
                 </motion.button>
               ))}
             </div>
+          </div>
+        </section>
+      )}
+
+      {faq.length > 0 && (
+        <section className="pb-16 bg-white" data-testid="project-faq">
+          <div className="container-x max-w-3xl">
+            <span className="eyebrow">Sık Sorulan Sorular</span>
+            <h2 className="mt-3 font-heading text-2xl sm:text-3xl font-bold text-[#07111F]">
+              Bu proje hakkında merak edilenler
+            </h2>
+            <dl className="mt-8 space-y-4">
+              {faq.map((x, i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl border border-slate-200 bg-[#F8FAFC] p-6"
+                  data-testid={`faq-item-${i}`}
+                >
+                  <dt className="font-heading text-base font-bold text-[#07111F]">{x.q}</dt>
+                  <dd className="mt-2 text-[15px] leading-relaxed text-[#334155]">{x.a}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </section>
       )}
