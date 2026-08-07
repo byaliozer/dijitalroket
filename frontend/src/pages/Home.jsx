@@ -8,6 +8,7 @@ import CaseStudiesSection from "../sections/CaseStudiesSection";
 import RoketPartnerSection from "../sections/RoketPartnerSection";
 import TrustSection from "../sections/TrustSection";
 import BlogTeasers from "../sections/BlogTeasers";
+import HomeFaq from "../sections/HomeFaq";
 import FinalCta from "../sections/FinalCta";
 import SEO from "../components/SEO";
 
@@ -25,6 +26,7 @@ export default function Home() {
       <RoketPartnerSection />
       <TrustSection />
       <BlogTeasers />
+      <HomeFaq />
       <FinalCta />
     </>
   );

@@ -1,0 +1,25 @@
+{
+  "summary": "Iteration 8 tested new Home Company FAQ feature end-to-end: settings merge (home_faq with 8 defaults), company-kind AI generation, PUT /admin/settings persistence for home_faq, Home page FAQ accordion + FAQPage JSON-LD, Organization graph including ProfessionalService, plus regressions (projeler/blog detail FAQ, robots/sitemap/llms).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_home_faq.py",
+    "/app/test_reports/pytest/home_faq_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is ~1790 lines; consider splitting into routers/modules for maintainability.",
+    "PUT /admin/settings does shallow whitelist merge; nested 'pages' updates require full object replacement (potential foot-gun for partial edits from admin UI).",
+    "DEFAULT_SETTINGS home_faq embedded in server.py — consider moving to a JSON/seed file for easier editing without redeploy."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_home_faq.py"
+  ],
+  "success_rate": {"backend": "100% (10/10)", "frontend": "100%"},
+  "test_credentials": "admin@dijitalroket.com / Roket2026! (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "None. Test used PUT then restored original home_faq.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend: /api/settings merges DEFAULT_SETTINGS so home_faq (8 items) always appears; PUT /admin/settings whitelist includes home_faq. POST /api/admin/generate-faq supports kind='company' with gpt-5.4-mini and returns Turkish Q&A referencing Dijital Roket. Frontend Home page renders data-testid=home-faq with 8 items, jsonld-home-faq (FAQPage) and jsonld-organization (Organization+WebSite+ProfessionalService). Admin Site Ayarları tab shows 'Şirket SSS' FaqEditor pre-populated from home_faq with faq-add-btn and ai-generate-faq-btn. All prior SEO endpoints (robots.txt, /sitemap.xml, /api/sitemap.xml, /llms.txt, /api/llms-full.txt) and project/blog FAQ still work.",
+  "rca of the issue": "No issues found."
+}

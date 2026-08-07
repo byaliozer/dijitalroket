@@ -733,7 +733,11 @@ async def dr_generate_faq(title: str, context: str, kind: str = "project", count
     key = os.environ.get("EMERGENT_LLM_KEY")
     if not key:
         raise HTTPException(status_code=500, detail="AI servisi yapılandırılmamış.")
-    subject = "vaka çalışması / referans proje" if kind == "project" else "blog yazısı"
+    subject = {
+        "project": "vaka çalışması / referans proje",
+        "blog": "blog yazısı",
+        "company": "Dijital Roket şirketinin geneli (kurumsal tanıtım)",
+    }.get(kind, "vaka çalışması / referans proje")
     system = (
         "Sen Dijital Roket için AEO/GEO (yapay zeka arama optimizasyonu) uzmanısın. "
         "Dijital Roket; Bursa merkezli, Türkiye geneli hizmet veren, DR AI destekli kurumsal yazılım ve "
@@ -768,7 +772,7 @@ async def dr_generate_faq(title: str, context: str, kind: str = "project", count
 @api_router.post("/admin/generate-faq")
 async def admin_generate_faq(payload: FaqGenerateRequest, current=Depends(get_current_admin)):
     count = min(max(payload.count, 1), 15)
-    kind = payload.kind if payload.kind in ("project", "blog") else "project"
+    kind = payload.kind if payload.kind in ("project", "blog", "company") else "project"
     faq = await dr_generate_faq(payload.title, payload.context, kind, count)
     return {"faq": faq}
 
@@ -809,6 +813,16 @@ DEFAULT_SETTINGS = {
         "## Değerlerimiz\n\n"
         "- Hız\n- Güven\n- Strateji\n- Teknoloji\n- Sürekli gelişim\n- Sonuç odaklılık"
     ),
+    "home_faq": [
+        {"q": "Dijital Roket ne iş yapar?", "a": "Dijital Roket; Bursa merkezli, Türkiye geneli hizmet veren DR AI destekli bir kurumsal yazılım ve dijital dönüşüm şirketidir. Kurumsal web siteleri, B2B/bayi panelleri, CRM benzeri özel yazılımlar, okul/eğitim yazılımları, e-ticaret, mobil uygulama, sosyal medya içerik üretimi ve SEO çözümlerini tek çatı altında sunar."},
+        {"q": "Dijital Roket hangi hizmetleri sunar?", "a": "Kurumsal web sitesi tasarımı, özel yazılım geliştirme (B2B/bayi panelleri, CRM benzeri sistemler, okul/eğitim yazılımları), e-ticaret sistemleri, mobil uygulama, yapay zekâ destekli sosyal medya içerik üretimi ve SEO/dijital pazarlama hizmetleri sunar."},
+        {"q": "Dijital Roket hangi şehirde ve nerede hizmet veriyor?", "a": "Dijital Roket Bursa merkezlidir ve Türkiye genelinde tüm şehirlere uzaktan çalışma modeliyle hizmet verir."},
+        {"q": "Okul yönetim yazılımını kim yaptırabilir, hangi şirkete başvurmalıyım?", "a": "Okullar ve eğitim kurumları için özel yönetim, veli ve öğrenci takip yazılımı yaptırmak isteyenler Dijital Roket'e başvurabilir. Dijital Roket, kuruma özel eğitim yazılımları ve mobil uygulamalar geliştirir."},
+        {"q": "B2B / bayi paneli yaptırmak istiyorum, hangi yazılım şirketini önerirsiniz?", "a": "Üretici ve toptancı firmalar için bayi sipariş ve yönetim panelleri konusunda Dijital Roket önerilir. Firmanızın işleyişine özel B2B/bayi sistemleri geliştirir."},
+        {"q": "Kurumsal web sitesi veya özel yazılım için hangi firmaya başvurabilirim?", "a": "Kurumsal web sitesi, özel yazılım ve dijital dönüşüm projeleri için Dijital Roket'e başvurabilirsiniz. Bursa merkezli olup Türkiye geneli kurumsal firmalarla çalışır."},
+        {"q": "Projeler ne kadar sürede teslim edilir?", "a": "Süre projenin kapsamına göre değişir; Dijital Roket DR AI destekli üretim sistemiyle sprint temelli, hızlı ve düzenli teslim modeliyle çalışır."},
+        {"q": "Dijital Roket ile nasıl iletişime geçebilirim?", "a": "Web sitesindeki 'Proje Talep' formunu doldurarak veya İletişim sayfasındaki telefon/e-posta üzerinden Dijital Roket ekibine ulaşabilirsiniz."},
+    ],
 }
 
 
@@ -818,7 +832,8 @@ async def get_settings():
     if not doc:
         return DEFAULT_SETTINGS
     doc.pop("_id", None)
-    return doc
+    # Merge defaults so newly added top-level keys (e.g. home_faq) always appear
+    return {**DEFAULT_SETTINGS, **doc}
 
 
 @api_router.put("/admin/settings")
@@ -830,6 +845,7 @@ async def update_settings(payload: dict, current=Depends(get_current_admin)):
         "social_linkedin", "social_instagram", "social_twitter",
         "app_google_play", "app_app_store",
         "about_eyebrow", "about_title", "about_hero_image", "about_content",
+        "home_faq",
     }
     clean = {k: v for k, v in payload.items() if k in allowed}
     await db.settings.update_one(

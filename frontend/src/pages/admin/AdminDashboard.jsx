@@ -354,6 +354,7 @@ function SettingsAdmin() {
   const { settings, refresh } = useSiteSettings();
   const [f, setF] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [genFaq, setGenFaq] = useState(false);
 
   useEffect(() => { if (settings && !f) setF(JSON.parse(JSON.stringify(settings))); }, [settings, f]);
 
@@ -362,6 +363,17 @@ function SettingsAdmin() {
   const set = (patch) => setF((s) => ({ ...s, ...patch }));
   const setPage = (key, patch) =>
     setF((s) => ({ ...s, pages: { ...s.pages, [key]: { ...s.pages?.[key], ...patch } } }));
+
+  const generateHomeFaq = async () => {
+    setGenFaq(true);
+    try {
+      const context = `Firma: Dijital Roket (Bursa merkezli, Türkiye geneli).\nAçıklama: ${f.site_description || ""}\nHakkımızda: ${(f.about_content || "").slice(0, 2000)}\nHizmetler: Kurumsal web, B2B/bayi panelleri, CRM benzeri özel yazılımlar, okul/eğitim yazılımları, e-ticaret, mobil uygulama, sosyal medya içerik üretimi, SEO.`;
+      const { data } = await api.post("/admin/generate-faq", { kind: "company", title: "Dijital Roket Kurumsal SSS", context, count: 10 });
+      if (data.faq?.length) { set({ home_faq: [...(f.home_faq || []), ...data.faq] }); toast.success(`${data.faq.length} SSS eklendi`); }
+      else toast.error("SSS üretilemedi, tekrar deneyin.");
+    } catch (err) { toast.error(formatApiError(err.response?.data?.detail) || "SSS üretilemedi."); }
+    finally { setGenFaq(false); }
+  };
 
   const save = async (e) => {
     e?.preventDefault();
@@ -446,6 +458,12 @@ function SettingsAdmin() {
           <ContentEditor value={f.about_content} onChange={(v) => set({ about_content: v })} rows={14} />
         </div>
       </FormSection>
+
+      <div className="rounded-xl border border-[#2563EB]/20 bg-[#2563EB]/5 p-4">
+        <div className="text-sm font-bold text-[#07111F]">🤖 AEO/GEO — Şirket SSS (Ana Sayfada gösterilir)</div>
+        <p className="mt-1 text-xs text-[#334155]">Bu sorular ana sayfada görünür ve FAQPage şeması olarak yapay zekâlara (ChatGPT/Gemini/Claude) sunulur. "Dijital Roket ne yapar?", "Nerede hizmet veriyor?" gibi kurumsal sorularla AI önerilerinde öne çıkarsınız.</p>
+      </div>
+      <FaqEditor faq={f.home_faq} onChange={(v) => set({ home_faq: v })} onGenerate={generateHomeFaq} generating={genFaq} />
 
       <div className="sticky bottom-0 -mx-6 lg:-mx-10 px-6 lg:px-10 py-4 bg-white border-t border-slate-200 flex justify-end">
         <button disabled={saving} className="btn-primary">
