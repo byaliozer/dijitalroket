@@ -1,136 +1,125 @@
-<analysis>**original_problem_statement**: 
-Dijital Roket için 2026 standartlarında, ultra profesyonel, kurumsal, modern, premium görünümlü bir B2B web sitesi geliştirilmesi. Sitede ChatGPT veya OpenAI gibi kelimeler kullanılmayacak, bunun yerine DR AI Üretim Sistemi konsepti kullanılacak. Hedef kitle: Orta/büyük şirketler, kurumsal firmalar. Ana sayfada DR AI özellikleri, sprint modeli, iletişim ve proje formları olacak. Ayrıca sitenin kendi yönetilebilir admin paneli olacak. 
-**Eklenen Gereksinimler:** Firmalar için AI görsel üretim paneli (gpt-image-2), kredi sistemi, admin paneli üzerinden marka onay/red yönetimi (Resend ile e-posta gönderimi), asenkron görsel üretimi ve düzenleme (edit) mekanizması, dinamik logo ve iletişim bilgisi yerleşimi.
+<analysis><problem_statement>
+Dijital Roket için 2026 standartlarında, ultra profesyonel, kurumsal, modern, premium görünümlü bir B2B web sitesi geliştirilmesi. Sitede ChatGPT veya OpenAI gibi kelimeler kullanılmayacak, bunun yerine DR AI Üretim Sistemi konsepti kullanılacak. Hedef kitle: Orta/büyük şirketler, kurumsal firmalar. Sitenin kendi yönetilebilir admin paneli, firmalar için AI görsel üretim paneli (gpt-image-2), Resend e-posta sistemi ve tam AEO/GEO (Yapay Zeka Motoru Optimizasyonu) altyapısı bulunacak.
+</problem_statement>
 
 **User's preferred language**: Turkish
 *INSTRUCT NEXT AGENT: You MUST automatically detect the user's primary language from their messages inside the <trajectory> tag and INSTRUCT next agent to respond in the user's preferred language only. RESPOND IN TURKISH.*
 
-**what currently exists?**: 
-Tamamen fonksiyonel React + FastAPI + MongoDB uygulaması. Brand Portal (Marka Paneli) özellikleri eklendi. Firmalar sisteme kayıt olabilir, admin kaydı onaylar (Resend üzerinden e-posta gider). Firmalar kendi panellerinden ayarlarını (şifre, firma hakkında, sosyal medya) yönetebilir ve gpt-image-2 kullanarak asenkron polling yöntemiyle sosyal medya görseli üretebilir/düzenleyebilir. AI görsellere logoyu ve sosyal medya hesaplarını serbest olarak yerleştirebiliyor. Geçici dosya sistemi sorunları nedeniyle Object Storage altyapısına geçiş süreci başlatıldı.
+**what currently exists?** 
+A highly optimized, feature-rich React SPA + FastAPI + MongoDB application. Features include:
+- Brand Portal with asynchronous AI image generation (gpt-image-2) and image editing.
+- Emergent Object Storage integration for all file uploads (logos, generated images, blog/project covers).
+- Extremely robust Technical SEO & AEO/GEO infrastructure (Dynamic XML sitemaps, , , , JSON-LD schemas for Organization, WebSite, Article, FAQPage, BreadcrumbList).
+- AI-Powered Content: Integrated  to auto-generate FAQ sections for Projects, Blogs, and Homepage directly from the admin panel to feed AI search engines.
+- Topical Authority Architecture: Dedicated Service landing pages () and an entity page ().
+- Dynamic Homepage: Rotating featured project card in Hero, pausing Marquee ticker, and dynamic sector filtering on the Projects page.
 
 **Last working item**:
-- **Last item agent was working**: Tüm dosya yüklemelerinin (Logolar, AI görselleri, blog/proje resimleri) kalıcı Object Storage (bulut depolama) sistemine taşınması. Docker pod'larının (ephemeral disk) yeniden başlatılması durumunda sunucuya yüklenen resimlerin kaybolması (kırık link) sorununu çözmek için  kullanılarak object storage playbook'u okundu.
-- **Status**: IN PROGRESS
-- **Agent Testing Done**: N
-- **Which testing method agent to use?**: backend testing agent
+- **Last item agent was working**: Implementing the Topical Authority architecture requested by the user via a ChatGPT audit. Created the  hub, 8 distinct service landing pages (B2B, CRM, AI Agent, etc.), and the  entity page to solidify the brand's SEO structure.
+- **Status**: USER VERIFICATION PENDING
+- **Agent Testing Done**: Y
+- **Which testing method agent to use?**: NA (Testing agent  already completed successfully).
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1: Yüklenen görsellerin birkaç gün sonra kırık (broken) gözükmesi (Ephemeral Disk Wipe Issue) - P0
-     - Attempted fixes: Daha önce frontend'in statik dizin erişim sorunu olarak düşünülüp  adında bir endpoint yazıldı, fakat asıl sorun production ortamındaki konteyner disklerinin (ephemeral storage) deploy sonrası sıfırlanması.
-     - Next debug checklist:  içerisinde ,  ve  fonksiyonlarını  kütüphanesini kullanarak Object Storage'a kaydedecek ve cloud linki döndürecek şekilde güncelleyin.
-     - Why fix this issue and what will be achieved with the fix?: Production ortamında yüklenen marka logolarının, proje resimlerinin ve üretilen AI görsellerinin kalıcı olmasını, deploy sonrası kaybolmamasını sağlayacak.
-     - Status: IN PROGRESS
-     - Is recurring issue? Y
-     - Should Test frontend/backend/both after fix?: Both (Backend testi ile cloud url dönüşü kontrol edilmeli, frontend test ile UI gösterimi onaylanmalı)
-     - Blocked on other issue: None
+No active bugs. The massive SEO and architecture implementation was just completed and tested successfully. 
 
 **In progress Task List**:
-  - Task 1: Object Storage Entegrasyonu
-     - Where to resume:  aracı yeni çağrıldı. Playbook içeriğine göre backend ortamına  kurularak, dosyaların local disk () yerine Object Storage'a kaydedilmesini sağlayın.
-     - What will be achieved with this?: Dosyaların kalıcılığı sağlanacak.
-     - Status: IN PROGRESS
-     - Should Test frontend/backend/both after fix?: Backend
-     - Blocked on something: Yok
+None.
 
 **Upcoming and Future Tasks**:
-- Task 1: Resend Production Domain Doğrulaması (P1)
-  - Kullanıcı alan adını () Resend üzerinde doğruladığında,  ayarını  yerine  olarak güncelleyin ve test modu kısıtlamasını kaldırın.
-- Task 2: Marka Panelinde Hazır Şablonlar / Kampanya Tipleri (P2)
-  - Kullanıcıya önerilmişti: İndirim, Duyuru, Yeni Ürün gibi ön tanımlı şablon seçeneklerinin marka portalı üretici (generator) formuna eklenmesi.
+- Task 1: Next.js / SSR Migration (P2)
+  - *Context:* The user provided a heavy SEO audit demanding SSR/SSG. The current app is a React SPA (CSR). While we heavily mitigated this with dynamic  and robust metadata/JSON-LD, a true SSR migration (like Next.js) is the ultimate future step for perfect Core Web Vitals. *Note: Do not start this unless explicitly requested by the user, as it requires a major rewrite.*
+- Task 2: Server-side 301 Redirect for non-www to www (P2)
+  - *Context:* Currently handled via a fallback JS redirect in . True server-side 301 needs to be done via Emergent Support / DNS settings.
 
 **Completed work in this session**:
-- Asenkron Job + Polling mimarisiyle AI Görsel Üretimi (60s timeout sorunu çözüldü) (DONE)
-- Marka Portalı Giriş, Panel ve Geçmiş Üretimlerin Gösterimi (DONE)
-- Görsel Düzenleme / Yeniden Üretme (Edit/Regenerate) özelliği (DONE)
-- Frontend Navbar Modifikasyonları (Portal Girişi ve Blog linkleri) (DONE)
-- Resim/URL Input Validation Düzeltmesi ( -> ) (DONE)
-- Marka Kayıt, Admin Onayı ve KVKK/Sözleşme Modalları (DONE)
-- Resend e-posta entegrasyonu (Test modunda) (DONE)
-- Firma Hakkında ile AI prompt'a dinamik iletişim bilgisi / logo entegrasyonu (9-nokta seçimi kaldırılarak özgür bırakıldı) (DONE)
+- Implemented Emergent Object Storage for all uploads (Fixed ephemeral disk wipe issue) () (DONE)
+- Fixed GPT image generation prompt bug where About text was rendered literally on images () (DONE)
+- SEO Core: Created , static , and dynamic  (, ) (DONE)
+- AEO/GEO Core: Created  and dynamic  (DONE)
+- AI FAQ Generator: Integrated  in admin to generate SEO/AEO optimized FAQs for projects, blogs, and homepage (, ) (DONE)
+- Canonical URL alignment: Forced all internal SEO, schemas, and links to use  and added JS redirect fallback (, ) (DONE)
+- Dynamic Sector Filters: Projects page filters now auto-generate based on DB entries () (DONE)
+- Project Durations: Added  to CaseStudy, backfilled data, and added UI badges (, , ) (DONE)
+- Featured Projects UI: Added rotating live card in Hero, Marquee ticker, and Featured checkbox in admin (, ) (DONE)
+- Topical Authority Pages: Created , , and 8 specific service templates (, ) (DONE)
 
 **Earlier issues found/mentioned but not fixed**:
-*None* (Object Storage issue is currently in progress)
+*None*
 
 **Known issue recurrence from previous fork**:
-  - Issue recurrence in previous fork: Resimlerin deploy sonrası kırık gözükmesi. (Önce path sorunu sanılıp düzeltildi, sonra disk silinme sorunu olduğu anlaşıldı).
-  - Recurrence count: 2
-  - Status: IN PROGRESS
+*None*
 
 **Code Architecture**:
 
 
 **Key Technical Concepts**:
-React SPA, FastAPI, MongoDB (Motor async), JWT Auth (Admin & Brand), Asynchronous API Polling (Image Generation takes >60s), OpenAI API ( for images,  for vision captions), Resend API (Email notifications).
+React SPA, FastAPI, MongoDB (Motor async), Emergent Object Storage, Emergent LLM Key (GPT-Image-2 for visuals, GPT-5.4-mini for AEO FAQ generation), AEO (Answer Engine Optimization), Structured Data (JSON-LD).
 
 **key DB schema**:
+  -  (Projects): 
   - : 
   - : 
 
 **changes in tech stack**:
-  -  kütüphanesi eklendi.
-  -  (Object storage için) ekleniyor.
+  - Integrated  for Object Storage and  (Text generation).
 
 **All files of reference**:
--  (Object storage migration için düzenlenecek ana dosya)
+- 
+- 
+- 
 - 
 - 
 - 
 
 **Areas that need refactoring**:
--  dosyası 1300 satırı geçti. Modeller, route'lar ve arka plan işleri (background tasks) olarak ileride bölünmesi gerekebilir.
+-  is approaching 2000 lines. It handles auth, CRUD, async image generation jobs, object storage, and LLM text generation. Needs splitting into routers.
 
 **key api endpoints**:
-- , 
-- , , 
--  (Onaylama ve kredi atama)
--  (LOCAL DİSKTEN OBJECT STORAGE'A TAŞINACAK)
+- : Calls GPT-5.4-mini to generate 5-10 SEO questions based on content.
+- , : Dynamic SEO/AEO endpoints.
+- : Saves global configurations including .
 
 **Critical Info for New Agent**:
-- **Dil**: Yanıtları her zaman Türkçe (Turkish) verin.
-- **Mimari Sorun**: Kubernetes ortamında local file system geçicidir (ephemeral). Asla dosyaları  veya backend içindeki yerel bir klasöre kaydetmeyin. Yeni görev, her türlü upload'u Object Storage sistemine bağlamaktır.
-- **Timeout**:  ile görsel üretimi ~90 saniye sürebildiği için Ingress limitine (60s) takılır. Bu yüzden asenkron Job ID ve Polling sistemi  olarak kodlanmıştır; generation logic'ini bozmamaya dikkat edin.
-- **E-posta (Resend)**: Kullanıcı domain doğrulaması yapmak istemediği için Resend test modundadır.  olarak sabittir. E-postalar sadece kullanıcının Resend'e kayıtlı hesabına gider.
+- **Strict Domain Rule:** The canonical domain is explicitly . All generated sitemaps, JSON-LD schemas, and OG tags use this. Do NOT revert to the non-www version.
+- **Language:** Must respond in Turkish.
+- **AEO Focus:** The user is obsessed with AEO/GEO (Answer Engine Optimization). Any new content feature must include  arrays and be exposed to .
 
 **documents and test reports created in this job**:
-  - 
-  - 
-  - 
+  -  (SEO basics)
+  -  (AEO/GEO logic)
+  -  (GPT-5.4 FAQ gen)
+  -  (Home FAQ)
+  -  (Featured Projects UI)
+  -  (Service Landing Pages)
+  -  (Continuously updated)
 
 **Last 10 User Messages and any pending HUMAN messages**:
- 1. User: İletişim bilgisi/logo alanı ekleyelim, 9 nokta olayını kaldıralım, AI serbest yerleştirsin. (COMPLETED)
- 2. User: Brand Portal üzerinden kayıt olabilsinler, KVKK/Sözleşme onayı zorunlu olsun, Admin panelde onaya düşsün, onaylanınca Resend üzerinden e-posta gitsin. (COMPLETED)
- 3. Agent: Resend e-posta detaylarını ve API anahtarını sordu.
- 4. User: Resend API anahtarını verdi. (COMPLETED)
- 5. User: Resend'de domain doğrulaması için hangi bölgeyi (Region) seçeceğim? (COMPLETED)
- 6. User: Mail eklemekten vazgeçtim, noreply@resend.dev kalsın. (COMPLETED - Agent test modunda çalışacağını belirtti).
- 7. User: markanın logosu kırık görünüyor. Önceden vardı... 4 gün sonra girdim kırık. (IN PROGRESS - Agent sorunun kalıcı storage eksikliği olduğunu bulup Object Storage Playbook'unu çağırdı.)
+ 1. User asked to add project development durations (e.g., 7 days) to all projects. (COMPLETED)
+ 2. User chose a hybrid layout for homepage projects: Live rotating Hero card + Marquee ticker + Admin Featured toggle. (COMPLETED)
+ 3. User noted the Hero layout had too much top padding and the rotating card was too low. (COMPLETED)
+ 4. User asked to make the Marquee ticker pause on mouse hover. (COMPLETED)
+ 5. User pasted a massive ChatGPT-generated SEO audit requesting SSR, wildcard removal, URL normalization, semantic HTML, and a comprehensive Topical Authority architecture (Service landing pages). (COMPLETED - Core semantic/meta fixes applied, Service pages created. SSR deferred as it requires Next.js rewrite).
 
 **Project Health Check**:
-- Broken: Yüklenen resimlerin deploy sonrası kaybolması (Local Ephemeral Disk problemi).
-- Mocked: Resend Email sistemi (Sadece test adresine gönderiyor).
+- Broken: None.
+- Mocked: Resend Email system (still in test mode as per previous fork).
 
 **3rd Party Integrations**:
- - OpenAI GPT-Image-2 (Emergent LLM Key ile)
- - Resend (Emails) — User API Key ile ('de mevcut)
- - Object Storage — Emergent Integrations ile (Şu an entegre ediliyor)
+ - OpenAI GPT-Image-2 (Emergent LLM Key)
+ - OpenAI GPT-5.4-mini (Emergent LLM Key - Used for FAQ Generation)
+ - Resend (Emails) — User API Key
+ - Emergent Object Storage 
 
 **Testing status**:
-  - Testing agent used after significant changes: YES (Iteration 4)
+  - Testing agent used after significant changes: YES (Iterations 5 through 10 utilized for every major phase).
   - Troubleshoot agent used after agent stuck in loop: NO
-  - Test files created: 
-  - Known regressions: Dosya yüklemeleri disk sıfırlandığı için çalışmıyor (URL var, resim yok).
+  - Test files created:  (Latest)
+  - Known regressions: None.
 
 **Credentials to test flow**:
-- Admin:  /  (Diğerleri  dosyasındadır).
+- Admin:  / 
 
 **What agent forgot to execute**:
-Object storage kodlaması tamamlanmadı. Agent sorunu buldu, playbook'u çağırdı ancak dosyayı (server.py) editlemeden task yarım kaldı.
-
-**Debugging checklist for current issue**:
-    Issue: Ephemeral File Storage (Images break after pod restart)
-    Backend files to check: 
-    - Check  method.
-    - Check  method (saving AI image).
-    - Check  method (saving edited AI image).
-    - Remove local file saving logic and implement  object storage client logic according to the playbook retrieved in the last step. Update the DB models/endpoints to return the cloud URL.</analysis>
+Nothing. All requests from the massive ChatGPT SEO list that were structurally viable in a React SPA were executed.</analysis>
