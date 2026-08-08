@@ -7,8 +7,6 @@ import SEO from "../components/SEO";
 import { api } from "../lib/api";
 import FinalCta from "../sections/FinalCta";
 
-const FILTERS = ["Tümü", "Kurumsal Web", "B2B", "AI", "Sosyal Medya", "Spor", "Eğitim", "Sağlık"];
-
 export default function Projects() {
   const [items, setItems] = useState([]);
   const [filter, setFilter] = useState("Tümü");
@@ -17,9 +15,19 @@ export default function Projects() {
     api.get("/projects").then((r) => setItems(r.data)).catch(() => {});
   }, []);
 
+  // Build filter chips dynamically from each project's "Sektör" (sector) value
+  const filters = useMemo(() => {
+    const seen = [];
+    for (const it of items) {
+      const s = (it.sector || "").trim();
+      if (s && !seen.some((x) => x.toLowerCase() === s.toLowerCase())) seen.push(s);
+    }
+    return ["Tümü", ...seen];
+  }, [items]);
+
   const filtered = useMemo(() => {
     if (filter === "Tümü") return items;
-    return items.filter((i) => (i.tags || []).some((t) => t.toLowerCase().includes(filter.toLowerCase())) || i.sector.toLowerCase().includes(filter.toLowerCase()));
+    return items.filter((i) => (i.sector || "").trim().toLowerCase() === filter.toLowerCase());
   }, [items, filter]);
 
   return (
@@ -34,7 +42,7 @@ export default function Projects() {
       <section className="section bg-white">
         <div className="container-x">
           <div className="flex flex-wrap gap-2" data-testid="project-filters">
-            {FILTERS.map((f) => (
+            {filters.map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
