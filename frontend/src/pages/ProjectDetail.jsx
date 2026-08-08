@@ -81,6 +81,15 @@ export default function ProjectDetail() {
           <Link to="/projeler" className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white">
             <ArrowLeft className="h-4 w-4" /> Tüm Projeler
           </Link>
+          <nav aria-label="breadcrumb" className="mt-4">
+            <ol className="flex flex-wrap items-center gap-2 text-xs text-white/50" data-testid="project-breadcrumb">
+              <li><Link to="/" className="hover:text-white">Ana Sayfa</Link></li>
+              <li aria-hidden="true">/</li>
+              <li><Link to="/projeler" className="hover:text-white">Projeler</Link></li>
+              <li aria-hidden="true">/</li>
+              <li className="text-white/80" aria-current="page">{item.title}</li>
+            </ol>
+          </nav>
           <div className="mt-6 block"><span className="eyebrow-light">{item.sector}</span></div>
           <h1 className="mt-3 h1-display text-white max-w-4xl">{item.title}</h1>
           <div className="mt-4 flex flex-wrap gap-2">

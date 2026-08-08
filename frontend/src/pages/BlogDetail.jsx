@@ -31,7 +31,7 @@ export default function BlogDetail() {
   const faq = (post.faq || []).filter((x) => x?.q && x?.a);
   const graph = [
       {
-        "@type": "Article",
+        "@type": "BlogPosting",
         "@id": `${postUrl}#article`,
         headline: post.title,
         description: post.seo_description || post.excerpt || "",
@@ -78,6 +78,15 @@ export default function BlogDetail() {
           <Link to="/blog" className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white">
             <ArrowLeft className="h-4 w-4" /> Tüm Yazılar
           </Link>
+          <nav aria-label="breadcrumb" className="mt-4">
+            <ol className="flex flex-wrap items-center gap-2 text-xs text-white/50" data-testid="blog-breadcrumb">
+              <li><Link to="/" className="hover:text-white">Ana Sayfa</Link></li>
+              <li aria-hidden="true">/</li>
+              <li><Link to="/blog" className="hover:text-white">Blog</Link></li>
+              <li aria-hidden="true">/</li>
+              <li className="text-white/80" aria-current="page">{post.title}</li>
+            </ol>
+          </nav>
           <div className="mt-6 block"><span className="eyebrow-light">{post.category}</span></div>
           <h1 className="mt-3 h1-display text-white">{post.title}</h1>
           <div className="mt-4 inline-flex items-center gap-1.5 text-sm text-white/60">

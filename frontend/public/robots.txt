@@ -1,9 +1,59 @@
+# Dijital Roket — robots.txt
+# Canonical host: https://www.dijitalroket.com
+
 User-agent: *
 Allow: /
-
 Disallow: /admin/
 Disallow: /firma/
 Disallow: /api/
+
+# --- AI / Answer-engine crawlers (AEO/GEO) ---
+# ChatGPT Search indexer — important for ChatGPT visibility
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin/
+Disallow: /firma/
+
+# OpenAI training/browse
+User-agent: GPTBot
+Allow: /
+Disallow: /admin/
+Disallow: /firma/
+
+# ChatGPT live browsing (user-triggered)
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin/
+Disallow: /firma/
+
+# Google Gemini / Vertex
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin/
+Disallow: /firma/
+
+# Anthropic (Claude)
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin/
+Disallow: /firma/
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /admin/
+Disallow: /firma/
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin/
+Disallow: /firma/
+
+# Apple Intelligence
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /admin/
+Disallow: /firma/
 
 Sitemap: https://www.dijitalroket.com/sitemap.xml
 Sitemap: https://www.dijitalroket.com/api/sitemap.xml
