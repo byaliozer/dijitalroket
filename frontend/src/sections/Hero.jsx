@@ -136,7 +136,7 @@ export default function Hero() {
         <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-b from-transparent to-[#07111F]" />
       </div>
 
-      <div className="container-x relative pt-24 pb-24 sm:pt-32 sm:pb-32 lg:pt-40 lg:pb-32 grid lg:grid-cols-12 gap-12 items-center">
+      <div className="container-x relative pt-20 pb-20 sm:pt-24 sm:pb-28 lg:pt-24 lg:pb-32 grid lg:grid-cols-12 gap-12 lg:items-start">
         <div className="lg:col-span-7">
           <motion.span
             initial={{ opacity: 0, y: 12 }}
