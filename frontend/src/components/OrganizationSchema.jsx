@@ -49,7 +49,8 @@ export default function OrganizationSchema() {
     telephone: phone,
     address: {
       "@type": "PostalAddress",
-      addressLocality: "Bursa",
+      streetAddress: "Panayır Mah. 400. Sk. Okumuşlar Plaza No:2 İç Kapı No:12",
+      addressLocality: "Osmangazi",
       addressRegion: "Bursa",
       addressCountry: "TR",
     },

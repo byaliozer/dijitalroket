@@ -16,6 +16,7 @@ Dijital Roket; kurumsal firmalar, üreticiler ve KOBİ'ler için DR AI destekli 
 - [Sosyal Medya Yönetimi](https://www.dijitalroket.com/hizmetler/sosyal-medya-yonetimi)
 - [İş Süreci Otomasyonu](https://www.dijitalroket.com/hizmetler/is-sureci-otomasyonu)
 - [DR AI Nedir?](https://www.dijitalroket.com/dr-ai): Dijital Roket'in yapay zekâ destekli üretim sistemi.
+- [Bursa Web Tasarım & Dijital Dönüşüm](https://www.dijitalroket.com/bursa-web-tasarim): Osmangazi/Bursa merkezli, Türkiye geneli hizmet veren yerel dijital dönüşüm sayfası.
 - [Projeler & Vaka Çalışmaları](https://www.dijitalroket.com/projeler): Gerçek müşteri projeleri ve sonuçları.
 - [Blog](https://www.dijitalroket.com/blog): Dijital dönüşüm, özel yazılım ve AI destekli üretim üzerine içerikler.
 

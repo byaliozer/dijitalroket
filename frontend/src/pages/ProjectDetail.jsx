@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import { api } from "../lib/api";
 import SEO from "../components/SEO";
@@ -8,6 +8,7 @@ import JsonLd from "../components/JsonLd";
 import { SITE_URL } from "../components/OrganizationSchema";
 import FinalCta from "../sections/FinalCta";
 import Markdown from "../components/Markdown";
+import { matchServicesFor, matchPostsForKeywords } from "../lib/related";
 
 // inline helper removed — now using shared Markdown component.
 
@@ -16,10 +17,16 @@ export default function ProjectDetail() {
   const [item, setItem] = useState(null);
   const [err, setErr] = useState("");
   const [lightbox, setLightbox] = useState(null);
+  const [posts, setPosts] = useState([]);
 
   useEffect(() => {
+    setItem(null);
     api.get(`/projects/${slug}`).then((r) => setItem(r.data)).catch(() => setErr("Proje bulunamadı"));
   }, [slug]);
+
+  useEffect(() => {
+    api.get("/blog").then((r) => setPosts(r.data || [])).catch(() => {});
+  }, []);
 
   if (err) {
     return (
@@ -33,6 +40,9 @@ export default function ProjectDetail() {
 
   const gallery = item.gallery || [];
   const faq = (item.faq || []).filter((x) => x?.q && x?.a);
+  const matchText = `${item.title} ${item.sector || ""} ${item.need || ""} ${item.solution || ""}`;
+  const relatedServices = matchServicesFor(matchText, item.tags, 3);
+  const relatedPosts = matchPostsForKeywords(posts, [...(item.tags || []), item.sector, item.title].filter(Boolean), 3);
   const projectUrl = `${SITE_URL}/projeler/${item.slug}`;
   const jsonLdGraph = [
     {
@@ -202,6 +212,40 @@ export default function ProjectDetail() {
                 </div>
               ))}
             </dl>
+          </div>
+        </section>
+      )}
+
+      {/* Internal links: related services */}
+      {relatedServices.length > 0 && (
+        <section className="pb-4 bg-white" data-testid="project-related-services">
+          <div className="container-x">
+            <h2 className="font-heading text-xl font-bold text-[#07111F]">Bu projeyle ilgili hizmetlerimiz</h2>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {relatedServices.map((s) => (
+                <Link key={s.slug} to={`/hizmetler/${s.slug}`} className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-[#F8FAFC] px-4 py-2 text-sm font-medium text-[#334155] hover:border-[#2563EB]/40 hover:text-[#07111F] transition" data-testid={`project-rel-service-${s.slug}`}>
+                  {s.navLabel} çözümlerimizi inceleyin <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Internal links: related posts */}
+      {relatedPosts.length > 0 && (
+        <section className="pb-12 bg-white" data-testid="project-related-posts">
+          <div className="container-x">
+            <h2 className="font-heading text-xl font-bold text-[#07111F]">İlgili yazılar</h2>
+            <div className="mt-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {relatedPosts.map((p) => (
+                <Link key={p.slug} to={`/blog/${p.slug}`} className="group card-elevate p-5" data-testid={`project-rel-post-${p.slug}`}>
+                  <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#2563EB]">{p.category}</span>
+                  <h3 className="mt-1.5 font-heading text-base font-semibold text-[#07111F] leading-snug line-clamp-2">{p.title}</h3>
+                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#2563EB] group-hover:gap-1.5 transition-all">Oku <ArrowRight className="h-3.5 w-3.5" /></span>
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
       )}

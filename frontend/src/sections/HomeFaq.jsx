@@ -32,7 +32,7 @@ export default function HomeFaq() {
             Dijital Roket hakkında merak edilenler
           </h2>
           <p className="mt-4 text-[15px] text-[#334155]">
-            Yapay zekâ asistanlarına en çok sorulan soruların yanıtları.
+            Dijital Roket'in hizmetleri, özel yazılım çözümleri ve proje süreçleri hakkında en çok merak edilen soruların yanıtları.
           </p>
         </div>
         <div className="mt-10 space-y-3">

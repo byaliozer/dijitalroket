@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Clock, ArrowUpRight } from "lucide-react";
@@ -8,14 +8,44 @@ import { api } from "../lib/api";
 
 export default function Blog() {
   const [items, setItems] = useState([]);
+  const [active, setActive] = useState("Tümü");
   useEffect(() => { api.get("/blog").then((r) => setItems(r.data)).catch(() => {}); }, []);
+
+  const categories = useMemo(() => {
+    const set = [];
+    items.forEach((p) => { if (p.category && !set.includes(p.category)) set.push(p.category); });
+    return ["Tümü", ...set];
+  }, [items]);
+
+  const filtered = active === "Tümü" ? items : items.filter((p) => p.category === active);
+
   return (
     <>
       <SEO page="blog" />
       <PageHero eyebrow="İçgörüler" title="Dijital Dönüşüm Blogu" subtitle="Kurumsal web, B2B, CRM ve AI üretimi üzerine düşünceler." />
       <section className="section bg-white">
-        <div className="container-x grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {items.map((p, i) => (
+        <div className="container-x">
+          {categories.length > 1 && (
+            <div className="mb-10 flex flex-wrap gap-2" data-testid="blog-category-filters">
+              {categories.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setActive(c)}
+                  data-testid={`blog-filter-${c === "Tümü" ? "all" : c}`}
+                  className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+                    active === c
+                      ? "border-[#2563EB] bg-[#2563EB] text-white"
+                      : "border-slate-200 bg-[#F8FAFC] text-[#334155] hover:border-[#2563EB]/40 hover:text-[#07111F]"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((p, i) => (
             <motion.article
               key={p.id}
               initial={{ opacity: 0, y: 18 }}
@@ -43,6 +73,7 @@ export default function Blog() {
               </div>
             </motion.article>
           ))}
+          </div>
         </div>
       </section>
     </>

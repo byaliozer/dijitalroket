@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ChevronDown, ArrowRight, ArrowUpRight, Check, Phone, MessageCircle } from "lucide-react";
 import { api } from "../lib/api";
 import { getService, SERVICES } from "../data/servicesData";
+import { matchPostsForKeywords } from "../lib/related";
 import SEO from "../components/SEO";
 import JsonLd from "../components/JsonLd";
 import { SITE_URL } from "../components/OrganizationSchema";
@@ -23,16 +24,19 @@ export default function ServiceLanding() {
   const { slug } = useParams();
   const service = getService(slug);
   const [projects, setProjects] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [openFaq, setOpenFaq] = useState(0);
 
   useEffect(() => {
     api.get("/projects").then((r) => setProjects(r.data || [])).catch(() => {});
+    api.get("/blog").then((r) => setPosts(r.data || [])).catch(() => {});
   }, []);
 
   if (!service) return <Navigate to="/hizmetler" replace />;
 
   const url = `${SITE_URL}/hizmetler/${service.slug}`;
   const related = matchProjects(projects, service.keywords);
+  const relatedPosts = matchPostsForKeywords(posts, [...service.keywords, service.navLabel], 3);
   const otherServices = SERVICES.filter((s) => s.slug !== service.slug).slice(0, 4);
 
   const jsonLd = {
@@ -184,6 +188,24 @@ export default function ServiceLanding() {
           </div>
         </div>
       </section>
+
+      {/* Related blog posts (internal links) */}
+      {relatedPosts.length > 0 && (
+        <section className="pb-4 bg-white" data-testid="service-related-posts">
+          <div className="container-x">
+            <h2 className="font-heading text-xl font-bold text-[#07111F]">İlgili blog yazıları</h2>
+            <div className="mt-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {relatedPosts.map((p) => (
+                <Link key={p.slug} to={`/blog/${p.slug}`} className="group card-elevate p-5" data-testid={`service-rel-post-${p.slug}`}>
+                  <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#2563EB]">{p.category}</span>
+                  <h3 className="mt-1.5 font-heading text-base font-semibold text-[#07111F] leading-snug line-clamp-2">{p.title}</h3>
+                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#2563EB] group-hover:gap-1.5 transition-all">Oku <ArrowRight className="h-3.5 w-3.5" /></span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Internal links to other services */}
       <section className="pb-16 bg-white">

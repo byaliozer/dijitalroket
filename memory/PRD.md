@@ -77,5 +77,19 @@ Build a premium corporate Turkish website for **Dijital Roket** — repositioned
 - Optional UX: large clickable cards on listings.
 - Optional: e-mail notifications when forms arrive.
 
+## What's Been Implemented (2026-06-19 → devam) — Topical Authority faz-4 (Eksik kapatma)
+ChatGPT SEO/topical authority denetim listesindeki atlanan maddeler tamamlandı:
+- **Bursa Local Landing Page** (`/bursa-web-tasarim`, `pages/BursaLanding.jsx`): GERÇEK adres (Panayır Mah. Okumuşlar Plaza, Osmangazi/Bursa), ProfessionalService (LocalBusiness) + BreadcrumbList + FAQPage JSON-LD, Google Maps iframe, telefon/WhatsApp CTA, hizmet grid internal linkleri, ilgili projeler, 5 yerel-niyet SSS. Doorway page değil, tek güçlü sayfa. Sitemap (statik+dinamik), llms.txt/llms-full.txt ve footer'a eklendi.
+- **Blog Topic Clusters** (`pages/Blog.jsx`): Kategori filtre çipleri (client-side, ayrı URL üretmez → thin/duplicate index sorunu yok). Kategoriler post'lardan dinamik türetiliyor.
+- **Internal Link Engine** (`lib/related.js` paylaşımlı yardımcılar): Blog detay → ilgili hizmet + ilgili proje + ilgili yazı; Proje detay → ilgili hizmet + ilgili yazı; Hizmet detay → ilgili blog yazıları. Anchor text doğal ("... çözümlerimizi inceleyin").
+- **Blog E-E-A-T** (`data/authorData.js`, `pages/BlogDetail.jsx`): GERÇEK yazar Ali Özer (Kurucu & CEO, byaliozer.com); hero'da yazar + görünür yayın tarihi + güncelleme tarihi + okuma süresi; yazı sonunda yazar kutusu (bio + link); JSON-LD author artık `Person` (worksFor Organization).
+- **Metin değişikliği**: HomeFaq alt başlığı → "Dijital Roket'in hizmetleri, özel yazılım çözümleri ve proje süreçleri hakkında en çok merak edilen soruların yanıtları."
+- **Organization JSON-LD**: PostalAddress'e gerçek streetAddress + Osmangazi eklendi (local SEO).
+- **Yazar bilgisi**: Ali Özer — CEO — https://www.byaliozer.com/ — 0543 793 41 01 (gerçek, uydurma değil).
+- **VALIDATED** (screenshot smoke): Bursa H1/map/6 hizmet/5 SSS; Blog detay yazar(1)+ilgili hizmet(1)+proje(2)+yazı(3)+tarihler; Blog filtre(6) çalışıyor; Hizmet ilgili blog(1)+ilgili proje(4). Derleme hatasız.
+- NOT: Değişikliklerin dijitalroket.com'da görünmesi için REDEPLOY + GSC sitemap yeniden gönderimi gerekir.
+
+## Next Tasks (archive below)
+
 ## Admin Credentials
 See `/app/memory/test_credentials.md`.

@@ -486,6 +486,7 @@ async def dynamic_sitemap():
         ("/hizmetler/sosyal-medya-yonetimi", "monthly", "0.8"),
         ("/hizmetler/is-sureci-otomasyonu", "monthly", "0.8"),
         ("/dr-ai", "monthly", "0.7"),
+        ("/bursa-web-tasarim", "monthly", "0.8"),
         ("/projeler", "weekly", "0.9"),
         ("/hakkimizda", "monthly", "0.7"),
         ("/blog", "weekly", "0.8"),
@@ -564,6 +565,11 @@ async def llms_full_txt():
     ]:
         md.append(f"- {label}: {SITE_URL}/hizmetler/{path}")
     md.append(f"- DR AI Nedir?: {SITE_URL}/dr-ai")
+    md.append(f"- Bursa Web Tasarım & Dijital Dönüşüm: {SITE_URL}/bursa-web-tasarim")
+    md.append("")
+    md.append("## Konum")
+    md.append("- Merkez: Osmangazi / Bursa (Panayır Mah. Okumuşlar Plaza)")
+    md.append("- Hizmet bölgesi: Bursa merkezli, Türkiye geneli")
     md.append("")
     md.append("## İletişim")
     md.append("- Web: https://www.dijitalroket.com")

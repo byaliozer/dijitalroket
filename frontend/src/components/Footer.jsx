@@ -49,18 +49,20 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-sm font-bold uppercase tracking-[0.18em] text-[#22D3EE]">Çözümler</h4>
+          <h4 className="text-sm font-bold uppercase tracking-[0.18em] text-[#22D3EE]">Hizmetler</h4>
           <ul className="mt-5 space-y-3 text-sm text-white/70">
-            <li><Link to="/kurumsal-cozumler" className="hover:text-white">Kurumsal Web</Link></li>
-            <li><Link to="/kurumsal-cozumler" className="hover:text-white">B2B Sistemler</Link></li>
-            <li><Link to="/kurumsal-cozumler" className="hover:text-white">CRM Benzeri Paneller</Link></li>
-            <li><Link to="/kurumsal-cozumler" className="hover:text-white">Sosyal Medya Üretimi</Link></li>
+            <li><Link to="/hizmetler/kurumsal-web-tasarim" className="hover:text-white">Kurumsal Web Tasarım</Link></li>
+            <li><Link to="/hizmetler/b2b-bayi-sistemi" className="hover:text-white">B2B Bayi Sistemi</Link></li>
+            <li><Link to="/hizmetler/ozel-crm-yazilimi" className="hover:text-white">Özel CRM Yazılımı</Link></li>
+            <li><Link to="/hizmetler/yapay-zeka-agent" className="hover:text-white">Yapay Zekâ Agent</Link></li>
+            <li><Link to="/bursa-web-tasarim" className="hover:text-white">Bursa Web Tasarım</Link></li>
           </ul>
         </div>
 
         <div>
           <h4 className="text-sm font-bold uppercase tracking-[0.18em] text-[#22D3EE]">Şirket</h4>
           <ul className="mt-5 space-y-3 text-sm text-white/70">
+            <li><Link to="/hizmetler" className="hover:text-white">Tüm Hizmetler</Link></li>
             <li><Link to="/hakkimizda" className="hover:text-white">Hakkımızda</Link></li>
             <li><Link to="/projeler" className="hover:text-white">Projeler</Link></li>
             <li><Link to="/blog" className="hover:text-white">Blog</Link></li>
