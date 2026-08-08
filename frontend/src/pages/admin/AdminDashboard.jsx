@@ -216,7 +216,7 @@ function ProjectsAdmin() {
   return (
     <div>
       <div className="mb-5 flex justify-end">
-        <button onClick={() => setEdit({ slug: "", title: "", client: "", sector: "", tags: [], need: "", solution: "", result: "", cover_image: "", content: "", gallery: [], faq: [], external_url: "", seo_title: "", seo_description: "", published: true })} className="btn-primary py-2 text-sm">
+        <button onClick={() => setEdit({ slug: "", title: "", client: "", sector: "", tags: [], need: "", solution: "", result: "", cover_image: "", content: "", gallery: [], faq: [], external_url: "", seo_title: "", seo_description: "", duration_days: null, published: true })} className="btn-primary py-2 text-sm">
           <Plus className="h-4 w-4" /> Yeni Proje
         </button>
       </div>
@@ -582,6 +582,18 @@ function ProjectForm({ initial, onSubmit }) {
           <FormInput label="Müşteri" value={f.client} onChange={(v) => set({ client: v })} />
           <FormInput label="Sektör" value={f.sector} onChange={(v) => set({ sector: v })} />
           <FormInput label="Harici Link (örn. firma sitesi)" value={f.external_url} onChange={(v) => set({ external_url: v })} />
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Süre (gün) — kaç günde geliştirildi</label>
+            <input
+              type="number"
+              min="1"
+              placeholder="Örn. 6"
+              value={f.duration_days ?? ""}
+              onChange={(e) => set({ duration_days: e.target.value === "" ? null : parseInt(e.target.value, 10) })}
+              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#2563EB]"
+              data-testid="project-duration-input"
+            />
+          </div>
         </div>
         <div className="mt-4">
           <TagInput label="Etiketler" value={f.tags} onChange={(v) => set({ tags: v })} />

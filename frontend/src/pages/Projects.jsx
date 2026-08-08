@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Clock } from "lucide-react";
 import PageHero from "../components/PageHero";
 import SEO from "../components/SEO";
 import { api } from "../lib/api";
@@ -75,7 +75,14 @@ export default function Projects() {
                   </div>
                 )}
                 <div className="p-6">
-                  <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#2563EB]">{it.sector}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#2563EB]">{it.sector}</span>
+                    {it.duration_days ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#22D3EE]/10 px-2.5 py-1 text-[11px] font-semibold text-[#0E7490]" data-testid={`project-duration-${it.slug}`}>
+                        <Clock className="h-3 w-3" /> {it.duration_days} günde geliştirildi
+                      </span>
+                    ) : null}
+                  </div>
                   <h3 className="mt-2 font-heading text-lg font-semibold text-[#07111F] leading-snug">{it.title}</h3>
                   <p className="mt-2 text-sm text-[#334155] leading-relaxed line-clamp-2">{it.need}</p>
                   <Link to={`/projeler/${it.slug}`} className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[#2563EB] hover:gap-2 transition-all">
