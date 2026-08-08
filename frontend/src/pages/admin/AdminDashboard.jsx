@@ -216,7 +216,7 @@ function ProjectsAdmin() {
   return (
     <div>
       <div className="mb-5 flex justify-end">
-        <button onClick={() => setEdit({ slug: "", title: "", client: "", sector: "", tags: [], need: "", solution: "", result: "", cover_image: "", content: "", gallery: [], faq: [], external_url: "", seo_title: "", seo_description: "", duration_days: null, published: true })} className="btn-primary py-2 text-sm">
+        <button onClick={() => setEdit({ slug: "", title: "", client: "", sector: "", tags: [], need: "", solution: "", result: "", cover_image: "", content: "", gallery: [], faq: [], external_url: "", seo_title: "", seo_description: "", duration_days: null, featured: false, published: true })} className="btn-primary py-2 text-sm">
           <Plus className="h-4 w-4" /> Yeni Proje
         </button>
       </div>
@@ -660,6 +660,12 @@ function ProjectForm({ initial, onSubmit }) {
         <input type="checkbox" checked={!!f.published} onChange={(e) => set({ published: e.target.checked })} />
         <span className="text-sm">Yayında göster</span>
       </label>
+
+      <label className="flex items-center gap-2 rounded-lg border border-[#2563EB]/25 bg-[#2563EB]/5 px-3 py-2">
+        <input type="checkbox" checked={!!f.featured} onChange={(e) => set({ featured: e.target.checked })} data-testid="project-featured-checkbox" />
+        <span className="text-sm font-medium text-[#07111F]">⭐ Öne Çıkan — ana sayfada (hero, vitrin ve kayan şeritte) göster</span>
+      </label>
+
 
       <div className="sticky bottom-0 -mx-6 -mb-6 px-6 py-4 bg-white border-t border-slate-200 flex justify-end">
         <button className="btn-primary">Kaydet</button>

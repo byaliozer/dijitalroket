@@ -1,0 +1,25 @@
+{
+  "summary": "Iteration 9 tested featured project system end-to-end. Backend: /api/projects returns 6 projects each with boolean 'featured' field; 4 are true (ARSİYAD, ABC İlk Yardım, Metehan Garaj, NAMTAŞ) as expected. PUT /api/admin/projects/{id} successfully persists featured toggle. Frontend Home: HeroShowcase (data-testid=hero-project-showcase) shows rotating featured projects with 4 dots matching featured count, hero-project-link points to /projeler/{slug}, title rotates every ~4.2s (verified 2 different titles). ProjectMarquee (data-testid=project-marquee) present with 8 items (4 featured x2 for loop) linking to project detail. CaseStudiesSection (data-testid=case-studies-section) positioned above VurucuFark, right after marquee (Y=1465 vs marquee Y=1225). Admin ProjectForm: login worked, DR AI Çalışmaları tab loads project list, edit modal shows data-testid=project-featured-checkbox; toggling on saved (Kaydedildi toast), API showed 5 featured incl. dr-ai-2026 slug; reopened → checkbox persisted checked; reverted to unchecked; final featured count back to 4. Regression: /projeler still shows 6 project cards with 6 duration badges intact.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_featured_projects.py",
+    "/app/test_reports/pytest/featured_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py continues to grow (~1790+ lines) — recommend splitting into routers (projects, admin, seo, brand) modules.",
+    "admin_update_project uses full CaseStudyCreate object which means partial admin edits from any client must include ALL fields; consider PATCH endpoint or partial-update model.",
+    "Marquee renders items duplicated (2x) to enable infinite scroll — ensure keys are unique (title+index) and screen-reader duplicates are aria-hidden."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_featured_projects.py"
+  ],
+  "success_rate": {"backend": "100% (2/2)", "frontend": "100%"},
+  "test_credentials": "admin@dijitalroket.com / Roket2026! (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "None. Test toggled one project featured then reverted; final featured count restored to 4.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Featured field is boolean on CaseStudy model. GET /api/projects exposes it; PUT /api/admin/projects/{id} uses full CaseStudyCreate (must include all fields). Home page consumes /api/projects then filters featured client-side (fallback to all). data-testid contract: hero-project-showcase, hero-project-link, hero-showcase-dots, project-marquee, marquee-item-{i}, case-studies-section, project-featured-checkbox, project-duration-{slug}. Section order verified: Hero → ProjectMarquee → CaseStudiesSection → VurucuFark → ...",
+  "rca of the issue": "No issues found — all backend and frontend flows working as specified."
+}

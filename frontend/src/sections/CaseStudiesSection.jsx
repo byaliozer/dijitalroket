@@ -8,7 +8,11 @@ export default function CaseStudiesSection({ limit = 4, withHeading = true }) {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    api.get("/projects").then((r) => setItems(r.data.slice(0, limit))).catch(() => {});
+    api.get("/projects").then((r) => {
+      const all = r.data || [];
+      const featured = all.filter((p) => p.featured);
+      setItems((featured.length ? featured : all).slice(0, limit));
+    }).catch(() => {});
   }, [limit]);
 
   return (

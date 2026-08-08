@@ -213,6 +213,7 @@ class CaseStudy(BaseModel):
     seo_description: Optional[str] = ""
     published: bool = True
     duration_days: Optional[int] = None
+    featured: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
@@ -234,6 +235,7 @@ class CaseStudyCreate(BaseModel):
     seo_description: Optional[str] = ""
     published: bool = True
     duration_days: Optional[int] = None
+    featured: bool = False
 
 
 # -----------------------------------------------------------------------------

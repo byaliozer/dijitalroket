@@ -1,4 +1,5 @@
 import Hero from "../sections/Hero";
+import ProjectMarquee from "../sections/ProjectMarquee";
 import VurucuFark from "../sections/VurucuFark";
 import Positioning from "../sections/Positioning";
 import DrAiSection from "../sections/DrAiSection";
@@ -17,12 +18,13 @@ export default function Home() {
     <>
       <SEO page="home" />
       <Hero />
+      <ProjectMarquee />
+      <CaseStudiesSection />
       <VurucuFark />
       <Positioning />
       <DrAiSection />
       <SolutionsGrid />
       <SprintTimeline />
-      <CaseStudiesSection />
       <RoketPartnerSection />
       <TrustSection />
       <BlogTeasers />

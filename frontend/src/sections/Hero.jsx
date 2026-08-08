@@ -1,6 +1,8 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, Layers, Cpu, Zap } from "lucide-react";
+import { ArrowRight, Sparkles, Layers, Cpu, Zap, Clock, ArrowUpRight } from "lucide-react";
+import { api } from "../lib/api";
 
 const HERO_BG = "https://static.prod-images.emergentagent.com/jobs/4563ce39-d136-4158-943b-98a85fea66a9/images/0c107f763e768d30c0b3ee5f6ce696642c4455d1ca466a00b36446cf22b3f389.png";
 const DASHBOARD_MOCKUP = "https://static.prod-images.emergentagent.com/jobs/4563ce39-d136-4158-943b-98a85fea66a9/images/e4e280432bf2c274958cd8cce8cc9f2b90889996c11e6f863d26e6b7cdfe661d.png";
@@ -21,6 +23,96 @@ function highlight(text) {
     ) : (
       <span key={idx}>{p}</span>
     )
+  );
+}
+
+function HeroShowcase() {
+  const [items, setItems] = useState([]);
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    api.get("/projects").then((r) => {
+      const all = r.data || [];
+      const featured = all.filter((p) => p.featured);
+      setItems((featured.length ? featured : all).slice(0, 8));
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (items.length < 2) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % items.length), 4200);
+    return () => clearInterval(t);
+  }, [items.length]);
+
+  // Fallback to the static mockup if there are no projects yet
+  if (!items.length) {
+    return (
+      <div className="relative animate-float">
+        <div className="absolute -inset-8 rounded-3xl bg-gradient-to-br from-[#2563EB]/20 via-[#22D3EE]/10 to-transparent blur-2xl" />
+        <div className="relative rounded-2xl border border-white/10 bg-white/5 p-2 backdrop-blur-xl shadow-2xl">
+          <img src={DASHBOARD_MOCKUP} alt="DR AI Dashboard" className="rounded-xl w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  const p = items[idx];
+
+  return (
+    <div className="relative animate-float" data-testid="hero-project-showcase">
+      <div className="absolute -inset-8 rounded-3xl bg-gradient-to-br from-[#2563EB]/20 via-[#22D3EE]/10 to-transparent blur-2xl" />
+      <div className="relative rounded-2xl border border-white/10 bg-white/5 p-2 backdrop-blur-xl shadow-2xl">
+        <div className="absolute top-4 left-4 z-10 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#07111F]/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#22D3EE] backdrop-blur">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#22D3EE] animate-pulse" /> Son Projelerimiz
+        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={p.slug}
+            initial={{ opacity: 0, scale: 1.02 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.99 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Link to={`/projeler/${p.slug}`} data-testid="hero-project-link" className="block group">
+              <div className="relative h-56 sm:h-64 overflow-hidden rounded-xl bg-[#0B1728]">
+                {p.cover_image ? (
+                  <img src={p.cover_image} alt={p.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-white/30">Görsel yok</div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#07111F] via-[#07111F]/30 to-transparent" />
+                <div className="absolute bottom-0 inset-x-0 p-5">
+                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#22D3EE]">
+                    <span>{p.sector}</span>
+                    {p.duration_days ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-white/80">
+                        <Clock className="h-3 w-3" /> {p.duration_days} günde
+                      </span>
+                    ) : null}
+                  </div>
+                  <h3 className="mt-1.5 font-heading text-lg font-bold text-white leading-snug line-clamp-2">{p.title}</h3>
+                  <span className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-white/90 group-hover:gap-2 transition-all">
+                    Projeyi incele <ArrowUpRight className="h-4 w-4" />
+                  </span>
+                </div>
+              </div>
+            </Link>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      {items.length > 1 && (
+        <div className="mt-4 flex justify-center gap-1.5" data-testid="hero-showcase-dots">
+          {items.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setIdx(i)}
+              aria-label={`Proje ${i + 1}`}
+              className={`h-1.5 rounded-full transition-all ${i === idx ? "w-6 bg-[#22D3EE]" : "w-1.5 bg-white/25 hover:bg-white/40"}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -131,21 +223,7 @@ export default function Hero() {
           className="lg:col-span-5 relative"
           data-testid="hero-mockup"
         >
-          <div className="relative animate-float">
-            <div className="absolute -inset-8 rounded-3xl bg-gradient-to-br from-[#2563EB]/20 via-[#22D3EE]/10 to-transparent blur-2xl" />
-            <div className="relative rounded-2xl border border-white/10 bg-white/5 p-2 backdrop-blur-xl shadow-2xl">
-              <img src={DASHBOARD_MOCKUP} alt="DR AI Dashboard" className="rounded-xl w-full" />
-            </div>
-            <div className="absolute -bottom-6 -left-6 hidden md:flex items-center gap-3 rounded-xl bg-[#07111F]/80 border border-white/10 backdrop-blur-xl px-4 py-3 shadow-2xl">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#2563EB] to-[#22D3EE]">
-                <Sparkles className="h-4 w-4 text-white" />
-              </span>
-              <div className="leading-tight">
-                <div className="text-xs text-white/50">DR AI</div>
-                <div className="text-sm font-semibold">Işık Hızında Üretime<br/>Her Zaman Hazır</div>
-              </div>
-            </div>
-          </div>
+          <HeroShowcase />
         </motion.div>
       </div>
     </section>
