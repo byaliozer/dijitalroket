@@ -5,6 +5,9 @@ import { SiteSettingsProvider } from "./context/SiteSettingsContext";
 import SiteLayout from "./components/SiteLayout";
 import Home from "./pages/Home";
 import CorporateSolutions from "./pages/CorporateSolutions";
+import Services from "./pages/Services";
+import ServiceLanding from "./pages/ServiceLanding";
+import DrAi from "./pages/DrAi";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import About from "./pages/About";
@@ -31,6 +34,9 @@ export default function App() {
               <Route element={<SiteLayout />}>
                 <Route index element={<Home />} />
                 <Route path="/kurumsal-cozumler" element={<CorporateSolutions />} />
+                <Route path="/hizmetler" element={<Services />} />
+                <Route path="/hizmetler/:slug" element={<ServiceLanding />} />
+                <Route path="/dr-ai" element={<DrAi />} />
                 <Route path="/projeler" element={<Projects />} />
                 <Route path="/projeler/:slug" element={<ProjectDetail />} />
                 <Route path="/hakkimizda" element={<About />} />

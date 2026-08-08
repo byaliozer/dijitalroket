@@ -1,0 +1,27 @@
+{
+  "summary": "Iteration 10 validated new SEO topical-authority architecture: /hizmetler hub, 8 unique service landings, /dr-ai entity page, navbar link, invalid-slug redirect, backend sitemap + llms-full. All acceptance criteria PASS. Backend: GET /api/sitemap.xml returns 9 hizmetler URLs (hub + 8 services) plus /dr-ai with www.dijitalroket.com host; GET /api/llms-full.txt contains 'Hizmet Sayfaları' section listing all 8 service URLs (plus DR AI). Frontend (Playwright, external REACT_APP_BACKEND_URL): /hizmetler renders H1 'Dijital Roket Hizmetleri' with 8 service-card-{slug} items and JSON-LD id=jsonld-services-hub with ItemList of 8 items. Each of the 8 service pages loads with unique H1 (8 distinct titles), service-breadcrumb, service-feature-0, service-faq-0, 1-3 service-related-{slug} cards, and JSON-LD id=jsonld-service containing @graph [Service, BreadcrumbList, FAQPage]. /dr-ai renders H1 'DR AI Nedir?', drai-breadcrumb, 4 drai-cap-* cards, JSON-LD id=jsonld-dr-ai with @graph [WebPage, BreadcrumbList]; content clearly states DR AI is Dijital Roket's AI production system. Navbar has nav-link-hizmetler pointing to /hizmetler. Invalid slug /hizmetler/olmayan-hizmet redirects to /hizmetler (Navigate replace). Regression: home hero-project-showcase and project-marquee still render; /projeler has 6 duration badges. No console/page errors observed.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_featured_projects.py (prior iteration; still valid regression)"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ServiceLanding FAQ default openFaq=0 means first question is always open on load; acceptable UX but note that toggle-close on first click closes it (accordion single-open pattern working).",
+    "matchProjects() falls back to `all.slice(0,3)` when no keyword or featured match — yapay-zeka-agent yielded only 1 related; acceptable but consider expanding keyword synonyms (e.g., 'ai','yapay zeka','agent') for better relevance.",
+    "servicesData.js is 200+ lines of static Turkish content — fine for now, but if this doubles consider splitting per-service files under /data/services/*.js.",
+    "server.py sitemap block hard-codes 8 service slugs — if a new service is added in servicesData.js it must be manually mirrored in server.py sitemap and llms-full; consider serving the list from a shared JSON or exposing services via API and consuming both in FE + sitemap builder."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (sitemap + llms-full verified)", "frontend": "100% (all 8 services + hub + dr-ai + navbar + invalid-slug redirect + regression)"},
+  "test_credentials": "N/A (public pages)",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Routes: /hizmetler (hub, JSON-LD id=jsonld-services-hub ItemList), /hizmetler/:slug (ServiceLanding, JSON-LD id=jsonld-service @graph=[Service,BreadcrumbList,FAQPage], data-testids: service-breadcrumb, service-card-{slug}, service-feature-{i}, service-faq-{i}, service-related-{project_slug}, service-cta-top), /dr-ai (data-testids: drai-breadcrumb, drai-cap-0..3, JSON-LD id=jsonld-dr-ai @graph=[WebPage,BreadcrumbList]). Invalid slugs redirect via <Navigate to='/hizmetler' replace/>. 8 service slugs: kurumsal-web-tasarim, b2b-bayi-sistemi, ozel-crm-yazilimi, ozel-yazilim-gelistirme, yapay-zeka-agent, ai-icerik-uretimi, sosyal-medya-yonetimi, is-sureci-otomasyonu. Sitemap host: https://www.dijitalroket.com. JSON-LD scripts injected client-side after React render — always use wait_until='networkidle'. FAQ has openFaq=0 default (first item open).",
+  "rca of the issue": "No issues — feature implementation complete and matches spec."
+}

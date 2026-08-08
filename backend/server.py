@@ -476,6 +476,16 @@ async def dynamic_sitemap():
     entries = [
         ("/", "weekly", "1.0"),
         ("/kurumsal-cozumler", "monthly", "0.8"),
+        ("/hizmetler", "weekly", "0.9"),
+        ("/hizmetler/kurumsal-web-tasarim", "monthly", "0.8"),
+        ("/hizmetler/b2b-bayi-sistemi", "monthly", "0.8"),
+        ("/hizmetler/ozel-crm-yazilimi", "monthly", "0.8"),
+        ("/hizmetler/ozel-yazilim-gelistirme", "monthly", "0.8"),
+        ("/hizmetler/yapay-zeka-agent", "monthly", "0.8"),
+        ("/hizmetler/ai-icerik-uretimi", "monthly", "0.8"),
+        ("/hizmetler/sosyal-medya-yonetimi", "monthly", "0.8"),
+        ("/hizmetler/is-sureci-otomasyonu", "monthly", "0.8"),
+        ("/dr-ai", "monthly", "0.7"),
         ("/projeler", "weekly", "0.9"),
         ("/hakkimizda", "monthly", "0.7"),
         ("/blog", "weekly", "0.8"),
@@ -540,6 +550,20 @@ async def llms_full_txt():
         "SEO ve dijital pazarlama",
     ]:
         md.append(f"- {s}")
+    md.append("")
+    md.append("## Hizmet Sayfaları")
+    for label, path in [
+        ("Kurumsal Web Tasarım", "kurumsal-web-tasarim"),
+        ("B2B Bayi Sistemi", "b2b-bayi-sistemi"),
+        ("Özel CRM Yazılımı", "ozel-crm-yazilimi"),
+        ("Özel Yazılım Geliştirme", "ozel-yazilim-gelistirme"),
+        ("Yapay Zekâ Agent", "yapay-zeka-agent"),
+        ("AI İçerik Üretimi", "ai-icerik-uretimi"),
+        ("Sosyal Medya Yönetimi", "sosyal-medya-yonetimi"),
+        ("İş Süreci Otomasyonu", "is-sureci-otomasyonu"),
+    ]:
+        md.append(f"- {label}: {SITE_URL}/hizmetler/{path}")
+    md.append(f"- DR AI Nedir?: {SITE_URL}/dr-ai")
     md.append("")
     md.append("## İletişim")
     md.append("- Web: https://www.dijitalroket.com")
