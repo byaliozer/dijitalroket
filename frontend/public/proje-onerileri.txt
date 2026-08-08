@@ -1,0 +1,59 @@
+========================================================
+DİJİTAL ROKET — PROJELERİ ANA SAYFADA ÖNE ÇIKARMA ÖNERİLERİ
+========================================================
+
+Amaç: Yaptığınız projeleri ana sayfanın üst kısmında canlı ve tıklanabilir
+şekilde göstermek. Tıklayınca ilgili projenin detay sayfasına gitmesi.
+Ayrıca bu, Google ve yapay zekaların projelerinizi daha hızlı keşfetmesini
+sağlayarak SEO/AEO'yu da güçlendirir.
+
+--------------------------------------------------------
+ÖNERİ A) Hero'daki sabit görseli "canlı proje kartı"na çevirmek
+--------------------------------------------------------
+- Sağdaki sabit dashboard görselinin yerine, otomatik dönen (her ~4 sn'de
+  bir değişen) gerçek proje kartı gelir: kapak görseli + sektör + başlık.
+- Cam/parlama ve süzülme (float) animasyonu korunur.
+- Tıklayınca doğrudan o projenin sayfasına gider.
+  (+) Projeler en tepede, site canlı görünür, tek tıkla projeye gidiş.
+  (-) Aynı anda tek proje görünür (sırayla döner).
+
+--------------------------------------------------------
+ÖNERİ B) Hero'nun hemen altına "kayan proje şeridi" (marquee)
+--------------------------------------------------------
+- Hero'nun altında sürekli akan, tüm proje kapak + başlıklarından oluşan
+  ince bir vitrin şeridi. Hero görseli kalabilir veya kalkabilir.
+  (+) Aynı anda çok proje görünür, dinamik his.
+  (-) Küçük küçük görünür (detay az).
+
+--------------------------------------------------------
+ÖNERİ C) Proje vitrinini yukarı taşımak + "Öne Çıkan" işareti
+--------------------------------------------------------
+- Şu an sayfanın ortasındaki proje bölümünü Hero'nun hemen altına alırım.
+- Admin panele "Öne Çıkan Proje" işareti eklerim; hangi projelerin en üstte
+  görüneceğini siz seçersiniz (3-6 proje büyük kartlarla).
+  (+) Gerçek galeri, sizin kontrolünüzde, dönüşüm için güçlü.
+  (-) Hero görselini değiştirmez.
+
+--------------------------------------------------------
+ÖNERİ D) HİBRİT  (ÖNERİM  ***)
+--------------------------------------------------------
+- A + C birlikte:
+  * Hero sağdaki görsel = otomatik dönen canlı proje kartı
+  * Admin panele "Öne Çıkan Proje" işareti (hangileri öne çıksın siz seçin)
+- İsterseniz proje vitrinini de yukarı çekerim.
+  (+) Hem tepede canlı vitrin, hem tam sizin kontrolünüzde.
+
+========================================================
+KARAR VERMENİZ GEREKENLER
+========================================================
+1) Hangi öneri?   ->  a  /  b  /  c  /  d   (d = hibrit, önerilen)
+
+2) Kartlarda hangi projeler görünsün?
+   1 = Son eklenen projeler (otomatik)
+   2 = Sadece "Öne Çıkan" işaretlediklerim  (c veya d seçerseniz)
+
+Not: Hangisini seçerseniz seçin, kartlara tıklanınca ilgili projenin detay
+sayfasına gider ve son eklediğiniz projeler otomatik dahil olur.
+
+Örnek cevap:  "d ve 2"  ya da  "a ve 1"
+========================================================
