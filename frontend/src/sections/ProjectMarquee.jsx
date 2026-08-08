@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { api } from "../lib/api";
 
 export default function ProjectMarquee() {
@@ -16,25 +15,31 @@ export default function ProjectMarquee() {
 
   if (!items.length) return null;
   const loop = [...items, ...items];
+  const duration = Math.max(items.length * 6, 24);
 
   return (
     <section className="bg-[#07111F] border-y border-white/5 py-8 overflow-hidden" data-testid="project-marquee">
-      <div className="container-x mb-5">
+      <style>{`
+        @keyframes dr-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        .dr-marquee-track { animation: dr-marquee linear infinite; width: max-content; }
+        .dr-marquee-wrap:hover .dr-marquee-track { animation-play-state: paused; }
+        @media (prefers-reduced-motion: reduce) { .dr-marquee-track { animation: none; } }
+      `}</style>
+      <div className="container-x mb-5 flex items-center justify-between">
         <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#22D3EE]">
           Öne Çıkan Projeler
         </span>
+        <span className="hidden sm:block text-[11px] text-white/30">Durdurmak için üzerine gelin</span>
       </div>
-      <div className="relative group">
-        <motion.div
-          className="flex gap-4 w-max px-6"
-          animate={{ x: ["0%", "-50%"] }}
-          transition={{ duration: Math.max(items.length * 6, 24), ease: "linear", repeat: Infinity }}
-        >
+      <div className="dr-marquee-wrap relative">
+        <div className="dr-marquee-track flex gap-4 px-6" style={{ animationDuration: `${duration}s` }}>
           {loop.map((p, i) => (
             <Link
               key={i}
               to={`/projeler/${p.slug}`}
-              className="relative w-64 shrink-0 rounded-xl overflow-hidden border border-white/10 bg-white/5 transition hover:border-[#22D3EE]/40"
+              aria-hidden={i >= items.length ? "true" : undefined}
+              tabIndex={i >= items.length ? -1 : undefined}
+              className="relative w-64 shrink-0 rounded-xl overflow-hidden border border-white/10 bg-white/5 transition hover:border-[#22D3EE]/40 hover:-translate-y-0.5"
               data-testid={`marquee-item-${i}`}
             >
               <div className="relative h-32 overflow-hidden bg-[#0B1728]">
@@ -49,7 +54,7 @@ export default function ProjectMarquee() {
               </div>
             </Link>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
