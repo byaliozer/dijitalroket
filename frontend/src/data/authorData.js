@@ -6,6 +6,8 @@ export const AUTHOR = {
   expertise: "Kurumsal web, özel yazılım (B2B/bayi panelleri, CRM benzeri sistemler) ve DR AI destekli dijital dönüşüm",
   bio: "Ali Özer, Dijital Roket'in kurucusu ve CEO'sudur. Kurumsal web siteleri, firmaya özel yazılım (B2B/bayi panelleri, CRM benzeri sistemler) ve DR AI destekli dijital dönüşüm projelerinde şirketlere danışmanlık yapar; üretim süreçlerini yönetir.",
   url: "https://www.byaliozer.com/",
+  image: "/api/uploads/64c720e8891a4d719539266a2a6db482.jpg",
+  sameAs: ["https://www.byaliozer.com/"],
   phone: "0543 793 41 01",
   phoneLink: "+905437934101",
   initials: "AÖ",

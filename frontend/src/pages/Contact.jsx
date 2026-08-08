@@ -64,7 +64,7 @@ export default function Contact() {
             className="lg:col-span-3 card-elevate p-7 sm:p-10 space-y-5"
           >
             {sent && (
-              <div className="flex items-start gap-3 rounded-xl border border-[#10B981]/30 bg-[#10B981]/8 p-4">
+              <div role="status" aria-live="polite" className="flex items-start gap-3 rounded-xl border border-[#10B981]/30 bg-[#10B981]/8 p-4">
                 <CheckCircle2 className="h-5 w-5 text-[#10B981] mt-0.5" />
                 <div className="text-sm text-[#07111F]">Talebiniz alındı. Dijital Roket ekibi en kısa sürede sizinle iletişime geçecektir.</div>
               </div>
@@ -72,16 +72,16 @@ export default function Contact() {
 
             <div className="grid sm:grid-cols-2 gap-5">
               <Field label="Ad Soyad" required>
-                <input data-testid="contact-name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" placeholder="Adınız Soyadınız" />
+                <input data-testid="contact-name" required aria-required="true" autoComplete="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" placeholder="Adınız Soyadınız" />
               </Field>
               <Field label="Firma Adı">
-                <input data-testid="contact-company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="input" placeholder="Şirket adı" />
+                <input data-testid="contact-company" autoComplete="organization" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="input" placeholder="Şirket adı" />
               </Field>
               <Field label="Telefon">
-                <input data-testid="contact-phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="input" placeholder="0 5xx xxx xx xx" />
+                <input data-testid="contact-phone" type="tel" autoComplete="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="input" placeholder="0 5xx xxx xx xx" />
               </Field>
               <Field label="E-posta" required>
-                <input data-testid="contact-email" required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input" placeholder="ornek@firma.com" />
+                <input data-testid="contact-email" required aria-required="true" type="email" autoComplete="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input" placeholder="ornek@firma.com" />
               </Field>
               <Field label="Proje Türü">
                 <select data-testid="contact-project-type" value={form.project_type} onChange={(e) => setForm({ ...form, project_type: e.target.value })} className="input">

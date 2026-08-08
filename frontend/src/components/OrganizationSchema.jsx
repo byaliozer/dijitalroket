@@ -49,10 +49,10 @@ export default function OrganizationSchema() {
     telephone: phone,
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Panayır Mah. 400. Sk. Okumuşlar Plaza No:2 İç Kapı No:12",
-      addressLocality: "Osmangazi",
-      addressRegion: "Bursa",
-      addressCountry: "TR",
+      streetAddress: settings?.address_street || "Panayır Mah. 400. Sk. Okumuşlar Plaza No:2 İç Kapı No:12",
+      addressLocality: settings?.address_locality || "Osmangazi",
+      addressRegion: settings?.address_region || "Bursa",
+      addressCountry: settings?.address_country || "TR",
     },
     areaServed: { "@type": "Country", name: "Türkiye" },
     contactPoint: {

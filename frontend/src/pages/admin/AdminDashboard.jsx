@@ -262,7 +262,7 @@ function BlogAdmin() {
   return (
     <div>
       <div className="mb-5 flex justify-end">
-        <button onClick={() => setEdit({ slug: "", title: "", excerpt: "", content: "", category: "", cover_image: "", read_time: 5, tags: [], faq: [], seo_title: "", seo_description: "", published: true })} className="btn-primary py-2 text-sm">
+        <button onClick={() => setEdit({ slug: "", title: "", excerpt: "", content: "", category: "", cover_image: "", read_time: 5, tags: [], faq: [], expert_insight: "", project_example: "", methodology: "", sources: [], seo_title: "", seo_description: "", published: true })} className="btn-primary py-2 text-sm">
           <Plus className="h-4 w-4" /> Yeni Yazı
         </button>
       </div>
@@ -720,6 +720,13 @@ function BlogForm({ initial, onSubmit }) {
         <FormTextarea label="SEO Açıklaması" rows={2} value={f.seo_description} onChange={(v) => set({ seo_description: v })} />
       </FormSection>
 
+      <FormSection title="Dijital Roket Deneyimi (First-Party / E-E-A-T)" hint="Yalnızca GERÇEK bilgi girin. Doldurulan alanlar blog sayfasında 'Dijital Roket Deneyimi' bölümünde görünür ve AI arama motorlarına birinci-el uzmanlık sinyali verir. Boş bırakılan alanlar gizlenir.">
+        <FormTextarea label="Uzman Görüşü (expert insight)" rows={3} value={f.expert_insight} onChange={(v) => set({ expert_insight: v })} />
+        <FormTextarea label="Gerçek Proje Örneği" rows={3} value={f.project_example} onChange={(v) => set({ project_example: v })} />
+        <FormTextarea label="Yöntem / Metodoloji" rows={2} value={f.methodology} onChange={(v) => set({ methodology: v })} />
+        <SourcesEditor sources={f.sources || []} onChange={(v) => set({ sources: v })} />
+      </FormSection>
+
       <FaqEditor faq={f.faq} onChange={(v) => set({ faq: v })} onGenerate={generateFaq} generating={genFaq} />
 
       <label className="flex items-center gap-2">
@@ -917,6 +924,32 @@ function TagInput({ label = "Etiketler", value = [], onChange }) {
     </div>
   );
 }
+
+function SourcesEditor({ sources = [], onChange }) {
+  const list = Array.isArray(sources) ? sources : [];
+  const update = (i, patch) => onChange(list.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
+  const add = () => onChange([...list, { title: "", url: "" }]);
+  const remove = (i) => onChange(list.filter((_, idx) => idx !== i));
+  return (
+    <div className="block" data-testid="sources-editor">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-semibold text-[#07111F]">Kaynaklar (opsiyonel)</span>
+        <button type="button" onClick={add} data-testid="add-source-btn" className="text-xs font-semibold text-[#2563EB] hover:underline">+ Kaynak ekle</button>
+      </div>
+      <div className="space-y-2">
+        {list.map((s, i) => (
+          <div key={i} className="flex gap-2 items-center" data-testid={`source-row-${i}`}>
+            <input value={s.title || ""} onChange={(e) => update(i, { title: e.target.value })} placeholder="Kaynak adı / başlık" className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#2563EB]" />
+            <input value={s.url || ""} onChange={(e) => update(i, { url: e.target.value })} placeholder="https://..." className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#2563EB]" />
+            <button type="button" onClick={() => remove(i)} className="p-1.5 rounded hover:bg-red-50 text-red-600"><X className="h-4 w-4" /></button>
+          </div>
+        ))}
+        {list.length === 0 && <p className="text-xs text-slate-400">Henüz kaynak eklenmedi.</p>}
+      </div>
+    </div>
+  );
+}
+
 
 // -----------------------------------------------------------------------------
 // Brands (DR AI Image Engine 2.0) tab

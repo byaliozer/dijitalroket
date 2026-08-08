@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Clock, Calendar, RefreshCw, User, ExternalLink, ArrowUpRight, ArrowRight } from "lucide-react";
+import { ArrowLeft, Clock, Calendar, RefreshCw, User, ExternalLink, ArrowUpRight, ArrowRight, Sparkles } from "lucide-react";
 import { api } from "../lib/api";
 import SEO from "../components/SEO";
 import JsonLd from "../components/JsonLd";
@@ -8,6 +8,7 @@ import { SITE_URL } from "../components/OrganizationSchema";
 import Markdown from "../components/Markdown";
 import FinalCta from "../sections/FinalCta";
 import { AUTHOR } from "../data/authorData";
+import Sources from "../components/Sources";
 import { matchServicesFor, matchProjectsFor, matchPostsFor, formatTrDate } from "../lib/related";
 
 export default function BlogDetail() {
@@ -63,6 +64,8 @@ export default function BlogDetail() {
         name: AUTHOR.name,
         jobTitle: AUTHOR.jobTitle,
         url: AUTHOR.url,
+        ...(AUTHOR.image ? { image: `${SITE_URL}${AUTHOR.image}` } : {}),
+        ...(AUTHOR.sameAs?.length ? { sameAs: AUTHOR.sameAs } : {}),
         worksFor: { "@id": `${SITE_URL}/#organization` },
       },
       publisher: { "@id": `${SITE_URL}/#organization` },
@@ -134,6 +137,41 @@ export default function BlogDetail() {
         </div>
       </article>
 
+      {/* First-Party Knowledge — Dijital Roket Deneyimi (yalnızca gerçek bilgi girildiyse) */}
+      {(post.expert_insight || post.project_example || post.methodology) && (
+        <section className="pb-12 bg-white" data-testid="blog-first-party">
+          <div className="container-x max-w-3xl">
+            <div className="rounded-2xl border border-[#2563EB]/20 bg-gradient-to-br from-[#2563EB]/5 to-[#22D3EE]/5 p-6 sm:p-8">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#2563EB] to-[#22D3EE] text-white"><Sparkles className="h-4 w-4" /></span>
+                <h2 className="font-heading text-xl font-bold text-[#07111F]">Dijital Roket Deneyimi</h2>
+              </div>
+              <p className="mt-1 text-xs text-slate-500">Bu bölüm, Dijital Roket'in gerçek proje ve uzmanlık deneyimine dayanır.</p>
+              <div className="mt-5 space-y-5">
+                {post.expert_insight && (
+                  <div data-testid="blog-expert-insight">
+                    <h3 className="font-heading text-sm font-bold uppercase tracking-[0.14em] text-[#2563EB]">Uzman Görüşü</h3>
+                    <p className="mt-2 text-[15px] leading-relaxed text-[#334155]">{post.expert_insight}</p>
+                  </div>
+                )}
+                {post.project_example && (
+                  <div data-testid="blog-project-example">
+                    <h3 className="font-heading text-sm font-bold uppercase tracking-[0.14em] text-[#2563EB]">Gerçek Proje Örneği</h3>
+                    <p className="mt-2 text-[15px] leading-relaxed text-[#334155]">{post.project_example}</p>
+                  </div>
+                )}
+                {post.methodology && (
+                  <div data-testid="blog-methodology">
+                    <h3 className="font-heading text-sm font-bold uppercase tracking-[0.14em] text-[#2563EB]">Yöntem</h3>
+                    <p className="mt-2 text-[15px] leading-relaxed text-[#334155]">{post.methodology}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {faq.length > 0 && (
         <section className="pb-16 bg-white" data-testid="blog-faq">
           <div className="container-x max-w-3xl">
@@ -157,9 +195,13 @@ export default function BlogDetail() {
       <section className="pb-12 bg-white" data-testid="blog-author">
         <div className="container-x max-w-3xl">
           <div className="flex flex-col sm:flex-row gap-5 rounded-2xl border border-slate-200 bg-[#F8FAFC] p-6">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2563EB] to-[#22D3EE] text-white font-heading text-xl font-bold" aria-hidden="true">
-              {AUTHOR.initials}
-            </div>
+            {AUTHOR.image ? (
+              <img src={AUTHOR.image} alt={AUTHOR.name} className="h-16 w-16 shrink-0 rounded-full object-cover border border-slate-200" data-testid="blog-author-photo" />
+            ) : (
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2563EB] to-[#22D3EE] text-white font-heading text-xl font-bold" aria-hidden="true">
+                {AUTHOR.initials}
+              </div>
+            )}
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.16em] text-[#2563EB]">Yazar</div>
               <h3 className="mt-1 font-heading text-lg font-bold text-[#07111F]">{AUTHOR.name}</h3>
@@ -229,6 +271,8 @@ export default function BlogDetail() {
           </div>
         </section>
       )}
+
+      <Sources sources={post.sources} />
 
       <FinalCta />
     </>

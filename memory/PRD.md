@@ -73,6 +73,17 @@ Build a premium corporate Turkish website for **Dijital Roket** — repositioned
 - Public case study filtering by industry on URL (deep-link).
 - Light/Dark mode toggle on public site.
 
+## What's Been Implemented (2026-06-19 → devam) — AI-Search / Citation-Ready faz-5
+ChatGPT 3. denetim (AI Search / entity clarity / citability) listesindeki eksikler kapatıldı:
+- **Merkezi NAP (tek adres kaynağı)**: `DEFAULT_SETTINGS`'e tam gerçek adres + `address_street/locality/region/country` eklendi; DB settings dokümanı güncellendi. Footer, İletişim ve `OrganizationSchema` (PostalAddress) artık aynı tek kaynaktan besleniyor. Adres: Panayır Mah. 400. Sk. Okumuşlar Plaza No:2 İç Kapı No:12, Osmangazi/Bursa.
+- **First-Party Knowledge Module + Kaynaklar**: `BlogPost`/`BlogPostCreate` modeline `expert_insight`, `project_example`, `methodology`, `sources[{title,url}]` eklendi (update whitelist + llms-full.txt export dahil). Admin BlogForm'a "Dijital Roket Deneyimi (First-Party / E-E-A-T)" bölümü + `SourcesEditor`. Blog detayda yalnızca doldurulmuşsa görünen "Dijital Roket Deneyimi" + `Sources` bileşeni. Uçtan uca curl testi geçti (create→fetch→llms→delete).
+- **Reusable bileşenler**: `components/DirectAnswer.jsx` (AEO doğrudan cevap kutusu) + `components/Sources.jsx` (kaynak listesi).
+- **Author E-E-A-T zenginleştirme**: Gerçek yazar fotoğrafı (Ali Özer, object storage `/api/uploads/64c720e8891a4d719539266a2a6db482.jpg`) blog detayda + `authorData.js`'e `image` + `sameAs`; BlogPosting `author` = `Person` (image + sameAs + jobTitle + worksFor Organization).
+- **Agent-friendly formlar**: İletişim + Proje Talep formlarına `autocomplete` (name/organization/tel/email), `aria-required`, başarı mesajlarına `role=status aria-live=polite`; Proje Talep bölümleri `fieldset/legend`.
+- **/arastirmalar**: Kullanıcı isteğiyle ATLANDI (gerçek araştırma verisi olduğunda yapılacak).
+- **Zaten mevcut olanlar (denetimde ✓)**: robots.txt'de OAI-SearchBot + tüm AI crawler'ları Allow; sameAs yalnızca gerçek hesaplar; FAQ görünür+schema; blog tarih/yazar; internal link engine. GA4 kurulu değil (ChatGPT referral için bozulacak bir şey yok).
+- **VALIDATED**: Admin blog formu (first-party + sources) render + kaydet; blog yazar fotoğrafı yükleniyor; footer/iletişim tam NAP; backend round-trip curl %100.
+
 ## Next Tasks
 - Optional UX: large clickable cards on listings.
 - Optional: e-mail notifications when forms arrive.

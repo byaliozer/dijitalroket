@@ -50,7 +50,7 @@ export default function ProjectRequest() {
       <section className="section bg-white">
         <div className="container-x max-w-4xl">
           {sent ? (
-            <div className="card-elevate p-12 text-center" data-testid="request-success">
+            <div className="card-elevate p-12 text-center" data-testid="request-success" role="status" aria-live="polite">
               <CheckCircle2 className="mx-auto h-14 w-14 text-[#10B981]" />
               <h2 className="mt-6 h2-section">Talebiniz Alındı</h2>
               <p className="mt-3 body-lg max-w-lg mx-auto">
@@ -61,10 +61,10 @@ export default function ProjectRequest() {
             <form onSubmit={submit} data-testid="request-form" className="card-elevate p-7 sm:p-10 space-y-6">
               <Section title="1. Firma Bilgileri">
                 <div className="grid sm:grid-cols-2 gap-5">
-                  <F label="Firma Adı" required><input data-testid="req-company" required value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} className="input" /></F>
-                  <F label="İletişim Kişisi" required><input data-testid="req-contact" required value={form.contact_name} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} className="input" /></F>
-                  <F label="E-posta" required><input data-testid="req-email" required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input" /></F>
-                  <F label="Telefon"><input data-testid="req-phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="input" /></F>
+                  <F label="Firma Adı" required><input data-testid="req-company" required aria-required="true" autoComplete="organization" value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} className="input" /></F>
+                  <F label="İletişim Kişisi" required><input data-testid="req-contact" required aria-required="true" autoComplete="name" value={form.contact_name} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} className="input" /></F>
+                  <F label="E-posta" required><input data-testid="req-email" required aria-required="true" type="email" autoComplete="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input" /></F>
+                  <F label="Telefon"><input data-testid="req-phone" type="tel" autoComplete="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="input" /></F>
                 </div>
               </Section>
 
@@ -148,10 +148,10 @@ export default function ProjectRequest() {
 
 function Section({ title, children }) {
   return (
-    <div className="border-l-2 border-[#2563EB]/20 pl-5">
-      <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#2563EB] mb-3">{title}</div>
+    <fieldset className="border-l-2 border-[#2563EB]/20 pl-5 border-t-0 border-r-0 border-b-0">
+      <legend className="text-xs font-bold uppercase tracking-[0.18em] text-[#2563EB] mb-3 px-0">{title}</legend>
       {children}
-    </div>
+    </fieldset>
   );
 }
 

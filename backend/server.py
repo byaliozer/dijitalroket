@@ -174,6 +174,10 @@ class BlogPost(BaseModel):
     seo_description: Optional[str] = ""
     tags: List[str] = []
     faq: List[dict] = []
+    expert_insight: Optional[str] = ""
+    project_example: Optional[str] = ""
+    methodology: Optional[str] = ""
+    sources: List[dict] = []
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
@@ -191,6 +195,10 @@ class BlogPostCreate(BaseModel):
     seo_description: Optional[str] = ""
     tags: List[str] = []
     faq: List[dict] = []
+    expert_insight: Optional[str] = ""
+    project_example: Optional[str] = ""
+    methodology: Optional[str] = ""
+    sources: List[dict] = []
 
 
 class CaseStudy(BaseModel):
@@ -612,6 +620,16 @@ async def llms_full_txt():
             md.append(f"- URL: {SITE_URL}/blog/{po.get('slug','')}")
             if po.get("excerpt"):
                 md.append(f"- Özet: {po['excerpt']}")
+            if po.get("expert_insight"):
+                md.append(f"- Dijital Roket Deneyimi (birinci el uzman görüşü): {po['expert_insight']}")
+            if po.get("project_example"):
+                md.append(f"- Gerçek proje örneği: {po['project_example']}")
+            if po.get("methodology"):
+                md.append(f"- Yöntem/Metodoloji: {po['methodology']}")
+            for src in (po.get("sources") or []):
+                t, u = src.get("title"), src.get("url")
+                if t and u:
+                    md.append(f"- Kaynak: {t} — {u}")
             for item in (po.get("faq") or []):
                 q, a = item.get("q"), item.get("a")
                 if q and a:
@@ -830,7 +848,11 @@ DEFAULT_SETTINGS = {
     "contact_phone": "0543 793 41 01",
     "contact_phone_link": "+905437934101",
     "contact_email": "byaliozer@gmail.com",
-    "contact_address": "Bursa, Türkiye",
+    "contact_address": "Panayır Mah. 400. Sk. Okumuşlar Plaza No:2 İç Kapı No:12, Osmangazi / Bursa",
+    "address_street": "Panayır Mah. 400. Sk. Okumuşlar Plaza No:2 İç Kapı No:12",
+    "address_locality": "Osmangazi",
+    "address_region": "Bursa",
+    "address_country": "TR",
     "social_linkedin": "",
     "social_instagram": "https://www.instagram.com/dijital.roket/",
     "social_twitter": "",
@@ -876,6 +898,7 @@ async def update_settings(payload: dict, current=Depends(get_current_admin)):
     allowed = {
         "site_title", "site_description", "favicon_url", "og_image", "pages",
         "contact_phone", "contact_phone_link", "contact_email", "contact_address",
+        "address_street", "address_locality", "address_region", "address_country",
         "social_linkedin", "social_instagram", "social_twitter",
         "app_google_play", "app_app_store",
         "about_eyebrow", "about_title", "about_hero_image", "about_content",
