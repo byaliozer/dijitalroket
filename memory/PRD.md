@@ -103,6 +103,10 @@ Reklam kampanyaları için premium, dönüşüm odaklı AI deneyim sayfası (tes
 - Model: gpt-5.4-mini (metin) + gpt-image-2 (görsel), Emergent/OpenAI key. E-posta bildirimi kurulmadı (kullanıcı tercihi — admin panelinden takip).
 - NOT: Production'da görünmesi için REDEPLOY gerekir.
 
+## What's Been Implemented (2026-06-19 → devam) — DR AI mockup marka watermark (faz-8)
+- `/api/dr-ai/mockup` ile üretilen her görsele, üretimden SONRA Pillow ile marka watermark ekleniyor: sağ altta yarı saydam koyu pill içinde **Dijital Roket logosu (favicon-512) + "www.dijitalroket.com"**. `_brand_mockup()` helper (`server.py`). Model'e bıraktırmak yerine deterministik composite — her zaman net ve doğru yazılıyor. Görsel olarak doğrulandı.
+- Ayrıca DR AI ile Üret hero alt metni güncellendi ("...Ama ne kadar uzun anlatırsanız o kadar iyi geliştiririz projeyi.").
+
 ## Next Tasks
 - Optional UX: large clickable cards on listings.
 - Optional: e-mail notifications when forms arrive.
@@ -126,6 +130,10 @@ Reklam kampanyaları için premium, dönüşüm odaklı AI deneyim sayfası (tes
 - **Admin**: Yeni "DR AI Talepleri" sekmesi (`AiLeadsAdmin`) — talep listesi + detay modal (fikir, soru-cevap, blueprint, üretilen görseller, geri bildirim).
 - Model: gpt-5.4-mini (metin) + gpt-image-2 (görsel), Emergent/OpenAI key. E-posta bildirimi kurulmadı (kullanıcı tercihi — admin panelinden takip).
 - NOT: Production'da görünmesi için REDEPLOY gerekir.
+
+## What's Been Implemented (2026-06-19 → devam) — DR AI mockup marka watermark (faz-8)
+- `/api/dr-ai/mockup` ile üretilen her görsele, üretimden SONRA Pillow ile marka watermark ekleniyor: sağ altta yarı saydam koyu pill içinde **Dijital Roket logosu (favicon-512) + "www.dijitalroket.com"**. `_brand_mockup()` helper (`server.py`). Model'e bıraktırmak yerine deterministik composite — her zaman net ve doğru yazılıyor. Görsel olarak doğrulandı.
+- Ayrıca DR AI ile Üret hero alt metni güncellendi ("...Ama ne kadar uzun anlatırsanız o kadar iyi geliştiririz projeyi.").
 
 ## Next Tasks (archive below)
 

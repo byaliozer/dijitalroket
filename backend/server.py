@@ -9,12 +9,14 @@ import logging
 import uuid
 import asyncio
 import base64
+import io
 import json
 import httpx
 import requests
 import bcrypt
 import jwt
 import resend
+from PIL import Image, ImageDraw, ImageFont
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
@@ -981,6 +983,71 @@ async def dr_ai_blueprint(req: DrAiBlueprintReq):
     return {"blueprint": bp}
 
 
+_BRAND_LOGO_PATH = Path("/app/frontend/public/favicon-512x512.png")
+
+
+def _load_brand_font(size: int):
+    for p in ("/opt/plugins-venv/lib/python3.11/site-packages/reportlab/fonts/VeraBd.ttf",):
+        try:
+            return ImageFont.truetype(p, size)
+        except Exception:
+            pass
+    try:
+        return ImageFont.load_default(size=size)
+    except Exception:
+        return ImageFont.load_default()
+
+
+def _brand_mockup(png_bytes: bytes) -> bytes:
+    """Composite the Dijital Roket logo + 'www.dijitalroket.com' onto a generated mockup (bottom-right pill)."""
+    try:
+        base = Image.open(io.BytesIO(png_bytes)).convert("RGBA")
+    except Exception:
+        return png_bytes
+    W, H = base.size
+    scale = W / 1536.0
+    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(overlay)
+    pad = int(28 * scale)
+    logo_h = int(54 * scale)
+    gap = int(14 * scale)
+    ipx, ipy = int(22 * scale), int(13 * scale)
+    text = "www.dijitalroket.com"
+    font = _load_brand_font(max(int(30 * scale), 14))
+    tb = d.textbbox((0, 0), text, font=font)
+    tw, th = tb[2] - tb[0], tb[3] - tb[1]
+
+    logo_img = None
+    logo_w = 0
+    try:
+        logo_img = Image.open(_BRAND_LOGO_PATH).convert("RGBA")
+        logo_w = int(logo_h * logo_img.width / logo_img.height)
+        logo_img = logo_img.resize((logo_w, logo_h), Image.LANCZOS)
+    except Exception:
+        logo_img = None
+        logo_w = 0
+
+    content_w = (logo_w + gap if logo_img else 0) + tw
+    pill_w = ipx * 2 + content_w
+    pill_h = ipy * 2 + max(logo_h, th)
+    x0 = W - pad - pill_w
+    y0 = H - pad - pill_h
+    d.rounded_rectangle([x0, y0, x0 + pill_w, y0 + pill_h], radius=int(pill_h / 2), fill=(11, 27, 52, 225))
+
+    cx = x0 + ipx
+    if logo_img:
+        overlay.alpha_composite(logo_img, (cx, y0 + (pill_h - logo_h) // 2))
+        cx += logo_w + gap
+    ty = y0 + (pill_h - th) // 2 - tb[1]
+    d.text((cx, ty), text, font=font, fill=(255, 255, 255, 255))
+
+    out = Image.alpha_composite(base, overlay).convert("RGB")
+    buf = io.BytesIO()
+    out.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+
 async def dr_generate_ui_mockup(visual_prompt: str, size: str = "1536x1024") -> str:
     """Generate a clean UI/dashboard mockup with gpt-image-2 (no brand logo). Returns base64 PNG."""
     if not OPENAI_API_KEY:
@@ -1018,7 +1085,8 @@ async def dr_ai_mockup(req: DrAiMockupReq):
 
     async def _one():
         b64 = await dr_generate_ui_mockup(visual)
-        name = await _save_upload_bytes(base64.b64decode(b64), ".png", "image/png")
+        branded = await asyncio.to_thread(_brand_mockup, base64.b64decode(b64))
+        name = await _save_upload_bytes(branded, ".png", "image/png")
         return f"/api/uploads/{name}"
 
     results = await asyncio.gather(_one(), _one(), return_exceptions=True)
