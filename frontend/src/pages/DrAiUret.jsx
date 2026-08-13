@@ -330,7 +330,7 @@ export default function DrAiUret() {
             Aklınızdaki yazılım fikrini anlatın. Yapay zekâmız bunu birkaç akıllı soruyla netleştirip canlı bir proje taslağına dönüştürsün.
           </p>
           <p className="mx-auto mt-2 max-w-xl text-sm text-slate-400">
-            Fikriniz net olmasa bile sorun değil — birkaç cümle yeterli. B2B, CRM, mobil uygulama, portal, otomasyon ve daha fazlası.
+            Fikriniz net olmasa bile sorun değil — birkaç cümle yeterli. B2B, CRM, mobil uygulama, portal, otomasyon ve daha fazlası. Ama ne kadar uzun anlatırsanız o kadar iyi geliştiririz projeyi.
           </p>
         </div>
 
