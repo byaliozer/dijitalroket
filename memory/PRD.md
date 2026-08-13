@@ -107,6 +107,11 @@ Reklam kampanyaları için premium, dönüşüm odaklı AI deneyim sayfası (tes
 - `/api/dr-ai/mockup` ile üretilen her görsele, üretimden SONRA Pillow ile marka watermark ekleniyor: sağ altta yarı saydam koyu pill içinde **Dijital Roket logosu (favicon-512) + "www.dijitalroket.com"**. `_brand_mockup()` helper (`server.py`). Model'e bıraktırmak yerine deterministik composite — her zaman net ve doğru yazılıyor. Görsel olarak doğrulandı.
 - Ayrıca DR AI ile Üret hero alt metni güncellendi ("...Ama ne kadar uzun anlatırsanız o kadar iyi geliştiririz projeyi.").
 
+## What's Been Implemented (2026-06-19 → devam) — E-posta bildirimleri (faz-9)
+- Yeni **DR AI ile Üret talebi** VE yeni **Proje Brief'i** geldiğinde `byaliozer@gmail.com` adresine otomatik bildirim e-postası gönderiliyor (Resend). Helper `_send_admin_notification()` + `_kv_rows()`/`_esc()` (`server.py`); `NOTIFY_EMAIL` env (fallback byaliozer@gmail.com). DR AI maili: müşterinin fikri + iletişim + blueprint + modüller + soru-cevap özeti. Brief maili: tüm form alanları. Gerçek gönderim log'la doğrulandı (Resend message ID döndü, 200).
+- DR AI ile Üret formunda **Ad Soyad + Telefon zorunlu** (hem frontend validasyon hem backend kontrolü — zaten mevcuttu, teyit edildi).
+- NOT: Gönderen `onboarding@resend.dev` (Resend test/onboarding). Delivery byaliozer@gmail.com'a çalışıyor. Kurumsal görünüm ve tüm adreslere gönderim için ileride `dijitalroket.com` alan adı Resend'de doğrulanmalı.
+
 ## Next Tasks
 - Optional UX: large clickable cards on listings.
 - Optional: e-mail notifications when forms arrive.
@@ -134,6 +139,11 @@ Reklam kampanyaları için premium, dönüşüm odaklı AI deneyim sayfası (tes
 ## What's Been Implemented (2026-06-19 → devam) — DR AI mockup marka watermark (faz-8)
 - `/api/dr-ai/mockup` ile üretilen her görsele, üretimden SONRA Pillow ile marka watermark ekleniyor: sağ altta yarı saydam koyu pill içinde **Dijital Roket logosu (favicon-512) + "www.dijitalroket.com"**. `_brand_mockup()` helper (`server.py`). Model'e bıraktırmak yerine deterministik composite — her zaman net ve doğru yazılıyor. Görsel olarak doğrulandı.
 - Ayrıca DR AI ile Üret hero alt metni güncellendi ("...Ama ne kadar uzun anlatırsanız o kadar iyi geliştiririz projeyi.").
+
+## What's Been Implemented (2026-06-19 → devam) — E-posta bildirimleri (faz-9)
+- Yeni **DR AI ile Üret talebi** VE yeni **Proje Brief'i** geldiğinde `byaliozer@gmail.com` adresine otomatik bildirim e-postası gönderiliyor (Resend). Helper `_send_admin_notification()` + `_kv_rows()`/`_esc()` (`server.py`); `NOTIFY_EMAIL` env (fallback byaliozer@gmail.com). DR AI maili: müşterinin fikri + iletişim + blueprint + modüller + soru-cevap özeti. Brief maili: tüm form alanları. Gerçek gönderim log'la doğrulandı (Resend message ID döndü, 200).
+- DR AI ile Üret formunda **Ad Soyad + Telefon zorunlu** (hem frontend validasyon hem backend kontrolü — zaten mevcuttu, teyit edildi).
+- NOT: Gönderen `onboarding@resend.dev` (Resend test/onboarding). Delivery byaliozer@gmail.com'a çalışıyor. Kurumsal görünüm ve tüm adreslere gönderim için ileride `dijitalroket.com` alan adı Resend'de doğrulanmalı.
 
 ## Next Tasks (archive below)
 

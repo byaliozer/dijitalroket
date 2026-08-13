@@ -439,6 +439,23 @@ async def submit_project_request(payload: ProjectRequestCreate):
     obj = ProjectRequest(**payload.model_dump())
     doc = obj.model_dump()
     await db.project_requests.insert_one(doc)
+    rows = _kv_rows([
+        ("Firma", obj.company_name), ("İletişim", obj.contact_name),
+        ("E-posta", obj.email), ("Telefon", obj.phone),
+        ("Proje Türü", obj.project_type), ("Hedefler", obj.goals),
+        ("Kullanıcı Rolleri", obj.user_roles), ("Özellikler", obj.required_features),
+        ("Referans Sistemler", obj.reference_systems), ("Mevcut Durum", obj.current_digital_state),
+        ("Zaman", obj.timeline), ("Bütçe", obj.budget), ("Notlar", obj.notes),
+    ])
+    inner = (
+        "<h2 style='font-size:18px;margin:0 0 10px'>Yeni Proje Brief'i</h2>"
+        "<p style='font-size:14px;color:#334155;margin:0 0 14px'>İletişim formu / proje talep sayfasından yeni bir brief geldi.</p>"
+        f"<table style='width:100%;border-collapse:collapse;background:#f8fafc;border-radius:10px;overflow:hidden'>{rows}</table>"
+    )
+    try:
+        await _send_admin_notification(f"Yeni Proje Brief'i — {obj.company_name}", inner)
+    except Exception as e:
+        logger.error("project-request notification failed: %s", e)
     return obj
 
 
@@ -1116,6 +1133,33 @@ async def dr_ai_lead(req: DrAiLeadReq):
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.ai_leads.insert_one(doc)
+    bp = doc.get("blueprint") or {}
+    qa = "".join(
+        f"<li style='margin-bottom:6px'><span style='color:#64748b'>{_esc(a.get('question'))}</span><br>"
+        f"<strong>{_esc(a.get('answer'))}</strong></li>" for a in (doc.get("answers") or [])
+    )
+    modules = ", ".join((bp.get("modules") or [])[:12])
+    rows = _kv_rows([
+        ("Ad Soyad", doc["name"]), ("Şirket", doc["company"]),
+        ("Telefon", doc["phone"]), ("E-posta", doc["email"]),
+        ("Proje Adı", bp.get("project_name")), ("Proje Tipi", bp.get("project_type")),
+        ("Platform", bp.get("platform")), ("Örnek Görsel", "Evet" if doc.get("mockup_images") else "Hayır"),
+        ("Görsel Geri Bildirim", doc.get("mockup_feedback")), ("Not", doc.get("note")),
+    ])
+    inner = (
+        "<h2 style='font-size:18px;margin:0 0 10px'>Yeni DR AI ile Üret Talebi</h2>"
+        f"<div style='background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px;margin-bottom:14px'>"
+        f"<div style='font-size:11px;font-weight:700;letter-spacing:.5px;color:#2563EB;text-transform:uppercase'>Müşterinin Fikri</div>"
+        f"<p style='font-size:14px;color:#0f172a;margin:6px 0 0'>{_esc(doc['idea'])}</p></div>"
+        f"<table style='width:100%;border-collapse:collapse;background:#f8fafc;border-radius:10px;overflow:hidden'>{rows}</table>"
+        + (f"<div style='margin-top:12px'><div style='font-size:11px;font-weight:700;letter-spacing:.5px;color:#2563EB;text-transform:uppercase'>Modüller</div><p style='font-size:13px;color:#334155;margin:6px 0 0'>{_esc(modules)}</p></div>" if modules else "")
+        + (f"<div style='margin-top:12px'><div style='font-size:11px;font-weight:700;letter-spacing:.5px;color:#2563EB;text-transform:uppercase'>Soru &amp; Cevaplar</div><ul style='font-size:13px;color:#0f172a;padding-left:18px;margin:8px 0 0'>{qa}</ul></div>" if qa else "")
+        + "<p style='font-size:13px;color:#64748b;margin-top:14px'>Detayları admin panelde <strong>DR AI Talepleri</strong> sekmesinden görebilirsiniz.</p>"
+    )
+    try:
+        await _send_admin_notification(f"Yeni DR AI Talebi — {doc['name']}", inner)
+    except Exception as e:
+        logger.error("dr-ai lead notification failed: %s", e)
     return {"ok": True, "id": doc["_id"]}
 
 
@@ -1231,6 +1275,7 @@ async def seed_settings():
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
+NOTIFY_EMAIL = os.environ.get("NOTIFY_EMAIL") or "byaliozer@gmail.com"
 DR_IMAGE_MODEL = "gpt-image-2"          # Shown to users as "DR AI Image Engine 2.0"
 DR_CAPTION_MODEL = "gpt-4o"             # Vision model for caption generation
 PUBLIC_DIR = Path("/app/frontend/public")
@@ -1428,6 +1473,44 @@ async def _send_approval_email(to_email: str, brand_name: str):
         logger.info("Approval email sent to %s", to_email)
     except Exception as e:
         logger.error("Failed to send approval email to %s: %s", to_email, e)
+
+
+def _esc(s):
+    return str(s or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def _kv_rows(pairs):
+    return "".join(
+        f"<tr><td style='padding:6px 10px;color:#64748b;font-size:13px;vertical-align:top'>{_esc(k)}</td>"
+        f"<td style='padding:6px 10px;color:#0f172a;font-size:14px;font-weight:600'>{_esc(v)}</td></tr>"
+        for k, v in pairs if (v is not None and str(v).strip())
+    )
+
+
+async def _send_admin_notification(subject: str, inner_html: str):
+    """Send an internal notification email to the Dijital Roket inbox via Resend."""
+    if not RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY not set — skipping notification: %s", subject)
+        return
+    html = f"""
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#0f172a">
+      <div style="background:#07111F;border-radius:14px;padding:22px;text-align:center">
+        <h1 style="color:#fff;margin:0;font-size:20px">Dijital Roket</h1>
+        <p style="color:#22D3EE;margin:6px 0 0;font-size:12px;letter-spacing:.5px">Yeni Talep Bildirimi</p>
+      </div>
+      <div style="padding:22px 4px">{inner_html}</div>
+      <p style="font-size:12px;color:#94a3b8;text-align:center;border-top:1px solid #e2e8f0;padding-top:14px">
+        Bu e-posta dijitalroket.com üzerinden otomatik gönderildi.
+      </p>
+    </div>
+    """
+    params = {"from": SENDER_EMAIL, "to": [NOTIFY_EMAIL], "subject": subject, "html": html}
+    try:
+        resend.api_key = RESEND_API_KEY
+        res = await asyncio.to_thread(resend.Emails.send, params)
+        logger.info("Notification email sent to %s (%s): %s", NOTIFY_EMAIL, subject, res)
+    except Exception as e:
+        logger.error("Failed to send notification to %s: %s", NOTIFY_EMAIL, e)
 
 
 def _extract_chat_text(data: dict) -> str:
