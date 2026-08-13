@@ -8,6 +8,7 @@ import CorporateSolutions from "./pages/CorporateSolutions";
 import Services from "./pages/Services";
 import ServiceLanding from "./pages/ServiceLanding";
 import DrAi from "./pages/DrAi";
+import DrAiUret from "./pages/DrAiUret";
 import BursaLanding from "./pages/BursaLanding";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
@@ -38,6 +39,7 @@ export default function App() {
                 <Route path="/hizmetler" element={<Services />} />
                 <Route path="/hizmetler/:slug" element={<ServiceLanding />} />
                 <Route path="/dr-ai" element={<DrAi />} />
+                <Route path="/dr-ai-ile-uret" element={<DrAiUret />} />
                 <Route path="/bursa-web-tasarim" element={<BursaLanding />} />
                 <Route path="/projeler" element={<Projects />} />
                 <Route path="/projeler/:slug" element={<ProjectDetail />} />

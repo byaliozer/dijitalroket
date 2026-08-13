@@ -829,6 +829,241 @@ async def admin_generate_faq(payload: FaqGenerateRequest, current=Depends(get_cu
     return {"faq": faq}
 
 
+# -----------------------------------------------------------------------------
+# DR AI ile Üret — interactive AI lead-generation experience
+# -----------------------------------------------------------------------------
+DR_AI_SYSTEM = (
+    "Sen 'DR AI'sın — Dijital Roket'in yapay zeka destekli proje analiz ve üretim sistemisin. "
+    "Şirket sahiplerinin ve yöneticilerin yazılım fikirlerini analiz eder, akıllı sorularla netleştirir "
+    "ve profesyonel bir proje kapsamına dönüştürürsün. Dijital Roket; Bursa merkezli, Türkiye geneli hizmet "
+    "veren kurumsal yazılım ve dijital dönüşüm şirketidir (B2B/bayi sistemleri, özel CRM, mobil uygulama, "
+    "müşteri portalları, iş süreci otomasyonu, raporlama panelleri, kurumsal web). Her zaman akıcı, profesyonel "
+    "ve net Türkçe kullan. Abartılı 'her şeyi yapan AI' vaatlerinden ve uydurma metriklerden kaçın."
+)
+
+
+def _extract_json_obj(raw: str):
+    text = (raw or "").strip()
+    if "```" in text:
+        text = re.sub(r"```[a-zA-Z]*", "", text).replace("```", "")
+    s, e = text.find("{"), text.rfind("}")
+    if s != -1 and e != -1 and e > s:
+        text = text[s:e + 1]
+    try:
+        return json.loads(text)
+    except Exception:
+        return None
+
+
+def _dr_ai_chat(session_prefix: str):
+    key = os.environ.get("EMERGENT_LLM_KEY")
+    if not key:
+        raise HTTPException(status_code=500, detail="AI servisi yapılandırılmamış.")
+    return LlmChat(
+        api_key=key, session_id=f"{session_prefix}-{uuid.uuid4().hex}", system_message=DR_AI_SYSTEM
+    ).with_model("openai", "gpt-5.4-mini")
+
+
+class DrAiAnswer(BaseModel):
+    question: str
+    answer: str
+
+
+class DrAiQuestionsReq(BaseModel):
+    idea: str
+
+
+class DrAiBlueprintReq(BaseModel):
+    idea: str
+    answers: List[DrAiAnswer] = []
+
+
+class DrAiMockupReq(BaseModel):
+    project_name: str = ""
+    description: str = ""
+    project_type: str = ""
+    modules: List[str] = []
+    platform: str = ""
+
+
+class DrAiLeadReq(BaseModel):
+    idea: str
+    answers: List[DrAiAnswer] = []
+    blueprint: dict = {}
+    mockup_images: List[str] = []
+    mockup_feedback: Optional[str] = ""
+    name: str
+    company: Optional[str] = ""
+    phone: str
+    email: Optional[str] = ""
+    note: Optional[str] = ""
+
+
+@api_router.post("/dr-ai/questions")
+async def dr_ai_questions(req: DrAiQuestionsReq):
+    idea = (req.idea or "").strip()
+    if len(idea) < 3:
+        raise HTTPException(status_code=400, detail="Lütfen fikrinizi birkaç cümleyle yazın.")
+    prompt = (
+        f"Bir şirket yöneticisinin yazılım fikri:\n\"{idea}\"\n\n"
+        "Bu fikri bir proje kapsamına dönüştürebilmek için, fikre ÖZEL, KISA ve AKILLI en fazla 4 soru üret. "
+        "Sorular jenerik olmasın; kullanıcının anlattığı işe göre farklılaşsın (ör. kullanıcı sayısı, roller, "
+        "entegrasyonlar, mevcut süreç, platform tercihi gibi gerçekten kapsamı netleştiren konular). "
+        "Uygun sorularda kullanıcının hızlı seçebilmesi için 3-4 kısa hazır seçenek de sun (kullanıcı yine serbest metin yazabilir). "
+        'SADECE geçerli JSON döndür, başka hiçbir açıklama yazma. Format: '
+        '{"questions":[{"id":"q1","question":"...","options":["seçenek1","seçenek2","seçenek3"]}]}'
+    )
+    chat = _dr_ai_chat("drai-q")
+    try:
+        raw = await chat.send_message(UserMessage(text=prompt))
+    except Exception as e:
+        logger.error("dr-ai questions failed: %s", e)
+        raise HTTPException(status_code=502, detail="Sorular üretilemedi. Lütfen tekrar deneyin.")
+    data = _extract_json_obj(raw if isinstance(raw, str) else str(raw)) or {}
+    out = []
+    for i, q in enumerate((data.get("questions") or [])[:5]):
+        if not isinstance(q, dict):
+            continue
+        question = str(q.get("question") or q.get("soru") or "").strip()
+        opts = [str(o).strip() for o in (q.get("options") or q.get("secenekler") or []) if str(o).strip()][:5]
+        if question:
+            out.append({"id": q.get("id") or f"q{i+1}", "question": question, "options": opts})
+    if not out:
+        raise HTTPException(status_code=502, detail="Sorular üretilemedi. Lütfen tekrar deneyin.")
+    return {"questions": out}
+
+
+@api_router.post("/dr-ai/blueprint")
+async def dr_ai_blueprint(req: DrAiBlueprintReq):
+    idea = (req.idea or "").strip()
+    if len(idea) < 3:
+        raise HTTPException(status_code=400, detail="Fikir bilgisi eksik.")
+    qa = "\n".join(f"- Soru: {a.question}\n  Cevap: {a.answer}" for a in req.answers if (a.answer or "").strip())
+    prompt = (
+        f"Yazılım fikri:\n\"{idea}\"\n\n"
+        f"Kullanıcının soru-cevapları:\n{qa or '(ek cevap yok)'}\n\n"
+        "Bu bilgilere göre profesyonel bir PROJECT BLUEPRINT (proje taslağı) üret. "
+        "Proje adı yaratıcı ama profesyonel ve projeye uygun olsun (jenerik olmasın). "
+        "Modüller kısa, net İngilizce/Türkçe etiketler olsun. Uydurma başarı metriği verme. "
+        'SADECE geçerli JSON döndür, başka açıklama yazma. Format: '
+        '{"project_name":"...","tagline":"tek cümle","description":"2-3 cümle Türkçe tanım",'
+        '"project_type":"ör. B2B Bayi Yönetim Platformu","target_users":["..."],'
+        '"modules":["Modül 1","Modül 2"],"admin_features":["..."],"platform":"ör. Web + Mobil",'
+        '"optional_features":["..."],"next_step":"tek cümle sonraki adım"}'
+    )
+    chat = _dr_ai_chat("drai-bp")
+    try:
+        raw = await chat.send_message(UserMessage(text=prompt))
+    except Exception as e:
+        logger.error("dr-ai blueprint failed: %s", e)
+        raise HTTPException(status_code=502, detail="Proje taslağı üretilemedi. Lütfen tekrar deneyin.")
+    data = _extract_json_obj(raw if isinstance(raw, str) else str(raw)) or {}
+
+    def _slist(v, limit):
+        if isinstance(v, list):
+            return [str(x).strip() for x in v if str(x).strip()][:limit]
+        return []
+
+    bp = {
+        "project_name": str(data.get("project_name") or "Özel Yazılım Projesi").strip()[:80],
+        "tagline": str(data.get("tagline") or "").strip()[:160],
+        "description": str(data.get("description") or "").strip()[:600],
+        "project_type": str(data.get("project_type") or "Özel Yazılım").strip()[:80],
+        "target_users": _slist(data.get("target_users"), 6),
+        "modules": _slist(data.get("modules"), 14),
+        "admin_features": _slist(data.get("admin_features"), 8),
+        "platform": str(data.get("platform") or "Web").strip()[:80],
+        "optional_features": _slist(data.get("optional_features"), 6),
+        "next_step": str(data.get("next_step") or "Dijital Roket ön değerlendirmesi").strip()[:200],
+    }
+    if not bp["modules"]:
+        raise HTTPException(status_code=502, detail="Proje taslağı üretilemedi. Lütfen tekrar deneyin.")
+    return {"blueprint": bp}
+
+
+async def dr_generate_ui_mockup(visual_prompt: str, size: str = "1536x1024") -> str:
+    """Generate a clean UI/dashboard mockup with gpt-image-2 (no brand logo). Returns base64 PNG."""
+    if not OPENAI_API_KEY:
+        raise HTTPException(status_code=500, detail="Görsel üretim servisi yapılandırılmamış.")
+    headers = {"Authorization": f"Bearer {OPENAI_API_KEY}", "Content-Type": "application/json"}
+    body = {
+        "model": DR_IMAGE_MODEL, "prompt": visual_prompt, "size": size,
+        "quality": "medium", "background": "opaque", "output_format": "png",
+    }
+    async with httpx.AsyncClient(timeout=180) as cx:
+        resp = await cx.post("https://api.openai.com/v1/images/generations",
+                             headers=headers, json=body)
+    if resp.status_code >= 400:
+        logger.error("dr-ai mockup error %s: %s", resp.status_code, resp.text[:400])
+        raise HTTPException(status_code=502, detail="Örnek görsel üretilemedi.")
+    try:
+        return resp.json()["data"][0]["b64_json"]
+    except (KeyError, IndexError, TypeError):
+        raise HTTPException(status_code=502, detail="Örnek görsel üretilemedi.")
+
+
+@api_router.post("/dr-ai/mockup")
+async def dr_ai_mockup(req: DrAiMockupReq):
+    modules = ", ".join((req.modules or [])[:8]) or "dashboard, table, reports"
+    is_mobile = "mobil" in (req.platform or "").lower() or "mobile" in (req.platform or "").lower()
+    screen = "mobile app screen (portrait)" if is_mobile else "web dashboard screen (desktop)"
+    visual = (
+        f"A clean, modern, high-fidelity UI mockup of a {screen} for a {req.project_type or 'business software'} "
+        f"product called '{req.project_name}'. {req.description}. The interface should clearly show these features: "
+        f"{modules}. Realistic professional SaaS product design, light premium theme with electric blue (#2563EB) and "
+        f"cyan (#22D3EE) accents, soft shadows, rounded cards, left sidebar navigation, data tables, KPI stat cards and "
+        f"a chart. Turkish interface labels. Crisp, realistic, believable product mockup. No company logo, no watermark, "
+        f"no text lorem ipsum gibberish — use short realistic Turkish labels."
+    )
+
+    async def _one():
+        b64 = await dr_generate_ui_mockup(visual)
+        name = await _save_upload_bytes(base64.b64decode(b64), ".png", "image/png")
+        return f"/api/uploads/{name}"
+
+    results = await asyncio.gather(_one(), _one(), return_exceptions=True)
+    urls = [r for r in results if isinstance(r, str)]
+    if not urls:
+        raise HTTPException(status_code=502, detail="Örnek görsel üretilemedi. Lütfen tekrar deneyin.")
+    return {"images": urls}
+
+
+@api_router.post("/dr-ai/lead")
+async def dr_ai_lead(req: DrAiLeadReq):
+    if not (req.name or "").strip() or not (req.phone or "").strip():
+        raise HTTPException(status_code=400, detail="Ad ve telefon zorunludur.")
+    doc = {
+        "_id": uuid.uuid4().hex,
+        "idea": (req.idea or "").strip(),
+        "answers": [a.dict() for a in req.answers],
+        "blueprint": req.blueprint or {},
+        "mockup_images": req.mockup_images or [],
+        "mockup_feedback": req.mockup_feedback or "",
+        "name": req.name.strip(),
+        "company": (req.company or "").strip(),
+        "phone": req.phone.strip(),
+        "email": (req.email or "").strip(),
+        "note": (req.note or "").strip(),
+        "status": "new",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.ai_leads.insert_one(doc)
+    return {"ok": True, "id": doc["_id"]}
+
+
+@api_router.get("/admin/ai-leads")
+async def admin_ai_leads(current=Depends(get_current_admin)):
+    items = await db.ai_leads.find().sort("created_at", -1).to_list(1000)
+    return items
+
+
+@api_router.delete("/admin/ai-leads/{lead_id}")
+async def admin_delete_ai_lead(lead_id: str, current=Depends(get_current_admin)):
+    await db.ai_leads.delete_one({"_id": lead_id})
+    return {"ok": True}
+
+
+
 
 # -----------------------------------------------------------------------------
 # Site Settings (single doc, editable from admin)

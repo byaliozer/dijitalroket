@@ -7,6 +7,7 @@ import Logo from "./Logo";
 const NAV_LINKS = [
   { to: "/", label: "Ana Sayfa" },
   { to: "/hizmetler", label: "Hizmetler" },
+  { to: "/dr-ai-ile-uret", label: "DR AI ile Üret" },
   { to: "/projeler", label: "Projeler" },
   { to: "/hakkimizda", label: "Hakkımızda" },
   { to: "/blog", label: "Blog" },

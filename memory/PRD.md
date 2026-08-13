@@ -95,6 +95,14 @@ ChatGPT "Google Search görünümü / sitelink" listesi uygulandı (testing_agen
 - **H1'ler**: Projeler/Hakkımızda/İletişim/Hizmetler benzersiz ve kompakt.
 - NOT: Yayına girmesi için REDEPLOY gerekir.
 
+## What's Been Implemented (2026-06-19 → devam) — "DR AI ile Üret" interaktif AI lead sayfası (faz-7)
+Reklam kampanyaları için premium, dönüşüm odaklı AI deneyim sayfası (testing_agent iteration_12: backend 6/6, frontend %100):
+- **Sayfa** `/dr-ai-ile-uret` (`pages/DrAiUret.jsx`): idle→analyzing→questions→building→blueprint→(mockup)→form→success state machine. Yaşayan gradient aurora, glassmorphism, döngüsel placeholder, floating örnek kartlar, canlı Project Blueprint (staggered reveal), Framer Motion. Menüye "DR AI ile Üret" eklendi (Hizmetler ile Projeler arası). Alt imza "Powered by Dijital Roket AI".
+- **Backend** (`server.py`): `POST /api/dr-ai/questions` (gpt-5.4-mini, 3-5 akıllı soru+seçenek), `/api/dr-ai/blueprint` (yapılandırılmış proje taslağı JSON), `/api/dr-ai/mockup` (gpt-image-2, logosuz UI mockup, 2 görsel paralel, object storage'a kaydeder), `/api/dr-ai/lead` (MongoDB `ai_leads`), admin `GET/DELETE /api/admin/ai-leads`.
+- **Admin**: Yeni "DR AI Talepleri" sekmesi (`AiLeadsAdmin`) — talep listesi + detay modal (fikir, soru-cevap, blueprint, üretilen görseller, geri bildirim).
+- Model: gpt-5.4-mini (metin) + gpt-image-2 (görsel), Emergent/OpenAI key. E-posta bildirimi kurulmadı (kullanıcı tercihi — admin panelinden takip).
+- NOT: Production'da görünmesi için REDEPLOY gerekir.
+
 ## Next Tasks
 - Optional UX: large clickable cards on listings.
 - Optional: e-mail notifications when forms arrive.
@@ -110,6 +118,14 @@ ChatGPT SEO/topical authority denetim listesindeki atlanan maddeler tamamlandı:
 - **Yazar bilgisi**: Ali Özer — CEO — https://www.byaliozer.com/ — 0543 793 41 01 (gerçek, uydurma değil).
 - **VALIDATED** (screenshot smoke): Bursa H1/map/6 hizmet/5 SSS; Blog detay yazar(1)+ilgili hizmet(1)+proje(2)+yazı(3)+tarihler; Blog filtre(6) çalışıyor; Hizmet ilgili blog(1)+ilgili proje(4). Derleme hatasız.
 - NOT: Değişikliklerin dijitalroket.com'da görünmesi için REDEPLOY + GSC sitemap yeniden gönderimi gerekir.
+
+## What's Been Implemented (2026-06-19 → devam) — "DR AI ile Üret" interaktif AI lead sayfası (faz-7)
+Reklam kampanyaları için premium, dönüşüm odaklı AI deneyim sayfası (testing_agent iteration_12: backend 6/6, frontend %100):
+- **Sayfa** `/dr-ai-ile-uret` (`pages/DrAiUret.jsx`): idle→analyzing→questions→building→blueprint→(mockup)→form→success state machine. Yaşayan gradient aurora, glassmorphism, döngüsel placeholder, floating örnek kartlar, canlı Project Blueprint (staggered reveal), Framer Motion. Menüye "DR AI ile Üret" eklendi (Hizmetler ile Projeler arası). Alt imza "Powered by Dijital Roket AI".
+- **Backend** (`server.py`): `POST /api/dr-ai/questions` (gpt-5.4-mini, 3-5 akıllı soru+seçenek), `/api/dr-ai/blueprint` (yapılandırılmış proje taslağı JSON), `/api/dr-ai/mockup` (gpt-image-2, logosuz UI mockup, 2 görsel paralel, object storage'a kaydeder), `/api/dr-ai/lead` (MongoDB `ai_leads`), admin `GET/DELETE /api/admin/ai-leads`.
+- **Admin**: Yeni "DR AI Talepleri" sekmesi (`AiLeadsAdmin`) — talep listesi + detay modal (fikir, soru-cevap, blueprint, üretilen görseller, geri bildirim).
+- Model: gpt-5.4-mini (metin) + gpt-image-2 (görsel), Emergent/OpenAI key. E-posta bildirimi kurulmadı (kullanıcı tercihi — admin panelinden takip).
+- NOT: Production'da görünmesi için REDEPLOY gerekir.
 
 ## Next Tasks (archive below)
 

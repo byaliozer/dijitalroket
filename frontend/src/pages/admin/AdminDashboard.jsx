@@ -16,6 +16,7 @@ const TABS = [
   { id: "overview", label: "Genel Bakış", icon: LayoutDashboard },
   { id: "contacts", label: "İletişim Talepleri", icon: Mail },
   { id: "requests", label: "Proje Brief'leri", icon: FileText },
+  { id: "ai-leads", label: "DR AI Talepleri", icon: Zap },
   { id: "projects", label: "DR AI Çalışmaları", icon: FolderOpen },
   { id: "blog", label: "Blog Yazıları", icon: BookOpenText },
   { id: "brands", label: "Markalar (AI)", icon: Sparkles },
@@ -83,6 +84,7 @@ export default function AdminDashboard() {
           {tab === "overview" && <Overview />}
           {tab === "contacts" && <Contacts />}
           {tab === "requests" && <Requests />}
+          {tab === "ai-leads" && <AiLeadsAdmin />}
           {tab === "projects" && <ProjectsAdmin />}
           {tab === "blog" && <BlogAdmin />}
           {tab === "brands" && <BrandsAdmin />}
@@ -196,6 +198,89 @@ function Requests() {
     </div>
   );
 }
+
+function AiLeadsAdmin() {
+  const [rows, setRows] = useState([]);
+  const [view, setView] = useState(null);
+  const backend = process.env.REACT_APP_BACKEND_URL;
+  const media = (u) => (u && u.startsWith("http") ? u : `${backend}${u}`);
+  const load = () => api.get("/admin/ai-leads").then((r) => setRows((r.data || []).map((x) => ({ ...x, id: x._id })))).catch(() => {});
+  useEffect(() => { load(); }, []);
+  const del = async (id) => { if (!confirm("Silinsin mi?")) return; await api.delete(`/admin/ai-leads/${id}`); toast.success("Silindi"); load(); };
+  const fmtDate = (iso) => { try { return new Date(iso).toLocaleString("tr-TR"); } catch { return ""; } };
+
+  return (
+    <div data-testid="admin-ai-leads">
+      {rows.length === 0 && <p className="text-sm text-[#334155]">Henüz DR AI ile Üret talebi gelmedi. Talepler <span className="font-semibold">/dr-ai-ile-uret</span> sayfasından toplanır.</p>}
+      <DataTable
+        rows={rows}
+        columns={[
+          { key: "name", label: "Ad Soyad" },
+          { key: "company", label: "Şirket" },
+          { key: "phone", label: "Telefon" },
+          { key: "_bp", label: "Proje", render: (_, r) => r.blueprint?.project_name || "—" },
+          { key: "created_at", label: "Tarih", render: (_, r) => fmtDate(r.created_at) },
+        ]}
+        actions={(r) => (
+          <>
+            <button onClick={() => setView(r)} className="p-2 rounded hover:bg-slate-100" data-testid={`ai-lead-view-${r.id}`}><Eye className="h-4 w-4" /></button>
+            <button onClick={() => del(r.id)} className="p-2 rounded hover:bg-red-50 text-red-600"><Trash2 className="h-4 w-4" /></button>
+          </>
+        )}
+      />
+      {view && (
+        <Modal onClose={() => setView(null)} title={`${view.name}${view.company ? " · " + view.company : ""}`}>
+          <div className="space-y-4 text-sm">
+            <div className="grid grid-cols-2 gap-3">
+              <div><span className="text-slate-400">Telefon:</span> <span className="font-medium">{view.phone}</span></div>
+              <div><span className="text-slate-400">E-posta:</span> <span className="font-medium">{view.email || "—"}</span></div>
+              <div className="col-span-2"><span className="text-slate-400">Tarih:</span> {fmtDate(view.created_at)}</div>
+            </div>
+            <div className="rounded-lg border border-slate-200 p-3">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#2563EB]">İlk Fikir</div>
+              <p className="mt-1 text-slate-700">{view.idea}</p>
+            </div>
+            {(view.answers || []).length > 0 && (
+              <div className="rounded-lg border border-slate-200 p-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-[#2563EB]">Soru & Cevaplar</div>
+                <ul className="mt-1.5 space-y-1.5">
+                  {view.answers.map((a, i) => (
+                    <li key={i}><span className="text-slate-500">{a.question}</span><br /><span className="font-medium text-slate-800">{a.answer}</span></li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {view.blueprint?.project_name && (
+              <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-[#2563EB]">Project Blueprint</div>
+                <div className="mt-1 font-heading text-lg font-bold text-[#0B1B34]">{view.blueprint.project_name}</div>
+                <div className="text-slate-500">{view.blueprint.project_type} · {view.blueprint.platform}</div>
+                {view.blueprint.description && <p className="mt-1 text-slate-700">{view.blueprint.description}</p>}
+                {(view.blueprint.modules || []).length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {view.blueprint.modules.map((m, i) => <span key={i} className="rounded-full bg-white px-2.5 py-1 text-xs text-slate-600 border border-slate-200">{m}</span>)}
+                  </div>
+                )}
+              </div>
+            )}
+            {(view.mockup_images || []).length > 0 && (
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider text-[#2563EB]">Üretilen Örnek Görsel{view.mockup_feedback ? ` · Geri bildirim: ${view.mockup_feedback}` : ""}</div>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {view.mockup_images.map((m, i) => (
+                    <a key={i} href={media(m)} target="_blank" rel="noreferrer"><img src={media(m)} alt="mockup" className="rounded-lg border border-slate-200" /></a>
+                  ))}
+                </div>
+              </div>
+            )}
+            {view.note && <div className="rounded-lg border border-slate-200 p-3"><span className="text-slate-400">Not:</span> {view.note}</div>}
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
 
 function ProjectsAdmin() {
   const [rows, setRows] = useState([]);
