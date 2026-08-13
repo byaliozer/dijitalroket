@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import {
+import { Link } from "react-router-dom";
+import { ArrowRight,
   Globe, Network, Users2, FileText, BarChart3, Package,
   CalendarClock, UserCog, Headphones, Image, Sparkles, Smartphone,
 } from "lucide-react";
@@ -25,7 +26,7 @@ export default function SolutionsGrid({ compact = false }) {
       <div className="container-x">
         {!compact && (
           <div className="max-w-3xl">
-            <span className="eyebrow">Kurumsal Çözümler</span>
+            <span className="eyebrow">Hizmetlerimiz</span>
             <h2 className="mt-3 h2-section">
               Şirketinizin İhtiyacına<br />
               <span className="text-[#2563EB]">Özel Dijital Sistemler</span>
@@ -34,6 +35,9 @@ export default function SolutionsGrid({ compact = false }) {
               Hazır kalıplara sıkışmadan; satış, operasyon, insan kaynakları, müşteri yönetimi, bayi ağı, teklif süreçleri
               ve raporlama gibi iş akışlarınıza özel dijital çözümler geliştiriyoruz.
             </p>
+            <Link to="/hizmetler" data-testid="solutions-services-link" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#2563EB] hover:gap-3 transition-all">
+              Tüm Hizmetlerimizi İnceleyin <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         )}
 

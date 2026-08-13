@@ -1,0 +1,77 @@
+{
+  "summary": "Frontend-only SEO/metadata verification for Dijital Roket. All 8 review requirements independently validated via Playwright + document.head evaluation on the preview URL. All pass.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verification_results": {
+    "unique_titles_5_pages": true,
+    "titles": {
+      "/": "Dijital Roket | Özel Yazılım, B2B, CRM & AI Çözümleri",
+      "/hizmetler": "Dijital Roket Hizmetleri | Yazılım, B2B, CRM & AI",
+      "/projeler": "Dijital Roket Projeleri | Web, Yazılım, B2B & AI",
+      "/hakkimizda": "Dijital Roket Hakkında | Teknoloji & Dijital Dönüşüm",
+      "/iletisim": "Dijital Roket İletişim | Projenizi Birlikte Planlayalım"
+    },
+    "unique_descriptions_5_pages": true,
+    "canonicals_self_referencing": true,
+    "canonical_examples": {
+      "/": "https://www.dijitalroket.com/",
+      "/hizmetler": "https://www.dijitalroket.com/hizmetler",
+      "/projeler": "https://www.dijitalroket.com/projeler",
+      "/hakkimizda": "https://www.dijitalroket.com/hakkimizda",
+      "/iletisim": "https://www.dijitalroket.com/iletisim"
+    },
+    "robots_index_follow_5_pages": true,
+    "404_page": {
+      "title": "404 - Sayfa Bulunamadı | Dijital Roket",
+      "robots": "noindex, nofollow",
+      "pass": true
+    },
+    "h1_unique_and_correct": {
+      "/hizmetler": "Dijital Roket Hizmetleri",
+      "/projeler": "Dijital Roket Projeleri",
+      "/hakkimizda": "Dijital Roket Hakkında",
+      "/iletisim": "Dijital Roket ile İletişime Geçin",
+      "pass": true
+    },
+    "navbar_order": ["Ana Sayfa", "Hizmetler", "Projeler", "Hakkımızda", "Blog", "İletişim"],
+    "navbar_order_pass": true,
+    "kurumsal_cozumler_removed_from_topnav": true,
+    "homepage_hizmetler_before_projeler": true,
+    "solutions_services_link_testid_present": true,
+    "solutions_services_link_href": "/hizmetler",
+    "hero_cta_secondary_testid_present": true,
+    "hero_cta_secondary_href": "/hizmetler",
+    "favicon_http_status": {
+      "/favicon.ico": 200, "/favicon.svg": 200, "/favicon-48x48.png": 200,
+      "/favicon-192x192.png": 200, "/favicon-512x512.png": 200,
+      "/apple-touch-icon.png": 200, "/manifest.json": 200
+    },
+    "favicon_head_refs": {
+      "/favicon.ico": true, "/favicon.svg": true, "/favicon-48x48.png": true,
+      "/favicon-192x192.png": false,
+      "/favicon-512x512.png": true, "/apple-touch-icon.png": true, "/manifest.json": true
+    },
+    "note_favicon_192": "favicon-192x192.png is served (HTTP 200) and referenced via manifest.json icons array (standard PWA practice). Direct <link> tag not required; not blocking.",
+    "regression": {
+      "/blog": "loaded, title=Blog | Dijital Roket İçgörüler",
+      "/bursa-web-tasarim": "loaded, title=Bursa Web Tasarım & Dijital Dönüşüm | Dijital Roket"
+    },
+    "no_console_errors_on_5_pages": true
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Minor (non-blocking): favicon-192x192.png is only referenced via manifest.json, not as a direct <link rel=icon> tag. Acceptable and standard, but adding a direct link tag would provide belt-and-suspenders coverage for browsers/crawlers that don't parse manifest."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend-only)", "frontend": "100%"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "SEO metadata is client-side injected by src/components/SEO.jsx. Always read document.title / meta / canonical via page.evaluate after networkidle + short wait. Homepage section order verified via data-testid: solutions-section (idx 2) precedes case-studies-section (idx 3). Do not rely on keyword substring matching of section headings — the Hizmetler section headline does not literally contain 'hizmet'.",
+  "rca of the issue": "N/A - all requirements pass"
+}

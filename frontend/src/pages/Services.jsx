@@ -36,8 +36,8 @@ export default function Services() {
   return (
     <>
       <SEO
-        title="Hizmetler | Dijital Roket"
-        description="Kurumsal web tasarım, B2B bayi sistemi, özel CRM, özel yazılım geliştirme, yapay zekâ agent, AI içerik üretimi, sosyal medya yönetimi ve iş süreci otomasyonu."
+        title="Dijital Roket Hizmetleri | Yazılım, B2B, CRM & AI"
+        description="Kurumsal web tasarımından B2B bayi sistemlerine, özel CRM ve yazılımdan AI Agent çözümlerine kadar Dijital Roket'in kurumsal teknoloji hizmetlerini keşfedin."
       />
       <JsonLd id="services-hub" data={jsonLd} />
 

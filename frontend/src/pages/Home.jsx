@@ -16,14 +16,17 @@ import SEO from "../components/SEO";
 export default function Home() {
   return (
     <>
-      <SEO page="home" />
+      <SEO
+        title="Dijital Roket | Özel Yazılım, B2B, CRM & AI Çözümleri"
+        description="Dijital Roket; kurumsal web, B2B bayi sistemleri, özel CRM yazılımları, AI Agent çözümleri ve dijital dönüşüm projeleri geliştiren Bursa merkezli teknoloji şirketidir."
+      />
       <Hero />
       <ProjectMarquee />
+      <SolutionsGrid />
       <CaseStudiesSection />
       <VurucuFark />
       <Positioning />
       <DrAiSection />
-      <SolutionsGrid />
       <SprintTimeline />
       <RoketPartnerSection />
       <TrustSection />

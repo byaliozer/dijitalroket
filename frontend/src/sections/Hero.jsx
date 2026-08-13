@@ -193,8 +193,8 @@ export default function Hero() {
               Projemi Analiz Edin
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link to="/kurumsal-cozumler" data-testid="hero-cta-secondary" className="btn-ghost-dark">
-              Kurumsal Çözümleri İnceleyin
+            <Link to="/hizmetler" data-testid="hero-cta-secondary" className="btn-ghost-dark">
+              Hizmetlerimizi İnceleyin
             </Link>
           </motion.div>
 

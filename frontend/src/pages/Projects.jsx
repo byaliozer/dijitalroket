@@ -32,10 +32,13 @@ export default function Projects() {
 
   return (
     <>
-      <SEO page="projects" />
+      <SEO
+        title="Dijital Roket Projeleri | Web, Yazılım, B2B & AI"
+        description="Dijital Roket tarafından geliştirilen kurumsal web sitelerini, B2B sistemlerini, özel yazılım projelerini, yönetim panellerini ve dijital dönüşüm çalışmalarını inceleyin."
+      />
       <PageHero
         eyebrow="DR AI Çalışmaları"
-        title="Roketlediğimiz Projeler"
+        title="Dijital Roket Projeleri"
         subtitle="Fikirleri sadece tasarıma değil, çalışan dijital sistemlere dönüştürüyoruz."
       />
 

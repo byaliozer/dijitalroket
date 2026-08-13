@@ -43,10 +43,10 @@ export default function Contact() {
 
   return (
     <>
-      <SEO title="İletişim | Dijital Roket" description="Dijital Roket ile iletişime geçin. Bursa merkezli kurumsal dijital dönüşüm ortağınız." />
+      <SEO title="Dijital Roket İletişim | Projenizi Birlikte Planlayalım" description="Web sitesi, B2B, CRM, özel yazılım veya yapay zekâ projeniz için Dijital Roket ile iletişime geçin. Bursa merkezli ekibimiz Türkiye genelinde hizmet vermektedir." />
       <PageHero
         eyebrow="İletişim"
-        title="Birlikte Çalışalım"
+        title="Dijital Roket ile İletişime Geçin"
         subtitle="Projenizi, ihtiyacınızı veya fikrinizi paylaşın. Dijital Roket ekibi en kısa sürede sizinle iletişime geçer."
       />
 

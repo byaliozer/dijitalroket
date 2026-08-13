@@ -84,6 +84,17 @@ ChatGPT 3. denetim (AI Search / entity clarity / citability) listesindeki eksikl
 - **Zaten mevcut olanlar (denetimde ✓)**: robots.txt'de OAI-SearchBot + tüm AI crawler'ları Allow; sameAs yalnızca gerçek hesaplar; FAQ görünür+schema; blog tarih/yazar; internal link engine. GA4 kurulu değil (ChatGPT referral için bozulacak bir şey yok).
 - **VALIDATED**: Admin blog formu (first-party + sources) render + kaydet; blog yazar fotoğrafı yükleniyor; footer/iletişim tam NAP; backend round-trip curl %100.
 
+## What's Been Implemented (2026-06-19 → devam) — Google Search Görünümü & Sitelink faz-6
+ChatGPT "Google Search görünümü / sitelink" listesi uygulandı (testing_agent iteration_11 %100):
+- **Benzersiz SEO metadata (5 ana sayfa)**: Home/Hizmetler/Projeler/Hakkımızda/İletişim'e verilen tam title + meta description + self-referencing canonical (www) explicit prop olarak geçildi. Duplicate yok.
+- **404 / wildcard**: NotFound title "404 - Sayfa Bulunamadı | Dijital Roket" + noindex,nofollow; `/*` SPA'da noindex, sitemap dışı.
+- **Favicon**: Gerçek dosyalar (favicon.ico + 32/48/192/512 png + apple-touch-icon 180 + favicon.svg + manifest.json), index.html link tag'leri, tümü HTTP 200 kalıcı URL.
+- **Organization logo schema**: `ImageObject` (favicon-512x512.png, 512x512). Favicon≠logo ayrımı korundu.
+- **Navbar sırası**: Ana Sayfa, Hizmetler, Projeler, Hakkımızda, Blog, İletişim (Kurumsal Çözümler üst nav'dan çıkarıldı; route+footer korundu).
+- **Homepage**: Hizmetler bölümü Projeler'den ÖNCE; Hero CTA + SolutionsGrid'den `/hizmetler`'e güçlü internal link.
+- **H1'ler**: Projeler/Hakkımızda/İletişim/Hizmetler benzersiz ve kompakt.
+- NOT: Yayına girmesi için REDEPLOY gerekir.
+
 ## Next Tasks
 - Optional UX: large clickable cards on listings.
 - Optional: e-mail notifications when forms arrive.

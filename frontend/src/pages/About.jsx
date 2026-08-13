@@ -10,10 +10,13 @@ export default function About() {
 
   return (
     <>
-      <SEO page="about" />
+      <SEO
+        title="Dijital Roket Hakkında | Teknoloji & Dijital Dönüşüm"
+        description="Dijital Roket'in özel yazılım, yapay zekâ, kurumsal web ve dijital dönüşüm alanlarındaki yaklaşımını, teknoloji vizyonunu ve geliştirdiği çözümleri yakından tanıyın."
+      />
       <PageHero
         eyebrow={settings.about_eyebrow || "Hakkımızda"}
-        title={settings.about_title || "Dijital Dönüşümü Hızlandıran Teknoloji Ekibi"}
+        title="Dijital Roket Hakkında"
       />
 
       <section className="section bg-white">

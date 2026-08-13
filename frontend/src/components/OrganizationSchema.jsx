@@ -23,7 +23,7 @@ export default function OrganizationSchema() {
   const { settings } = useSiteSettings();
   const email = settings?.contact_email || "byaliozer@gmail.com";
   const phone = settings?.contact_phone_link || "+905437934101";
-  const logo = settings?.logo_url || `${SITE_URL}/favicon.png`;
+  const logo = { "@type": "ImageObject", url: `${SITE_URL}/favicon-512x512.png`, width: 512, height: 512 };
   const sameAs = [
     settings?.social_linkedin,
     settings?.social_instagram,
