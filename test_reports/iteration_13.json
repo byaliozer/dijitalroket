@@ -1,0 +1,29 @@
+{
+  "summary": "Frontend regression testing after removal of inline canonical-host redirect <script> from /app/frontend/public/index.html. Verified preview site loads cleanly, no redirect loop, all target routes render, dr-ai-input visible, favicon assets return 200, and no console errors.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verifications": [
+    "Homepage / renders with H1 'Şirketinizin İhtiyaçlarını DR AI sayesinde IŞIK HIZINDA hayata geçiriyoruz.' and data-testid='site-navbar' present.",
+    "Served index.html contains NO inline <script> with window.location.replace (regex-checked on rendered document.content()).",
+    "Client-side navigation to /hizmetler, /projeler, /iletisim, /dr-ai-ile-uret works; each renders unique H1 with no reload loop.",
+    "data-testid='dr-ai-input' visible on /dr-ai-ile-uret.",
+    "/favicon.ico, /favicon.svg, /manifest.json all return HTTP 200.",
+    "Zero console errors and zero pageerrors captured across homepage and /dr-ai-ile-uret."
+  ],
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "index.html now clean: only meta/OG/favicon tags remain — no client-side host-forcing script. Since Cloudflare handles www<->apex redirect at the edge, keeping this out of the app is correct.",
+    "src/components/SEO.jsx canonical link to https://www.dijitalroket.com is fine (SEO hint, not a redirect) — no action needed."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend-only)", "frontend": "100%"},
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Redirect-loop fix verified on preview host. Note: the actual loop can only reproduce on the real production hostname dijitalroket.com (behind Cloudflare); preview host cannot reproduce it. Regression on preview is clean."
+}

@@ -2,22 +2,6 @@
 <html lang="tr">
   <head>
     <meta charset="utf-8" />
-    <script>
-      // Canonical host enforcement: send bare domain to the www version.
-      // Only triggers on the exact production non-www host (not preview / emergent.host / localhost).
-      (function () {
-        try {
-          if (window.location.hostname === "dijitalroket.com") {
-            window.location.replace(
-              "https://www.dijitalroket.com" +
-                window.location.pathname +
-                window.location.search +
-                window.location.hash
-            );
-          }
-        } catch (e) {}
-      })();
-    </script>
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
