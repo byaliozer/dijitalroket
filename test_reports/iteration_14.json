@@ -1,0 +1,21 @@
+{
+  "summary": "Regression test for SEO per-route metadata fix on Dijital Roket preview. All 5 main routes have UNIQUE titles and UNIQUE descriptions, correct self-referencing canonicals to https://www.dijitalroket.com<path>, and robots='index, follow'. 404 (both /this-does-not-exist and /%2A) renders NotFound with title '404 - Sayfa Bulunamadi | Dijital Roket' and robots='noindex, nofollow'. Homepage navbar (data-testid='site-navbar') and H1 present. /dr-ai-ile-uret still exposes data-testid='dr-ai-input'. No console errors during client-side navigation across /hizmetler, /projeler, /hakkimizda, /iletisim, /blog, /dr-ai-ile-uret.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Prerender script only affects production build/ output; preview dev server relies solely on client-side SEO injection. Ensure production deployment runs the postbuild prerender so Google crawlers see the unique meta before JS execution.",
+    "Canonical for '/' resolves to https://www.dijitalroket.com/ (with trailing slash) — verify this matches Search Console preferred canonical to avoid duplicate signal."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100%"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "SEO regression validated on preview. All 5 titles/descriptions unique, canonicals correct, robots values correct, 404 noindex works, no console errors. If any change is made to SEO.jsx or App.js NotFound, re-run same checks."
+}

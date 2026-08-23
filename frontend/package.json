@@ -58,7 +58,7 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "craco build",
+    "build": "craco build && node scripts/prerender-meta.js",
     "test": "craco test"
   },
   "browserslist": {

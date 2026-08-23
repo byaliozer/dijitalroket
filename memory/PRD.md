@@ -118,6 +118,12 @@ Reklam kampanyaları için premium, dönüşüm odaklı AI deneyim sayfası (tes
 - **Düzeltme**: index.html'deki host-forcing JS redirect bloğu kaldırıldı. Yönlendirme artık yalnızca Cloudflare edge'de (tek yön). testing_agent iteration_13 %100 (preview temiz, script yok, navigasyon OK, konsol hatasız).
 - **AKSİYON**: Production'a yansıması için REDEPLOY gerekir. Ayrıca canonical tutarlılığı için (tüm SEO www kullanıyor ama Cloudflare non-www'ye yönlendiriyor) primary domain kararı: ya Cloudflare'i non-www→www'ye çevir, ya da canonical'ları non-www yap.
 
+## SEO FIX (faz-11) — Duplicate meta description (sitelink) + /%2A
+- **Sorun**: Google sitelink'lerinde Hakkımızda/Hizmetler/Projeler AYNI meta açıklamayı gösteriyordu. Kök neden: CSR SPA her URL için aynı statik index.html meta'sını sunuyor; per-page açıklamalar yalnızca JS ile ekleniyordu (Google sitelink'te statik HTML'i kullanıyor).
+- **Düzeltme**: (1) `public/index.html` statik açıklaması ana sayfaya özel yapıldı. (2) Postbuild prerender script `frontend/scripts/prerender-meta.js` (package.json build'e bağlı) → her route için `build/<route>/index.html` içine BENZERSİZ title/description/canonical gömüyor. `yarn build` doğrulandı: 12 route, 5 ana sayfa 5/5 tekil. testing_agent iteration_14 %100 (regresyon yok, 404/%2A noindex).
+- **/%2A**: Sitede link yok, sitemap'te yok, NotFound noindex,nofollow render ediyor (Googlebot JS render edince görür → düşürür). GSC geçici kaldırma süresi dolmuş → kullanıcı hem www hem non-www için yeniden "URL Kaldırma" göndermeli; recrawl sonrası kalıcı düşer.
+- **AKSİYON**: REDEPLOY gerekir (prerender yalnızca production build'de çalışır). Not: host `/<route>/index.html` fiziksel dosyalarını sunmalı (standart SPA try_files davranışı).
+
 ## Next Tasks
 - Optional UX: large clickable cards on listings.
 - Optional: e-mail notifications when forms arrive.
@@ -156,6 +162,12 @@ Reklam kampanyaları için premium, dönüşüm odaklı AI deneyim sayfası (tes
 - **Kök neden**: Cloudflare `www.dijitalroket.com` → 308 → `dijitalroket.com` (non-www) yönlendiriyor; `public/index.html` içindeki inline `<script>` ise non-www'yi tekrar `www`'ye zorluyordu → **sonsuz redirect döngüsü**.
 - **Düzeltme**: index.html'deki host-forcing JS redirect bloğu kaldırıldı. Yönlendirme artık yalnızca Cloudflare edge'de (tek yön). testing_agent iteration_13 %100 (preview temiz, script yok, navigasyon OK, konsol hatasız).
 - **AKSİYON**: Production'a yansıması için REDEPLOY gerekir. Ayrıca canonical tutarlılığı için (tüm SEO www kullanıyor ama Cloudflare non-www'ye yönlendiriyor) primary domain kararı: ya Cloudflare'i non-www→www'ye çevir, ya da canonical'ları non-www yap.
+
+## SEO FIX (faz-11) — Duplicate meta description (sitelink) + /%2A
+- **Sorun**: Google sitelink'lerinde Hakkımızda/Hizmetler/Projeler AYNI meta açıklamayı gösteriyordu. Kök neden: CSR SPA her URL için aynı statik index.html meta'sını sunuyor; per-page açıklamalar yalnızca JS ile ekleniyordu (Google sitelink'te statik HTML'i kullanıyor).
+- **Düzeltme**: (1) `public/index.html` statik açıklaması ana sayfaya özel yapıldı. (2) Postbuild prerender script `frontend/scripts/prerender-meta.js` (package.json build'e bağlı) → her route için `build/<route>/index.html` içine BENZERSİZ title/description/canonical gömüyor. `yarn build` doğrulandı: 12 route, 5 ana sayfa 5/5 tekil. testing_agent iteration_14 %100 (regresyon yok, 404/%2A noindex).
+- **/%2A**: Sitede link yok, sitemap'te yok, NotFound noindex,nofollow render ediyor (Googlebot JS render edince görür → düşürür). GSC geçici kaldırma süresi dolmuş → kullanıcı hem www hem non-www için yeniden "URL Kaldırma" göndermeli; recrawl sonrası kalıcı düşer.
+- **AKSİYON**: REDEPLOY gerekir (prerender yalnızca production build'de çalışır). Not: host `/<route>/index.html` fiziksel dosyalarını sunmalı (standart SPA try_files davranışı).
 
 ## Next Tasks (archive below)
 
